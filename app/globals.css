@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 60% 99%;
+  --foreground: 220 26% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 26% 17%;
+  --border: 212 47% 88%;
+  --input: 212 47% 88%;
+  --primary: 206 74% 55%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 230 65% 31%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 209 70% 96%;
+  --muted-foreground: 217 19% 41%;
+  --accent: 204 76% 93%;
+  --accent-foreground: 230 65% 31%;
+  --destructive: 0 78% 52%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 206 74% 55%;
+}
+
+body {
+  @apply bg-background text-foreground;
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(58, 153, 225, 0.18), transparent 38%),
+    radial-gradient(circle at 100% 0%, rgba(28, 45, 134, 0.18), transparent 34%),
+    linear-gradient(180deg, #f7fbff 0%, #eef6fd 100%);
+}
+
+.grid-backdrop {
+  background-image:
+    linear-gradient(to right, rgba(58, 153, 225, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(58, 153, 225, 0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+}

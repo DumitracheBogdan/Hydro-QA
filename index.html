@@ -1,0 +1,1763 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Simple QA Tracker</title>
+  <style>
+    :root {
+      --line: #e4e7ed;
+      --ink: #323a49;
+      --muted: #7b8495;
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --blue: #3a99e1;
+      --green: #2eaf4a;
+      --purple: #b33bc7;
+      --cyan: #4ba8f0;
+      --orange: #f39a1f;
+      --gray: #9aa3b2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    }
+
+    .app {
+      width: min(1200px, 96vw);
+      margin: 20px auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .head-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand img {
+      height: 24px;
+      width: auto;
+      display: block;
+    }
+
+    .head h1 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .form {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1.2fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .req-star {
+      color: #dc2626;
+      font-weight: 700;
+      margin-left: 3px;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 38px;
+      border: 1px solid #dbe0e8;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fff;
+      color: #2f3747;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 84px;
+      border: 1px solid #dbe0e8;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fff;
+      color: #2f3747;
+      resize: vertical;
+      line-height: 1.35;
+    }
+
+    .field-error {
+      border-color: #dc2626 !important;
+      background: #fff5f5;
+    }
+
+    button {
+      height: 38px;
+      border: 0;
+      border-radius: 8px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-primary:disabled {
+      background: #cfd7e6;
+      color: #6b7280;
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 1;
+    }
+
+    .table-wrap { overflow-x: hidden; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 0;
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border-top: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      padding: 11px 10px;
+      font-size: 0.93rem;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    th:last-child,
+    td:last-child { border-right: 0; }
+
+    th {
+      font-size: 0.8rem;
+      color: #1f2937;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: linear-gradient(180deg, #eef3fb 0%, #e6edf8 100%);
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      border-bottom: 1px solid #c8d5ea;
+      box-shadow: inset 0 -1px 0 #d0dbec;
+    }
+
+    thead th {
+      white-space: normal;
+    }
+
+    .muted { color: var(--gray); }
+
+    .status {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .st-progress { color: var(--green); }
+    .st-hold { color: var(--purple); }
+    .st-not { color: var(--cyan); }
+    .st-review { color: var(--orange); }
+    .st-done { color: #1f7a3e; }
+
+    .priority {
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .pr-low { color: #2f9e44; }
+    .pr-normal { color: #3a99e1; }
+    .pr-high { color: #f08c00; }
+    .pr-critical { color: #d6336c; }
+
+    .severity {
+      font-weight: 700;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sev-low { color: #16a34a; }
+    .sev-medium { color: #0284c7; }
+    .sev-high { color: #ea580c; }
+    .sev-critical { color: #dc2626; }
+
+    .dev-name {
+      font-weight: 700;
+      font-size: 0.84rem;
+      white-space: nowrap;
+    }
+
+    .dev-inline-select {
+      width: 100%;
+      min-width: 0;
+      height: 32px;
+      border: 1px solid #d7deea;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: #fff;
+    }
+
+    .cell-input,
+    .cell-select {
+      width: 100%;
+      min-width: 0;
+      height: 32px;
+      border: 1px solid #d7deea;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.82rem;
+      background: #fff;
+      color: #1f2937;
+    }
+
+    .cell-select.priority {
+      font-weight: 700;
+    }
+
+    .cell-select.severity {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .cell-select.status {
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .cell-select.priority.pr-low {
+      color: #166534;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .cell-select.priority.pr-normal {
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .cell-select.priority.pr-high {
+      color: #9a3412;
+      background: #ffedd5;
+      border-color: #fdba74;
+    }
+
+    .cell-select.priority.pr-critical {
+      color: #9f1239;
+      background: #ffe4e6;
+      border-color: #fda4af;
+    }
+
+    .cell-select.severity.sev-low {
+      color: #166534;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .cell-select.severity.sev-medium {
+      color: #0c4a6e;
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+    }
+
+    .cell-select.severity.sev-high {
+      color: #9a3412;
+      background: #ffedd5;
+      border-color: #fdba74;
+    }
+
+    .cell-select.severity.sev-critical {
+      color: #991b1b;
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    .cell-select.status.st-progress {
+      color: #166534;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .cell-select.status.st-hold {
+      color: #6b21a8;
+      background: #f3e8ff;
+      border-color: #d8b4fe;
+    }
+
+    .cell-select.status.st-not {
+      color: #075985;
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+    }
+
+    .cell-select.status.st-review {
+      color: #9a3412;
+      background: #ffedd5;
+      border-color: #fdba74;
+    }
+
+    .cell-select.status.st-done {
+      color: #14532d;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .cell-input.wide {
+      min-width: 0;
+    }
+
+    .cell-media {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .dev-calin { color: #1d4ed8; }
+    .dev-ruxandra { color: #9333ea; }
+    .dev-alexandra { color: #ea580c; }
+    .dev-robert { color: #0f766e; }
+    .dev-unassigned { color: #9aa3b2; font-weight: 600; }
+
+    .actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .issue-row {
+      cursor: pointer;
+    }
+
+    .issue-row:hover td {
+      background: #f8fbff;
+    }
+
+    .title-link {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .media-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 20px;
+      padding: 0 6px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.25px;
+      margin-left: 8px;
+      border: 1px solid transparent;
+      vertical-align: middle;
+    }
+
+    .mi-img {
+      color: #0c4a6e;
+      background: #e0f2fe;
+      border-color: #7dd3fc;
+    }
+
+    .mi-video {
+      color: #14532d;
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+
+    .mi-link {
+      color: #1d4ed8;
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+
+    .mi-none {
+      color: #6b7280;
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+
+    .btn-lite {
+      background: #eaf2fd;
+      color: #2e5f93;
+      font-size: 0.78rem;
+      height: 28px;
+      padding: 0 8px;
+    }
+
+    .media-link-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid #cbdaf1;
+      background: #eef4ff;
+      color: #235487;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-decoration: none;
+      width: fit-content;
+    }
+
+    .btn-danger {
+      background: #fdeaea;
+      color: #b12a2a;
+      font-size: 0.78rem;
+      height: 28px;
+      padding: 0 8px;
+    }
+
+    .media-inline {
+      width: 100%;
+      max-width: 140px;
+      aspect-ratio: 16 / 9;
+      height: auto;
+      border: 1px solid #dbe3f2;
+      border-radius: 8px;
+      background: #f8fbff;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      justify-self: start;
+    }
+
+    .media-inline iframe,
+    .media-inline video,
+    .media-inline img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: 0;
+      background: #ffffff;
+    }
+
+    .media-inline img {
+      cursor: zoom-in;
+    }
+
+    .image-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 13, 24, 0.82);
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      z-index: 30;
+    }
+
+    .image-modal[hidden] {
+      display: none;
+    }
+
+    .image-modal-card {
+      width: min(1100px, 96vw);
+      max-height: 92vh;
+      background: #0f1728;
+      border: 1px solid #2d3850;
+      border-radius: 10px;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .image-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: #111b2d;
+      border-bottom: 1px solid #2d3850;
+    }
+
+    .image-modal-head strong {
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+
+    .image-tools {
+      display: flex;
+      gap: 6px;
+    }
+
+    .image-tools button {
+      height: 32px;
+      padding: 0 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      background: #e6eefc;
+      color: #284b75;
+    }
+
+    .image-stage {
+      overflow: auto;
+      padding: 10px;
+      display: grid;
+      place-items: center;
+      background: #0a1222;
+    }
+
+    .image-stage img {
+      max-width: 100%;
+      max-height: calc(92vh - 80px);
+      width: auto;
+      height: auto;
+      border-radius: 6px;
+      background: #ffffff;
+    }
+
+    .empty {
+      padding: 16px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      text-align: center;
+    }
+
+    .issue-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      z-index: 25;
+    }
+
+    .issue-modal[hidden] {
+      display: none;
+    }
+
+    .issue-modal-card {
+      width: min(1120px, 96vw);
+      max-height: 94vh;
+      overflow: auto;
+      background: #ffffff;
+      border: 1px solid #dce3ef;
+      border-radius: 12px;
+    }
+
+    .issue-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #f8f9fc;
+    }
+
+    .issue-modal-head h2 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .form-modal {
+      border-bottom: 0;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .form-modal label {
+      gap: 6px;
+    }
+
+    .form-modal input,
+    .form-modal select,
+    .form-modal textarea,
+    .form-modal button {
+      height: 40px;
+      border-radius: 10px;
+    }
+
+    .form-modal textarea {
+      height: auto;
+      min-height: 96px;
+    }
+
+    .form-modal.readonly-mode input:disabled,
+    .form-modal.readonly-mode select:disabled,
+    .form-modal.readonly-mode textarea:disabled {
+      background: #f3f4f6;
+      color: #6b7280;
+      border-color: #d1d5db;
+    }
+
+    .form-modal button {
+      margin-top: 4px;
+    }
+
+    .focus-table-wrap {
+      grid-column: 1 / -1;
+      border: 1px solid #d7e3f7;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    .focus-stack {
+      display: grid;
+      gap: 0;
+    }
+
+    .focus-row {
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+      border-top: 1px solid #dbe5f4;
+    }
+
+    .focus-row:first-child {
+      border-top: 0;
+    }
+
+    .focus-row strong {
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      font-size: 0.72rem;
+      color: #4b5563;
+      font-weight: 700;
+    }
+
+    .focus-row textarea {
+      min-height: 96px;
+    }
+
+    .form-modal.new-case-mode .focus-table-wrap {
+      border-color: #bfdbfe;
+      box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.25) inset;
+      animation: createFieldPulse 1.2s ease-out;
+    }
+
+    .form-modal.new-case-mode .focus-stack input,
+    .form-modal.new-case-mode .focus-stack textarea {
+      border-color: #93c5fd;
+      background: #ffffff;
+    }
+
+    @keyframes createFieldPulse {
+      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
+      100% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+    }
+
+    .modal-sticky-actions {
+      position: sticky;
+      bottom: 0;
+      z-index: 3;
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 8px;
+      padding-bottom: 6px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 34%);
+      grid-column: 1 / -1;
+    }
+
+    .modal-sticky-actions .btn-primary {
+      min-width: 120px;
+      box-shadow: 0 4px 16px rgba(58, 153, 225, 0.22);
+    }
+
+    .modal-media-preview {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid #dbe3f2;
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .media-preview-head {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .media-preview-title {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+      color: #4b5563;
+      font-weight: 700;
+    }
+
+    .modal-media-preview .muted {
+      font-size: 0.84rem;
+      flex-basis: 100%;
+    }
+
+    .modal-media-preview .media-link-btn {
+      margin-top: 2px;
+    }
+
+    .modal-media-item {
+      position: relative;
+      display: grid;
+      gap: 6px;
+      width: 210px;
+      padding: 4px;
+      border: 1px dashed #d9e2f3;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .modal-media-item .media-inline {
+      width: 100%;
+      max-width: none;
+      min-height: 118px;
+      aspect-ratio: 16 / 9;
+    }
+
+    .media-remove-btn {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 2;
+      width: 20px;
+      height: 20px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(17, 24, 39, 0.72);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    @media (max-width: 980px) {
+      .form { grid-template-columns: 1fr 1fr; }
+      .form-modal { grid-template-columns: 1fr; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="head">
+      <div class="brand">
+        <img src="https://gen-cert.com/assets/logo-Cv0yGe77.svg" alt="Gen-Cert Logo" />
+      </div>
+      <div class="head-actions">
+        <button id="openCreateBtn" class="btn-primary" type="button">Create Issue</button>
+      </div>
+    </header>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>QA Category</th>
+            <th>Dev Assigned</th>
+            <th>Severity</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Date Reported</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="emptyState" class="empty" hidden>No tasks yet. Add your first QA item above.</div>
+  </main>
+
+  <div id="issueModal" class="issue-modal" hidden>
+    <div class="issue-modal-card">
+      <div class="issue-modal-head">
+        <h2 id="issueModalTitle">Create Issue</h2>
+        <div class="head-actions">
+          <button id="enableEditBtn" class="btn-lite" type="button" hidden>Edit</button>
+          <button id="deleteIssueBtn" class="btn-danger" type="button" hidden>Delete Issue</button>
+          <button id="closeCreateBtn" class="btn-danger" type="button">Close</button>
+        </div>
+      </div>
+      <form id="taskForm" class="form form-modal">
+        <input type="hidden" id="taskId" />
+
+        <label>
+          Title <span class="req-star">*</span>
+          <input id="title" required maxlength="120" placeholder="Test case 1" />
+        </label>
+
+        <label>
+          QA Category <span class="req-star">*</span>
+          <select id="qaCategory" required>
+            <option>BUG</option>
+            <option>User Interface</option>
+            <option>Performance</option>
+            <option>Regression</option>
+          </select>
+        </label>
+
+        <label>
+          Dev Assigned
+          <select id="devAssigned">
+            <option value="">Unassigned</option>
+            <option>Calin Muntean</option>
+            <option>Ruxandra Boca</option>
+            <option>Alexandra Pop</option>
+            <option>Robert Amatisei</option>
+          </select>
+        </label>
+
+        <label>
+          Severity <span class="req-star">*</span>
+          <select id="severity" required>
+            <option>Low</option>
+            <option selected>Medium</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </label>
+
+        <label>
+          Priority <span class="req-star">*</span>
+          <select id="priority" required>
+            <option>Normal</option>
+            <option>Low</option>
+            <option>High</option>
+            <option>Critical</option>
+          </select>
+        </label>
+
+        <label>
+          Status <span class="req-star">*</span>
+          <select id="status" required>
+            <option>IN PROGRESS</option>
+            <option>ON HOLD</option>
+            <option>NOT STARTED</option>
+            <option>REVIEW</option>
+            <option>DONE</option>
+          </select>
+        </label>
+
+        <label>
+          Date Reported (2026) <span class="req-star">*</span>
+          <input id="issueFoundOn" type="date" min="2026-01-01" max="2026-12-31" required />
+        </label>
+
+        <label>
+          Target Fix Date (2026)
+          <input id="targetFixDate" type="date" min="2026-01-01" max="2026-12-31" />
+        </label>
+
+        <div class="focus-table-wrap">
+          <div class="focus-stack">
+            <div class="focus-row">
+              <strong>Bug/Issue Description <span class="req-star">*</span></strong>
+              <textarea id="issueDescription" class="auto-grow" maxlength="2000" placeholder="Issue details" required></textarea>
+            </div>
+            <div class="focus-row">
+              <strong>Console/Network Evidence</strong>
+              <textarea id="consoleEvidence" class="auto-grow" maxlength="3000" placeholder="Logs, stack traces, requests, notes..."></textarea>
+            </div>
+            <div class="focus-row">
+              <strong>Expected result</strong>
+              <textarea id="expectedResult" class="auto-grow" maxlength="3000" placeholder="What should happen"></textarea>
+            </div>
+            <div class="focus-row">
+              <strong>Actual result</strong>
+              <textarea id="actualResult" class="auto-grow" maxlength="3000" placeholder="What actually happens"></textarea>
+            </div>
+            <div class="focus-row">
+              <strong>Steps to Reproduce</strong>
+              <textarea id="stepsToReproduce" class="auto-grow" maxlength="5000" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <textarea id="mediaUrls" hidden></textarea>
+
+        <div id="modalMediaPreview" class="modal-media-preview">
+          <span class="muted">No media URLs provided.</span>
+        </div>
+
+        <div class="modal-sticky-actions">
+          <button class="btn-primary" id="saveBtn" type="submit">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="imageModal" class="image-modal" hidden>
+    <div class="image-modal-card">
+      <div class="image-modal-head">
+        <strong id="imageModalTitle">Photo Preview</strong>
+        <div class="image-tools">
+          <button id="fullBtn" type="button">Full Screen</button>
+          <button id="closeImageBtn" type="button">Close</button>
+        </div>
+      </div>
+      <div id="imageStage" class="image-stage">
+        <img id="zoomImage" alt="Zoomed task photo" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "qa_simple_tasks_v1";
+
+    const taskForm = document.getElementById("taskForm");
+    const taskId = document.getElementById("taskId");
+    const title = document.getElementById("title");
+    const qaCategory = document.getElementById("qaCategory");
+    const issueDescription = document.getElementById("issueDescription");
+    const targetFixDate = document.getElementById("targetFixDate");
+    const issueFoundOn = document.getElementById("issueFoundOn");
+    const devAssigned = document.getElementById("devAssigned");
+    const severity = document.getElementById("severity");
+    const priority = document.getElementById("priority");
+    const status = document.getElementById("status");
+    const consoleEvidence = document.getElementById("consoleEvidence");
+    const expectedResult = document.getElementById("expectedResult");
+    const actualResult = document.getElementById("actualResult");
+    const stepsToReproduce = document.getElementById("stepsToReproduce");
+    const mediaUrls = document.getElementById("mediaUrls");
+    const modalMediaPreview = document.getElementById("modalMediaPreview");
+    const saveBtn = document.getElementById("saveBtn");
+    const tableBody = document.getElementById("tableBody");
+    const emptyState = document.getElementById("emptyState");
+    const openCreateBtn = document.getElementById("openCreateBtn");
+    const closeCreateBtn = document.getElementById("closeCreateBtn");
+    const enableEditBtn = document.getElementById("enableEditBtn");
+    const deleteIssueBtn = document.getElementById("deleteIssueBtn");
+    const issueModal = document.getElementById("issueModal");
+    const issueModalTitle = document.getElementById("issueModalTitle");
+    const imageModal = document.getElementById("imageModal");
+    const imageModalTitle = document.getElementById("imageModalTitle");
+    const imageStage = document.getElementById("imageStage");
+    const zoomImage = document.getElementById("zoomImage");
+    const fullBtn = document.getElementById("fullBtn");
+    const closeImageBtn = document.getElementById("closeImageBtn");
+    const DEV_OPTIONS = [
+      "Calin Muntean",
+      "Ruxandra Boca",
+      "Alexandra Pop",
+      "Robert Amatisei"
+    ];
+    const QA_CATEGORY_OPTIONS = ["BUG", "User Interface", "Performance", "Regression"];
+    const SEVERITY_OPTIONS = ["Low", "Medium", "High", "Critical"];
+    const PRIORITY_OPTIONS = ["Normal", "Low", "High", "Critical"];
+    const STATUS_OPTIONS = ["IN PROGRESS", "ON HOLD", "NOT STARTED", "REVIEW", "DONE"];
+    const requiredFields = [
+      title,
+      qaCategory,
+      issueDescription,
+      issueFoundOn,
+      priority,
+      severity,
+      status
+    ];
+    const editableFields = [
+      title,
+      qaCategory,
+      issueDescription,
+      targetFixDate,
+      issueFoundOn,
+      devAssigned,
+      severity,
+      priority,
+      status,
+      consoleEvidence,
+      expectedResult,
+      actualResult,
+      stepsToReproduce,
+      mediaUrls
+    ];
+
+    function uid() {
+      return `TASK-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+    }
+
+    function loadTasks() {
+      try {
+        const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        return Array.isArray(value) ? value : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTasks(tasks) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function clearForm() {
+      taskForm.reset();
+      taskForm.classList.add("new-case-mode");
+      taskId.value = "";
+      issueFoundOn.value = "2026-01-01";
+      targetFixDate.value = "";
+      status.value = "IN PROGRESS";
+      severity.value = "Medium";
+      priority.value = "Normal";
+      saveBtn.textContent = "Add Task";
+      issueModalTitle.textContent = "Create Issue";
+      enableEditBtn.hidden = true;
+      setModalEditingEnabled(true);
+      deleteIssueBtn.hidden = true;
+      refreshModalMediaPreview();
+      refreshAutoGrowTextareas();
+      clearFieldErrors();
+    }
+
+    function setModalEditingEnabled(enabled) {
+      editableFields.forEach((field) => {
+        field.disabled = !enabled;
+      });
+      saveBtn.disabled = !enabled;
+      taskForm.classList.toggle("readonly-mode", !enabled);
+    }
+
+    function openEditModal(task) {
+      taskForm.classList.remove("new-case-mode");
+      taskId.value = task.id || "";
+      title.value = task.title || "";
+      qaCategory.value = task.qaCategory || task.qaType || "BUG";
+      issueDescription.value = task.issueDescription || "";
+      targetFixDate.value = task.targetFixDate || task.schedule || "";
+      issueFoundOn.value = task.issueFoundOn || "2026-01-01";
+      devAssigned.value = task.devAssigned || "";
+      severity.value = task.severity || "Medium";
+      priority.value = task.priority || "Normal";
+      status.value = task.status || "IN PROGRESS";
+      consoleEvidence.value = task.consoleEvidence || "";
+      expectedResult.value = task.expectedResult || "";
+      actualResult.value = task.actualResult || "";
+      stepsToReproduce.value = task.stepsToReproduce || "";
+      mediaUrls.value = getTaskMediaUrls(task).join("\n");
+      saveBtn.textContent = "Save";
+      issueModalTitle.textContent = "Create Issue";
+      enableEditBtn.hidden = false;
+      setModalEditingEnabled(false);
+      deleteIssueBtn.hidden = true;
+      refreshModalMediaPreview();
+      refreshAutoGrowTextareas();
+      clearFieldErrors();
+      openCreateModal();
+    }
+
+    function autoResizeTextarea(el) {
+      if (!(el instanceof HTMLTextAreaElement)) return;
+      el.style.height = "auto";
+      el.style.height = `${el.scrollHeight}px`;
+    }
+
+    function refreshAutoGrowTextareas() {
+      document.querySelectorAll("textarea.auto-grow").forEach((el) => autoResizeTextarea(el));
+    }
+
+    function refreshModalMediaPreview() {
+      const urls = getMediaUrlList(mediaUrls.value);
+      const editable = !mediaUrls.disabled;
+      const head = `
+        <div class="media-preview-head">
+          <span class="media-preview-title">Photo/Video Preview</span>
+          <button id="addMediaBtnInline" class="btn-lite" type="button" ${editable ? "" : "disabled"}>Add Media</button>
+        </div>
+      `;
+      if (!urls.length) {
+        modalMediaPreview.innerHTML = `${head}<span class="muted">No media URLs provided.</span>`;
+        return;
+      }
+      modalMediaPreview.innerHTML = head + urls.map((url, index) => `
+        <div class="modal-media-item">
+          ${editable ? `<button class="media-remove-btn" type="button" data-action="remove-media" data-index="${index}" aria-label="Remove media">X</button>` : ""}
+          ${renderInlineMedia(url)}
+        </div>
+      `).join("");
+    }
+
+    function getMediaUrlList(raw) {
+      return String(raw || "")
+        .split(/\r?\n/)
+        .map((url) => url.trim())
+        .filter(Boolean);
+    }
+
+    function getTaskMediaUrls(task) {
+      if (Array.isArray(task.mediaUrls) && task.mediaUrls.length) {
+        return task.mediaUrls.map((url) => String(url || "").trim()).filter(Boolean);
+      }
+      if (task.mediaUrl) {
+        return getMediaUrlList(task.mediaUrl);
+      }
+      return [];
+    }
+
+    function openCreateModal() {
+      issueModal.hidden = false;
+    }
+
+    function closeCreateModal() {
+      issueModal.hidden = true;
+    }
+
+    function hasRequiredIssueFields(draft) {
+      return Boolean(
+        draft.title &&
+        draft.qaCategory &&
+        draft.issueDescription &&
+        draft.issueFoundOn &&
+        draft.priority &&
+        draft.severity &&
+        draft.status
+      );
+    }
+
+    function clearFieldErrors() {
+      requiredFields.forEach((field) => field.classList.remove("field-error"));
+      targetFixDate.classList.remove("field-error");
+    }
+
+    function isFieldEmpty(field) {
+      const raw = field.value == null ? "" : String(field.value);
+      const value = raw.trim();
+      if (field === devAssigned) return value === "";
+      return value === "";
+    }
+
+    function markMissingRequiredFields() {
+      requiredFields.forEach((field) => {
+        field.classList.toggle("field-error", isFieldEmpty(field));
+      });
+    }
+
+    function formatDate(dateValue) {
+      if (!dateValue) return "";
+      const d = new Date(`${dateValue}T00:00:00`);
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleDateString();
+    }
+
+    function normalizeMonthDayTo2026(value) {
+      const raw = String(value || "").trim().replace(/\//g, "-").replace(/\./g, "-");
+      let mm = "";
+      let dd = "";
+
+      const full = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (full) {
+        mm = String(Number(full[2])).padStart(2, "0");
+        dd = String(Number(full[3])).padStart(2, "0");
+      } else {
+        const short = raw.match(/^(\d{1,2})-(\d{1,2})$/);
+        if (!short) return "";
+        mm = String(Number(short[1])).padStart(2, "0");
+        dd = String(Number(short[2])).padStart(2, "0");
+      }
+
+      const monthNum = Number(mm);
+      const dayNum = Number(dd);
+      if (monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) return "";
+
+      const probe = new Date(`2026-${mm}-${dd}T12:00:00`);
+      if (Number.isNaN(probe.getTime())) return "";
+      if (probe.getUTCFullYear() !== 2026 || probe.getUTCMonth() + 1 !== monthNum || probe.getUTCDate() !== dayNum) return "";
+
+      return `2026-${mm}-${dd}`;
+    }
+
+    function forceYear2026(dateValue) {
+      const m = String(dateValue || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return "";
+      return `2026-${m[2]}-${m[3]}`;
+    }
+
+    function toMonthDay(value) {
+      const m = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return "";
+      return `${m[2]}-${m[3]}`;
+    }
+
+    function statusClass(value) {
+      if (value === "IN PROGRESS") return "st-progress";
+      if (value === "ON HOLD") return "st-hold";
+      if (value === "NOT STARTED") return "st-not";
+      if (value === "REVIEW") return "st-review";
+      return "st-done";
+    }
+
+    function priorityClass(value) {
+      if (value === "Low") return "pr-low";
+      if (value === "Normal") return "pr-normal";
+      if (value === "High") return "pr-high";
+      return "pr-critical";
+    }
+
+    function severityClass(value) {
+      if (value === "Low") return "sev-low";
+      if (value === "Medium") return "sev-medium";
+      if (value === "High") return "sev-high";
+      return "sev-critical";
+    }
+
+    function devClass(value) {
+      if (value === "Calin Muntean") return "dev-calin";
+      if (value === "Ruxandra Boca") return "dev-ruxandra";
+      if (value === "Alexandra Pop") return "dev-alexandra";
+      if (value === "Robert Amatisei") return "dev-robert";
+      return "dev-unassigned";
+    }
+
+    function renderDevAssignedEditor(task) {
+      const current = task.devAssigned || "";
+      const options = [
+        `<option value="">Unassigned</option>`,
+        ...DEV_OPTIONS.map((dev) => `<option value="${dev}" ${current === dev ? "selected" : ""}>${dev}</option>`)
+      ].join("");
+      return `<select class="dev-inline-select ${devClass(current)}" data-action="inline-update" data-id="${task.id}" data-field="devAssigned">${options}</select>`;
+    }
+
+    function escapeAttr(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function renderOptions(options, selected, includeBlank) {
+      const start = includeBlank ? [`<option value="">Unassigned</option>`] : [];
+      return [...start, ...options.map((value) => `<option value="${escapeAttr(value)}" ${selected === value ? "selected" : ""}>${value}</option>`)].join("");
+    }
+
+    function renderInlineText(task, field, isWide) {
+      const cls = isWide ? "cell-input wide" : "cell-input";
+      return `<input class="${cls}" data-action="inline-update" data-id="${task.id}" data-field="${field}" value="${escapeAttr(task[field] || "")}" />`;
+    }
+
+    function renderInlineDate(task, field) {
+      const value = task[field] || "";
+      return `<input class="cell-input" data-action="inline-update" data-id="${task.id}" data-field="${field}" type="date" min="2026-01-01" max="2026-12-31" value="${escapeAttr(value)}" />`;
+    }
+
+    function renderInlineSelect(task, field, options) {
+      const selected = task[field] || "";
+      let tone = "";
+      if (field === "priority") tone = `priority ${priorityClass(selected)}`;
+      if (field === "severity") tone = `severity ${severityClass(selected)}`;
+      if (field === "status") tone = `status ${statusClass(selected)}`;
+      return `<select class="cell-select ${tone}" data-action="inline-update" data-id="${task.id}" data-field="${field}">${renderOptions(options, selected, false)}</select>`;
+    }
+
+    function updateTaskField(taskIdValue, field, rawValue) {
+      const tasks = loadTasks();
+      const index = tasks.findIndex((x) => x.id === taskIdValue);
+      if (index < 0) return;
+
+      const value = String(rawValue ?? "").trim();
+      const requiredNoEmpty = ["title", "qaCategory", "issueDescription", "issueFoundOn", "severity", "priority", "status"];
+      if (requiredNoEmpty.includes(field) && !value) {
+        alert(`${field} is required.`);
+        renderTasks();
+        return;
+      }
+
+      if (field === "issueFoundOn" || field === "targetFixDate") {
+        const normalized = value ? normalizeMonthDayTo2026(value) : "";
+        if (value && !normalized) {
+          alert(`${field === "issueFoundOn" ? "Date Reported" : "Target Fix Date"} must be a valid date in year 2026.`);
+          renderTasks();
+          return;
+        }
+        tasks[index][field] = normalized;
+      } else {
+        tasks[index][field] = value;
+      }
+
+      tasks[index].updatedAt = Date.now();
+      saveTasks(tasks);
+      renderTasks();
+    }
+
+    function getMediaKind(rawUrl) {
+      const lower = (rawUrl || "").toLowerCase();
+      if (lower.match(/[?&]ithint=video/) || lower.match(/\/:v:\//) || lower.match(/\/v\//) || lower.match(/\.(mp4|webm|ogg|mov)(\?|$)/)) return "video";
+      if (lower.match(/[?&]ithint=photo/) || lower.match(/[?&]ithint=image/) || lower.match(/\/:i:\//) || lower.match(/\/i\//) || lower.match(/\.(jpg|jpeg|png|gif|webp|bmp)(\?|$)/)) return "image";
+      return "unknown";
+    }
+
+    function getOneDriveLinks(raw) {
+      try {
+        const base = new URL(raw);
+        const host = base.hostname.toLowerCase();
+        const isOneDrive = host.includes("onedrive.live.com") || host.includes("1drv.ms") || host.includes("sharepoint.com");
+        if (!isOneDrive) return null;
+
+        const downloadUrl = new URL(base.toString());
+        downloadUrl.searchParams.set("download", "1");
+        downloadUrl.searchParams.delete("web");
+        downloadUrl.searchParams.delete("embed");
+
+        const embedUrl = new URL(base.toString());
+        embedUrl.searchParams.set("web", "1");
+        embedUrl.searchParams.set("download", "0");
+
+        return {
+          downloadUrl: downloadUrl.toString(),
+          embedUrl: embedUrl.toString()
+        };
+      } catch {
+        return null;
+      }
+    }
+
+    function uniqueNonEmpty(list) {
+      const seen = new Set();
+      const out = [];
+      list.forEach((item) => {
+        const value = String(item || "").trim();
+        if (!value || seen.has(value)) return;
+        seen.add(value);
+        out.push(value);
+      });
+      return out;
+    }
+
+    function buildOneDriveImageCandidates(rawUrl, oneDriveLinks) {
+      const withDownload = (() => {
+        try {
+          const u = new URL(rawUrl);
+          u.searchParams.set("download", "1");
+          return u.toString();
+        } catch {
+          return "";
+        }
+      })();
+
+      const rVariant = rawUrl.replace("/:i:/g/", "/:i:/r/");
+      const uVariant = rawUrl.replace("/:i:/g/", "/:u:/g/");
+      const rVariantDownload = (() => {
+        try {
+          const u = new URL(rVariant);
+          u.searchParams.set("download", "1");
+          return u.toString();
+        } catch {
+          return "";
+        }
+      })();
+      const uVariantDownload = (() => {
+        try {
+          const u = new URL(uVariant);
+          u.searchParams.set("download", "1");
+          return u.toString();
+        } catch {
+          return "";
+        }
+      })();
+      const withDownloadMobile = (() => {
+        try {
+          const u = new URL(rawUrl);
+          u.searchParams.set("download", "1");
+          u.searchParams.set("mobileredirect", "true");
+          return u.toString();
+        } catch {
+          return "";
+        }
+      })();
+
+      return uniqueNonEmpty([
+        uVariantDownload,
+        oneDriveLinks?.downloadUrl,
+        rVariantDownload,
+        withDownloadMobile,
+        withDownload,
+        uVariant,
+        rawUrl,
+        rVariant
+      ]);
+    }
+
+    function getOfficeEmbedUrl(rawUrl) {
+      return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(rawUrl)}`;
+    }
+
+    function onOneDriveImageError(img) {
+      if (!(img instanceof HTMLImageElement)) return;
+      const candidates = (img.dataset.candidates || "").split("||").filter(Boolean);
+      const index = Number(img.dataset.candidateIndex || "0");
+      const next = index + 1;
+
+      if (next < candidates.length) {
+        img.dataset.candidateIndex = String(next);
+        img.src = candidates[next];
+        return;
+      }
+
+      const wrapper = img.closest(".media-inline");
+      if (!wrapper) return;
+      const openUrl = img.dataset.openUrl || candidates[0] || "#";
+      const officeSrc = img.dataset.officeSrc || "";
+      if (officeSrc) {
+        wrapper.innerHTML = `<iframe src="${officeSrc}" title="OneDrive preview"></iframe>`;
+        return;
+      }
+      wrapper.innerHTML = `<a href="${openUrl}" target="_blank" rel="noopener">Open OneDrive File</a>`;
+    }
+
+    window.onOneDriveImageError = onOneDriveImageError;
+
+    function renderInlineMedia(rawUrl) {
+      const kind = getMediaKind(rawUrl);
+      const oneDrive = getOneDriveLinks(rawUrl);
+
+      if (oneDrive && kind === "image") {
+        const candidates = buildOneDriveImageCandidates(rawUrl, oneDrive);
+        const first = candidates[0] || rawUrl;
+        const encodedCandidates = candidates.join("||");
+        const officeSrc = getOfficeEmbedUrl(rawUrl);
+        return `<div class="media-inline"><img src="${first}" alt="Attachment" data-zoomable="1" data-open-url="${rawUrl}" data-office-src="${officeSrc}" data-candidates="${encodedCandidates}" data-candidate-index="0" onerror="onOneDriveImageError(this)" /></div>`;
+      }
+      if (oneDrive && kind === "video") {
+        return `<div class="media-inline"><video src="${oneDrive.downloadUrl}" controls></video></div>`;
+      }
+      if (oneDrive) {
+        return `<div class="media-inline"><iframe src="${getOfficeEmbedUrl(rawUrl)}" title="OneDrive preview"></iframe></div>`;
+      }
+
+      if (kind === "video") {
+        return `<div class="media-inline"><video src="${rawUrl}" controls></video></div>`;
+      }
+      if (kind === "image") {
+        return `<div class="media-inline"><img src="${rawUrl}" alt="Attachment" data-zoomable="1" /></div>`;
+      }
+      return `<a href="${rawUrl}" target="_blank" rel="noopener">Open URL</a>`;
+    }
+
+    function renderMediaLinkButton(rawUrl) {
+      const value = String(rawUrl || "").trim();
+      if (!value) return `<span class="muted">No link</span>`;
+      return `<a class="media-link-btn" href="${escapeAttr(value)}" target="_blank" rel="noopener noreferrer">Click</a>`;
+    }
+
+    function renderMediaIndicator(task) {
+      const urls = getTaskMediaUrls(task);
+      if (!urls.length) return `<span class="media-indicator mi-none" title="No attachment">NONE</span>`;
+      const hasVideo = urls.some((url) => getMediaKind(url) === "video");
+      const hasImage = urls.some((url) => getMediaKind(url) === "image");
+      const count = urls.length > 1 ? String(urls.length) : "";
+      if (hasVideo && hasImage) return `<span class="media-indicator mi-link" title="Mixed attachments">${`MIX${count}`}</span>`;
+      if (hasImage) return `<span class="media-indicator mi-img" title="Photo attached">${`IMG${count}`}</span>`;
+      if (hasVideo) return `<span class="media-indicator mi-video" title="Video attached">${`VID${count}`}</span>`;
+      return `<span class="media-indicator mi-link" title="Attachment link">${`ATT${count}`}</span>`;
+    }
+
+    function openImageModal(src) {
+      zoomImage.src = src;
+      imageModalTitle.textContent = "Photo Preview";
+      imageModal.hidden = false;
+    }
+
+    function closeImageModal() {
+      imageModal.hidden = true;
+      zoomImage.removeAttribute("src");
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function renderTasks() {
+      const tasks = loadTasks();
+      tableBody.innerHTML = "";
+
+      if (!tasks.length) {
+        emptyState.hidden = false;
+        return;
+      }
+      emptyState.hidden = true;
+
+      tasks.forEach((task) => {
+        const tr = document.createElement("tr");
+        tr.className = "issue-row";
+        tr.dataset.id = task.id;
+        tr.innerHTML = `
+          <td><span class="title-link">${escapeAttr(task.title || "")}</span>${renderMediaIndicator(task)}</td>
+          <td>${escapeAttr(task.qaCategory || task.qaType || "BUG")}</td>
+          <td>${renderDevAssignedEditor(task)}</td>
+          <td>${renderInlineSelect({ ...task, severity: task.severity || "Medium" }, "severity", SEVERITY_OPTIONS)}</td>
+          <td>${renderInlineSelect(task, "priority", PRIORITY_OPTIONS)}</td>
+          <td>${renderInlineSelect(task, "status", STATUS_OPTIONS)}</td>
+          <td>${renderInlineDate(task, "issueFoundOn")}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    taskForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const normalizedReported = normalizeMonthDayTo2026(issueFoundOn.value);
+      const normalizedTargetFixDate = targetFixDate.value.trim() ? normalizeMonthDayTo2026(targetFixDate.value) : "";
+      const mediaList = getMediaUrlList(mediaUrls.value);
+
+      if (issueFoundOn.value.trim() && !normalizedReported) {
+        issueFoundOn.classList.add("field-error");
+      }
+      if (targetFixDate.value.trim() && !normalizedTargetFixDate) {
+        targetFixDate.classList.add("field-error");
+      }
+
+      const draft = {
+        id: taskId.value || uid(),
+        title: title.value.trim(),
+        qaCategory: qaCategory.value,
+        issueDescription: issueDescription.value.trim(),
+        targetFixDate: normalizedTargetFixDate,
+        issueFoundOn: normalizedReported,
+        devAssigned: devAssigned.value,
+        severity: severity.value,
+        priority: priority.value,
+        status: status.value,
+        consoleEvidence: consoleEvidence.value.trim(),
+        expectedResult: expectedResult.value.trim(),
+        actualResult: actualResult.value.trim(),
+        stepsToReproduce: stepsToReproduce.value.trim(),
+        mediaUrls: mediaList,
+        mediaUrl: mediaList[0] || "",
+        updatedAt: Date.now()
+      };
+
+      if (!hasRequiredIssueFields(draft)) {
+        markMissingRequiredFields();
+        alert("Please fill all required fields.");
+        return;
+      }
+
+      if (targetFixDate.value.trim() && !normalizedTargetFixDate) {
+        alert("Target Fix Date must be a valid date in year 2026.");
+        return;
+      }
+
+      if (!normalizedReported) {
+        alert("Date Reported must be a valid date in year 2026.");
+        return;
+      }
+
+      const tasks = loadTasks();
+      const index = tasks.findIndex((x) => x.id === draft.id);
+      if (index >= 0) {
+        tasks[index] = draft;
+      } else {
+        tasks.push(draft);
+      }
+
+      saveTasks(tasks);
+      clearForm();
+      closeCreateModal();
+      renderTasks();
+    });
+
+    tableBody.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (target instanceof HTMLImageElement && target.dataset.zoomable === "1") {
+        openImageModal(target.src);
+        return;
+      }
+
+      if (target.closest("input, select, button, a, video, iframe")) return;
+
+      const row = target.closest("tr.issue-row");
+      if (!row) return;
+      const id = row.dataset.id || "";
+      if (!id) return;
+      const task = loadTasks().find((x) => x.id === id);
+      if (!task) return;
+      openEditModal(task);
+    });
+
+    taskForm.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      if (target instanceof HTMLButtonElement && target.dataset.action === "remove-media") {
+        const index = Number(target.dataset.index || "-1");
+        if (index < 0) return;
+        const urls = getMediaUrlList(mediaUrls.value);
+        if (index >= urls.length) return;
+        urls.splice(index, 1);
+        mediaUrls.value = urls.join("\n");
+        refreshModalMediaPreview();
+        return;
+      }
+
+      if (target instanceof HTMLButtonElement && target.id === "addMediaBtnInline") {
+        if (mediaUrls.disabled) return;
+        const value = window.prompt("Paste OneDrive photo/video URL:");
+        if (!value) return;
+        const trimmed = String(value).trim();
+        if (!trimmed) return;
+        const urls = getMediaUrlList(mediaUrls.value);
+        urls.push(trimmed);
+        mediaUrls.value = urls.join("\n");
+        refreshModalMediaPreview();
+        return;
+      }
+
+      if (target instanceof HTMLImageElement && target.dataset.zoomable === "1") {
+        openImageModal(target.src);
+      }
+    });
+
+    tableBody.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+      const action = target.getAttribute("data-action");
+      const id = target.getAttribute("data-id");
+      const field = target.getAttribute("data-field");
+      if (action !== "inline-update" || !id || !field) return;
+      updateTaskField(id, field, target.value);
+    });
+
+    openCreateBtn.addEventListener("click", () => {
+      clearForm();
+      openCreateModal();
+    });
+
+    [targetFixDate, issueFoundOn].forEach((field) => {
+      field.addEventListener("focus", () => {
+        if (!field.value) field.value = "2026-01-01";
+      });
+      field.addEventListener("change", () => {
+        const forced = forceYear2026(field.value);
+        if (forced) field.value = forced;
+      });
+    });
+
+    requiredFields.forEach((field) => {
+      const handler = () => {
+        if (field.value && String(field.value).trim()) {
+          field.classList.remove("field-error");
+        }
+      };
+      field.addEventListener("input", handler);
+      field.addEventListener("change", handler);
+    });
+
+    document.querySelectorAll("textarea.auto-grow").forEach((el) => {
+      el.addEventListener("input", () => autoResizeTextarea(el));
+      el.addEventListener("change", () => autoResizeTextarea(el));
+    });
+
+    closeCreateBtn.addEventListener("click", closeCreateModal);
+    mediaUrls.addEventListener("input", refreshModalMediaPreview);
+    mediaUrls.addEventListener("change", refreshModalMediaPreview);
+    enableEditBtn.addEventListener("click", () => {
+      setModalEditingEnabled(true);
+      saveBtn.textContent = "Save";
+      refreshModalMediaPreview();
+    });
+    deleteIssueBtn.addEventListener("click", () => {
+      const id = taskId.value || "";
+      if (!id) return;
+      const tasks = loadTasks();
+      const index = tasks.findIndex((x) => x.id === id);
+      if (index < 0) return;
+      const taskTitle = (tasks[index].title || "this task").trim();
+      const ok = window.confirm(`Delete "${taskTitle}"? This action cannot be undone.`);
+      if (!ok) return;
+      saveTasks(tasks.filter((x) => x.id !== id));
+      clearForm();
+      closeCreateModal();
+      renderTasks();
+    });
+    issueModal.addEventListener("click", (event) => {
+      if (event.target === issueModal) closeCreateModal();
+    });
+
+    fullBtn.addEventListener("click", async () => {
+      const card = imageModal.querySelector(".image-modal-card");
+      if (!(card instanceof HTMLElement)) return;
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          await card.requestFullscreen();
+        }
+      } catch {}
+    });
+
+    closeImageBtn.addEventListener("click", closeImageModal);
+    imageModal.addEventListener("click", (event) => {
+      if (event.target === imageModal) closeImageModal();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !issueModal.hidden) closeCreateModal();
+      if (event.key === "Escape" && !imageModal.hidden) closeImageModal();
+    });
+
+    clearForm();
+    renderTasks();
+  </script>
+</body>
+</html>
+

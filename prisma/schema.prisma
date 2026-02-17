@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  qa
+  viewer
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CaseResult {
+  pass
+  fail
+  blocked
+  skip
+  not_run
+}
+
+enum DefectStatus {
+  NEW
+  TRIAGED
+  IN_PROGRESS
+  FIXED
+  VERIFIED
+  CLOSED
+  REOPENED
+}
+
+enum Severity {
+  S1
+  S2
+  S3
+  S4
+}
+
+enum DefectPriority {
+  P0
+  P1
+  P2
+  P3
+}
+
+enum DefectClass {
+  CONFIRMED_BUG
+  FLAKY_GLITCH
+}
+
+enum EvidenceProvider {
+  onedrive
+  local
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String?
+  email           String?  @unique
+  image           String?
+  role            Role     @default(viewer)
+  graphAccessToken String? @db.Text
+  graphRefreshToken String? @db.Text
+  graphExpiresAt   DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  projectsOwned   Project[] @relation("ProjectOwner")
+  defectComments  DefectComment[]
+  activities      ActivityLog[]
+  savedFolders    SavedOneDriveFolder[]
+  createdCases    TestCase[] @relation("CaseCreatedBy")
+  assignedItems   TestRunItem[] @relation("AssignedTester")
+  assignedDefects Defect[]      @relation("DefectAssignee")
+  createdEvidence Evidence[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  repoLink    String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner        User          @relation("ProjectOwner", fields: [ownerId], references: [id])
+  environments Environment[]
+  components   Component[]
+  releases     Release[]
+  suites       TestSuite[]
+  cases        TestCase[]
+  runs         TestRun[]
+  defects      Defect[]
+  savedFolders SavedOneDriveFolder[]
+}
+
+model Environment {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  url       String?
+  notes     String?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  runs    TestRun[]
+}
+
+model Component {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+
+  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  cases   TestCase[]
+  defects Defect[]
+}
+
+model Release {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  build     String
+  createdAt DateTime @default(now())
+
+  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  runs    TestRun[]
+  defects Defect[]
+}
+
+model TestSuite {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+
+  project Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  cases   TestCase[]
+}
+
+model TestCase {
+  id              String   @id @default(cuid())
+  projectId       String
+  suiteId         String?
+  componentId     String?
+  title           String
+  preconditions   String?
+  stepsJson       String   @db.Text
+  tags            String[]
+  priority        Priority
+  requirementLink String?
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  suite       TestSuite?    @relation(fields: [suiteId], references: [id], onDelete: SetNull)
+  component   Component?    @relation(fields: [componentId], references: [id], onDelete: SetNull)
+  createdBy   User          @relation("CaseCreatedBy", fields: [createdById], references: [id])
+  runItems    TestRunItem[]
+  defects     Defect[]
+  evidence    Evidence[]
+}
+
+model TestRun {
+  id            String   @id @default(cuid())
+  projectId     String
+  releaseId     String
+  environmentId String
+  name          String
+  createdAt     DateTime @default(now())
+
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  release     Release       @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  environment Environment   @relation(fields: [environmentId], references: [id], onDelete: Cascade)
+  items       TestRunItem[]
+  defects     Defect[]
+  evidence    Evidence[]
+}
+
+model TestRunItem {
+  id             String     @id @default(cuid())
+  runId          String
+  caseId         String
+  assignedToId   String?
+  status         CaseResult @default(not_run)
+  notes          String?
+  executedAt     DateTime?
+
+  run        TestRun     @relation(fields: [runId], references: [id], onDelete: Cascade)
+  testCase   TestCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  assignedTo User?       @relation("AssignedTester", fields: [assignedToId], references: [id], onDelete: SetNull)
+  evidence   Evidence[]
+}
+
+model Defect {
+  id                String         @id @default(cuid())
+  projectId         String
+  runId             String?
+  testCaseId        String?
+  releaseId         String?
+  componentId       String?
+  title             String
+  description       String
+  stepsToReproduce  String
+  expectedResult    String
+  actualResult      String
+  environment       String
+  jiraUrl           String?
+  severity          Severity
+  priority          DefectPriority
+  status            DefectStatus   @default(NEW)
+  classification    DefectClass
+  reproducible      Boolean
+  reproRate         Int
+  assigneeId        String?
+  tags              String[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  run           TestRun?         @relation(fields: [runId], references: [id], onDelete: SetNull)
+  testCase      TestCase?        @relation(fields: [testCaseId], references: [id], onDelete: SetNull)
+  release       Release?         @relation(fields: [releaseId], references: [id], onDelete: SetNull)
+  component     Component?       @relation(fields: [componentId], references: [id], onDelete: SetNull)
+  assignee      User?            @relation("DefectAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  comments      DefectComment[]
+  activity      ActivityLog[]
+  evidence      Evidence[]
+}
+
+model DefectComment {
+  id        String   @id @default(cuid())
+  defectId  String
+  userId    String
+  body      String
+  createdAt DateTime @default(now())
+
+  defect Defect @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  defectId  String
+  userId    String
+  action    String
+  meta      String?
+  createdAt DateTime @default(now())
+
+  defect Defect @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Evidence {
+  id               String           @id @default(cuid())
+  provider         EvidenceProvider
+  type             String
+  filename         String
+  mimeType         String
+  size             Int
+  driveId          String?
+  itemId           String?
+  path             String?
+  annotationJson   String?
+  annotatedPath    String?
+  createdById      String
+  defectId         String?
+  testCaseId       String?
+  testRunId        String?
+  testRunItemId    String?
+  createdAt        DateTime         @default(now())
+
+  createdBy   User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  defect      Defect?     @relation(fields: [defectId], references: [id], onDelete: SetNull)
+  testCase    TestCase?   @relation(fields: [testCaseId], references: [id], onDelete: SetNull)
+  testRun     TestRun?    @relation(fields: [testRunId], references: [id], onDelete: SetNull)
+  testRunItem TestRunItem? @relation(fields: [testRunItemId], references: [id], onDelete: SetNull)
+}
+
+model SavedOneDriveFolder {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String?
+  driveId   String
+  folderId  String
+  label     String
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
