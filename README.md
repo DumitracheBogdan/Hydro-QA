@@ -5,8 +5,8 @@ This repository contains the standalone QA tracker app used by QA/Dev teams.
 ## What is included
 
 - `index.html`: full QA tracker UI and logic
-- SharePoint List cloud mode (shared data for team)
-- OneDrive/SharePoint media URL previews
+- GitHub Issues cloud mode (shared data for team)
+- OneDrive/SharePoint media URL previews (attachments)
 - team-shared enforcement (`TEAM_MODE_REQUIRED = true`)
 
 ## Run locally
@@ -21,20 +21,20 @@ Then open `http://localhost:5500/index.html`.
 
 ## Team shared mode (recommended)
 
-To make all team members see the same issues, use SharePoint List cloud mode:
+To make all team members see the same issues, use GitHub Issues cloud mode:
 
-1. Create a SharePoint List with columns used in `SP_FIELDS` from `index.html`.
-2. Create an Azure App Registration with Microsoft Graph delegated permission:
-   - `Sites.ReadWrite.All`
-3. In `index.html`, fill `GRAPH_CONFIG`:
-   - `tenantId`
-   - `clientId`
-   - `siteId`
-   - `listId`
-4. In app header click `Connect SharePoint`.
+1. In `index.html`, set `GITHUB_CONFIG`:
+   - `owner`
+   - `repo`
+2. Each user clicks `Connect GitHub` in the app.
+3. Paste a GitHub token that has issue access for the repo:
+   - Fine-grained token permissions:
+     - Repository access: `Hydro-QA`
+     - Issues: `Read and write`
+   - or classic token with `repo` scope.
 
 Current default is strict team mode.  
-If SharePoint is not configured/connected, create/edit actions are blocked to avoid local-only data splits.
+If GitHub is not connected, create/edit actions are blocked to avoid local-only data splits.
 
 ## Azure deployment (low/zero extra budget)
 
