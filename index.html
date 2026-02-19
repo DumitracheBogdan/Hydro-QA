@@ -1133,6 +1133,25 @@
       }
     }
 
+    function getReadableError(error) {
+      const raw = String(error?.message || "").trim();
+      if (!raw) return "Unknown error";
+      const jsonStart = raw.indexOf("{");
+      if (jsonStart >= 0) {
+        const maybeJson = raw.slice(jsonStart);
+        try {
+          const parsed = JSON.parse(maybeJson);
+          if (parsed && typeof parsed.error === "string" && parsed.error.trim()) {
+            return parsed.error.trim();
+          }
+          if (parsed && typeof parsed.message === "string" && parsed.message.trim()) {
+            return parsed.message.trim();
+          }
+        } catch {}
+      }
+      return raw.replace(/^\d+:\s*/, "");
+    }
+
     async function apiFetch(path, options = {}) {
       const response = await fetch(`${API_CONFIG.baseUrl}${path}`, {
         ...options,
@@ -1235,9 +1254,10 @@
         if (ok) {
           await refreshFromCloud();
         }
-      } catch {
+      } catch (error) {
         cloudReady = false;
-        setCloudStatus(TEAM_MODE_REQUIRED ? "Connection failed" : "Local mode");
+        const reason = getReadableError(error);
+        setCloudStatus(TEAM_MODE_REQUIRED ? `Connection failed: ${reason}` : "Local mode");
       }
       updateInteractionState();
     }
@@ -2022,7 +2042,8 @@
         updateInteractionState();
       } catch (error) {
         cloudReady = false;
-        setCloudStatus(TEAM_MODE_REQUIRED ? "Connection failed" : "Local mode (connect failed)");
+        const reason = getReadableError(error);
+        setCloudStatus(TEAM_MODE_REQUIRED ? `Connection failed: ${reason}` : "Local mode (connect failed)");
         updateInteractionState();
         alert(`Connection failed: ${error.message}`);
       }
