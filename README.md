@@ -5,9 +5,9 @@ This repository contains the standalone QA tracker app used by QA/Dev teams.
 ## What is included
 
 - `index.html`: full QA tracker UI and logic
-- local mode (browser localStorage)
 - SharePoint List cloud mode (shared data for team)
 - OneDrive/SharePoint media URL previews
+- team-shared enforcement (`TEAM_MODE_REQUIRED = true`)
 
 ## Run locally
 
@@ -33,7 +33,8 @@ To make all team members see the same issues, use SharePoint List cloud mode:
    - `listId`
 4. In app header click `Connect SharePoint`.
 
-Without this setup, data stays local per browser (localStorage).
+Current default is strict team mode.  
+If SharePoint is not configured/connected, create/edit actions are blocked to avoid local-only data splits.
 
 ## Azure deployment (low/zero extra budget)
 

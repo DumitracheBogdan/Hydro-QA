@@ -1015,6 +1015,7 @@
   <script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
   <script>
     const STORAGE_KEY = "qa_simple_tasks_v1";
+    const TEAM_MODE_REQUIRED = true;
     const GRAPH_CONFIG = {
       tenantId: "", // e.g. "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
       clientId: "", // Azure App Registration (public client)
@@ -1131,6 +1132,26 @@
 
     function setCloudStatus(text) {
       cloudStatus.textContent = text;
+    }
+
+    function canUseSharedMode() {
+      return cloudEnabled && cloudReady;
+    }
+
+    function getEmptyMessage() {
+      if (TEAM_MODE_REQUIRED && !isCloudConfigured()) {
+        return "SharePoint config missing. Ask admin to set GRAPH_CONFIG in index.html.";
+      }
+      if (TEAM_MODE_REQUIRED && isCloudConfigured() && !canUseSharedMode()) {
+        return "Connect SharePoint to load shared team cases.";
+      }
+      return "No tasks yet. Add your first QA item above.";
+    }
+
+    function updateInteractionState() {
+      const blocked = TEAM_MODE_REQUIRED && !canUseSharedMode();
+      openCreateBtn.disabled = blocked;
+      openCreateBtn.title = blocked ? "Connect SharePoint first" : "";
     }
 
     function parseJsonSafe(value, fallback) {
@@ -1290,15 +1311,21 @@
     }
 
     async function initializeData() {
-      loadTasksFromLocalStorage();
+      if (!TEAM_MODE_REQUIRED) {
+        loadTasksFromLocalStorage();
+      } else {
+        tasksCache = [];
+      }
       renderTasks();
       if (!isCloudConfigured()) {
         cloudEnabled = false;
-        setCloudStatus("Local mode");
+        setCloudStatus(TEAM_MODE_REQUIRED ? "Cloud setup required" : "Local mode");
+        updateInteractionState();
         return;
       }
       cloudEnabled = true;
       setCloudStatus("Cloud available (connect)");
+      updateInteractionState();
     }
 
     async function refreshFromCloud() {
@@ -1306,6 +1333,7 @@
       const cloudTasks = await cloudFetchTasks();
       saveTasks(cloudTasks);
       renderTasks();
+      updateInteractionState();
     }
 
     async function persistTask(task) {
@@ -1807,6 +1835,7 @@
       tableBody.innerHTML = "";
 
       if (!tasks.length) {
+        emptyState.textContent = getEmptyMessage();
         emptyState.hidden = false;
         return;
       }
@@ -1831,6 +1860,10 @@
 
     taskForm.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
+        alert("Connect SharePoint first so issues are shared with the whole team.");
+        return;
+      }
       const normalizedReported = normalizeMonthDayTo2026(issueFoundOn.value);
       const normalizedTargetFixDate = targetFixDate.value.trim() ? normalizeMonthDayTo2026(targetFixDate.value) : "";
       const mediaList = getMediaUrlList(mediaUrls.value);
@@ -1910,6 +1943,7 @@
     tableBody.addEventListener("click", (event) => {
       const target = event.target;
       if (!(target instanceof HTMLElement)) return;
+      if (TEAM_MODE_REQUIRED && !canUseSharedMode()) return;
 
       if (target instanceof HTMLImageElement && target.dataset.zoomable === "1") {
         openImageModal(target.src);
@@ -1963,6 +1997,10 @@
     tableBody.addEventListener("change", (event) => {
       const target = event.target;
       if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement)) return;
+      if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
+        renderTasks();
+        return;
+      }
       const action = target.getAttribute("data-action");
       const id = target.getAttribute("data-id");
       const field = target.getAttribute("data-field");
@@ -1971,6 +2009,10 @@
     });
 
     openCreateBtn.addEventListener("click", () => {
+      if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
+        alert("Connect SharePoint first so all team members can see the same cases.");
+        return;
+      }
       clearForm();
       openCreateModal();
     });
@@ -2009,6 +2051,10 @@
       refreshModalMediaPreview();
     });
     deleteIssueBtn.addEventListener("click", () => {
+      if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
+        alert("Connect SharePoint first.");
+        return;
+      }
       const id = taskId.value || "";
       if (!id) return;
       const tasks = loadTasks();
@@ -2059,8 +2105,10 @@
         const ok = await cloudSignIn();
         if (!ok) return;
         await refreshFromCloud();
+        updateInteractionState();
       } catch (error) {
-        setCloudStatus("Local mode (connect failed)");
+        setCloudStatus(TEAM_MODE_REQUIRED ? "Cloud connect failed" : "Local mode (connect failed)");
+        updateInteractionState();
         alert(`SharePoint connect failed: ${error.message}`);
       }
     });
