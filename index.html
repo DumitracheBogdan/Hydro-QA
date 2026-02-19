@@ -847,8 +847,8 @@
         <img src="https://gen-cert.com/assets/logo-Cv0yGe77.svg" alt="Gen-Cert Logo" />
       </div>
       <div class="head-actions">
-        <button id="connectCloudBtn" class="btn-lite" type="button">Connect GitHub</button>
-        <span id="cloudStatus" class="sub">Disconnected</span>
+        <button id="connectCloudBtn" class="btn-lite" type="button">Refresh</button>
+        <span id="cloudStatus" class="sub">Connecting...</span>
         <button id="openCreateBtn" class="btn-primary" type="button">Create Issue</button>
       </div>
     </header>
@@ -1015,13 +1015,8 @@
   <script>
     const STORAGE_KEY = "qa_simple_tasks_v1";
     const TEAM_MODE_REQUIRED = true;
-    const GITHUB_TOKEN_KEY = "qa_github_token_v1";
-    const GITHUB_META_START = "QA_TRACKER_META_START";
-    const GITHUB_META_END = "QA_TRACKER_META_END";
-    const GITHUB_CONFIG = {
-      owner: "DumitracheBogdan",
-      repo: "Hydro-QA",
-      apiBase: "https://api.github.com"
+    const API_CONFIG = {
+      baseUrl: "/api/qa"
     };
 
     const taskForm = document.getElementById("taskForm");
@@ -1096,15 +1091,12 @@
       mediaUrls
     ];
     let tasksCache = [];
-    let githubToken = "";
-    let githubUser = "";
     let cloudEnabled = false;
     let cloudReady = false;
 
     function isCloudConfigured() {
       return Boolean(
-        GITHUB_CONFIG.owner &&
-        GITHUB_CONFIG.repo
+        API_CONFIG.baseUrl
       );
     }
 
@@ -1118,10 +1110,10 @@
 
     function getEmptyMessage() {
       if (TEAM_MODE_REQUIRED && !isCloudConfigured()) {
-        return "GitHub repo config missing. Set GITHUB_CONFIG in index.html.";
+        return "Backend API config missing. Set API_CONFIG in index.html.";
       }
       if (TEAM_MODE_REQUIRED && isCloudConfigured() && !canUseSharedMode()) {
-        return "Connect GitHub to load shared team cases.";
+        return "Connection required to load shared team cases.";
       }
       return "No tasks yet. Add your first QA item above.";
     }
@@ -1129,7 +1121,7 @@
     function updateInteractionState() {
       const blocked = TEAM_MODE_REQUIRED && !canUseSharedMode();
       openCreateBtn.disabled = blocked;
-      openCreateBtn.title = blocked ? "Connect GitHub first" : "";
+      openCreateBtn.title = blocked ? "Backend connection required" : "";
     }
 
     function parseJsonSafe(value, fallback) {
@@ -1141,228 +1133,66 @@
       }
     }
 
-    function toSlug(value) {
-      return String(value || "")
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "none";
-    }
-
-    function makeIssueMeta(task) {
-      return {
-        id: task.id || uid(),
-        qaCategory: task.qaCategory || "BUG",
-        issueDescription: task.issueDescription || "",
-        targetFixDate: task.targetFixDate || "",
-        issueFoundOn: task.issueFoundOn || "",
-        devAssigned: task.devAssigned || "",
-        severity: task.severity || "Medium",
-        priority: task.priority || "Normal",
-        status: task.status || "IN PROGRESS",
-        consoleEvidence: task.consoleEvidence || "",
-        expectedResult: task.expectedResult || "",
-        actualResult: task.actualResult || "",
-        stepsToReproduce: task.stepsToReproduce || "",
-        devComments: task.devComments || "",
-        mediaUrls: Array.isArray(task.mediaUrls) ? task.mediaUrls : [],
-        updatedAt: task.updatedAt || Date.now()
-      };
-    }
-
-    function buildGitHubLabels(task) {
-      const labels = [
-        "qa-tracker",
-        `status:${toSlug(task.status)}`,
-        `priority:${toSlug(task.priority)}`,
-        `severity:${toSlug(task.severity)}`,
-        `qa:${toSlug(task.qaCategory)}`
-      ];
-      return Array.from(new Set(labels));
-    }
-
-    function toGitHubIssuePayload(task) {
-      const meta = makeIssueMeta(task);
-      const mediaLines = meta.mediaUrls.length ? meta.mediaUrls.join("\n") : "-";
-      const body = [
-        "## QA Case",
-        "",
-        `- Date Reported: ${meta.issueFoundOn || "-"}`,
-        `- Target Fix Date: ${meta.targetFixDate || "-"}`,
-        `- Status: ${meta.status || "-"}`,
-        `- Priority: ${meta.priority || "-"}`,
-        `- Severity: ${meta.severity || "-"}`,
-        `- Dev Assigned: ${meta.devAssigned || "-"}`,
-        `- QA Category: ${meta.qaCategory || "-"}`,
-        "",
-        "### Bug/Issue Description",
-        meta.issueDescription || "-",
-        "",
-        "### Expected result",
-        meta.expectedResult || "-",
-        "",
-        "### Actual result",
-        meta.actualResult || "-",
-        "",
-        "### Steps to Reproduce",
-        meta.stepsToReproduce || "-",
-        "",
-        "### Console/Network Evidence",
-        meta.consoleEvidence || "-",
-        "",
-        "### DEV Comments",
-        meta.devComments || "-",
-        "",
-        "### Media URLs",
-        mediaLines,
-        "",
-        `<!-- ${GITHUB_META_START}`,
-        JSON.stringify(meta, null, 2),
-        `${GITHUB_META_END} -->`
-      ].join("\n");
-
-      return {
-        title: task.title || "Untitled QA Case",
-        body,
-        labels: buildGitHubLabels(task)
-      };
-    }
-
-    function parseGitHubMeta(body) {
-      const text = String(body || "");
-      const regex = new RegExp(`<!--\\s*${GITHUB_META_START}\\s*([\\s\\S]*?)\\s*${GITHUB_META_END}\\s*-->`);
-      const match = text.match(regex);
-      if (!match || !match[1]) return null;
-      return parseJsonSafe(match[1], null);
-    }
-
-    function fromGitHubIssue(issue) {
-      const meta = parseGitHubMeta(issue.body) || {};
-      const mediaUrls = Array.isArray(meta.mediaUrls) ? meta.mediaUrls.filter(Boolean) : [];
-      return {
-        spItemId: String(issue.number || ""),
-        githubIssueId: String(issue.id || ""),
-        githubIssueNumber: Number(issue.number || 0),
-        id: meta.id || `GH-${issue.number}`,
-        title: issue.title || "",
-        qaCategory: meta.qaCategory || "BUG",
-        issueDescription: meta.issueDescription || "",
-        targetFixDate: meta.targetFixDate || "",
-        issueFoundOn: meta.issueFoundOn || "",
-        devAssigned: meta.devAssigned || "",
-        severity: meta.severity || "Medium",
-        priority: meta.priority || "Normal",
-        status: meta.status || "IN PROGRESS",
-        consoleEvidence: meta.consoleEvidence || "",
-        expectedResult: meta.expectedResult || "",
-        actualResult: meta.actualResult || "",
-        stepsToReproduce: meta.stepsToReproduce || "",
-        devComments: meta.devComments || "",
-        mediaUrls,
-        mediaUrl: mediaUrls[0] || "",
-        updatedAt: Number(meta.updatedAt || Date.parse(issue.updated_at || "") || Date.now())
-      };
-    }
-
-    async function githubFetch(path, options = {}) {
-      const opts = { ...options };
-      const tokenFromOptions = String(opts.token || "").trim();
-      delete opts.token;
-
-      const token = tokenFromOptions || githubToken || String(localStorage.getItem(GITHUB_TOKEN_KEY) || "").trim();
-      if (!token) throw new Error("GitHub token missing.");
-
-      const response = await fetch(`${GITHUB_CONFIG.apiBase}${path}`, {
-        ...opts,
+    async function apiFetch(path, options = {}) {
+      const response = await fetch(`${API_CONFIG.baseUrl}${path}`, {
+        ...options,
         headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: `Bearer ${token}`,
-          "X-GitHub-Api-Version": "2022-11-28",
-          ...(opts.headers || {})
+          "Content-Type": "application/json",
+          ...(options.headers || {})
         }
       });
 
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(`GitHub ${response.status}: ${text}`);
+        throw new Error(`${response.status}: ${text}`);
       }
 
       if (response.status === 204) return null;
-      return response.json();
+
+      const contentType = response.headers.get("content-type") || "";
+      if (contentType.includes("application/json")) {
+        return response.json();
+      }
+      return null;
     }
 
     async function cloudSignIn() {
       if (!isCloudConfigured()) {
-        alert("GitHub config missing. Fill GITHUB_CONFIG in index.html first.");
+        alert("Backend API config missing. Fill API_CONFIG in index.html first.");
         return false;
       }
-
-      const savedToken = String(localStorage.getItem(GITHUB_TOKEN_KEY) || "").trim();
-      const promptText = savedToken
-        ? "Paste a new GitHub token (or Cancel to use saved token):"
-        : "Paste GitHub token (repo scope) to connect shared cases:";
-      const input = window.prompt(promptText);
-      const token = input && String(input).trim() ? String(input).trim() : savedToken;
-      if (!token) return false;
-
-      const me = await githubFetch("/user", { token });
-      await githubFetch(`/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}`, { token });
-
-      githubToken = token;
-      githubUser = me?.login || "";
-      localStorage.setItem(GITHUB_TOKEN_KEY, githubToken);
+      await apiFetch("/health");
       cloudReady = true;
-      setCloudStatus(`Connected GitHub: @${githubUser || "user"}`);
-      connectCloudBtn.textContent = "Reconnect GitHub";
+      setCloudStatus("Connected: Team shared mode");
+      connectCloudBtn.textContent = "Refresh";
       return true;
     }
 
     async function cloudFetchTasks() {
-      let page = 1;
-      const collected = [];
-
-      while (page <= 10) {
-        const issues = await githubFetch(`/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues?state=open&per_page=100&page=${page}`);
-        if (!Array.isArray(issues) || !issues.length) break;
-        const normalIssues = issues.filter((issue) => !issue.pull_request);
-        const qaIssues = normalIssues.filter((issue) => {
-          const labels = (issue.labels || []).map((x) => String(typeof x === "string" ? x : x?.name || "").toLowerCase());
-          return labels.includes("qa-tracker") || String(issue.body || "").includes(GITHUB_META_START);
-        });
-        collected.push(...qaIssues);
-        if (issues.length < 100) break;
-        page += 1;
-      }
-
-      return collected.map(fromGitHubIssue).sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      const data = await apiFetch("/tasks");
+      return Array.isArray(data) ? data : [];
     }
 
     async function cloudCreateTask(task) {
-      const payload = toGitHubIssuePayload(task);
-      const created = await githubFetch(`/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues`, {
+      const created = await apiFetch("/tasks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(task)
       });
-      return String(created?.number || "");
+      return String(created?.spItemId || created?.githubIssueNumber || created?.id || "");
     }
 
     async function cloudUpdateTask(task) {
       if (!task.spItemId) return;
-      const payload = toGitHubIssuePayload(task);
-      await githubFetch(`/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/${task.spItemId}`, {
+      await apiFetch(`/tasks/${task.spItemId}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(task)
       });
     }
 
     async function cloudDeleteTask(task) {
       if (!task?.spItemId) return;
-      await githubFetch(`/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/issues/${task.spItemId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ state: "closed" })
+      await apiFetch(`/tasks/${task.spItemId}`, {
+        method: "DELETE"
       });
     }
 
@@ -1394,30 +1224,20 @@
       renderTasks();
       if (!isCloudConfigured()) {
         cloudEnabled = false;
-        setCloudStatus(TEAM_MODE_REQUIRED ? "GitHub setup required" : "Local mode");
+        setCloudStatus(TEAM_MODE_REQUIRED ? "API setup required" : "Local mode");
         updateInteractionState();
         return;
       }
       cloudEnabled = true;
-      setCloudStatus("GitHub available (connect)");
-      const stored = String(localStorage.getItem(GITHUB_TOKEN_KEY) || "").trim();
-      if (stored) {
-        try {
-          githubToken = stored;
-          const me = await githubFetch("/user");
-          githubUser = me?.login || "";
-          cloudReady = true;
-          setCloudStatus(`Connected GitHub: @${githubUser || "user"}`);
-          connectCloudBtn.textContent = "Reconnect GitHub";
+      setCloudStatus("Connecting...");
+      try {
+        const ok = await cloudSignIn();
+        if (ok) {
           await refreshFromCloud();
-          return;
-        } catch {
-          cloudReady = false;
-          githubToken = "";
-          githubUser = "";
-          localStorage.removeItem(GITHUB_TOKEN_KEY);
-          setCloudStatus("GitHub available (connect)");
         }
+      } catch {
+        cloudReady = false;
+        setCloudStatus(TEAM_MODE_REQUIRED ? "Connection failed" : "Local mode");
       }
       updateInteractionState();
     }
@@ -1734,7 +1554,7 @@
         tasks[index] = saved;
         saveTasks(tasks);
       }).catch((error) => {
-        alert(`Cloud sync failed: ${error.message}`);
+        alert(`Shared sync failed: ${error.message}`);
       });
     }
 
@@ -1955,7 +1775,7 @@
     taskForm.addEventListener("submit", (event) => {
       event.preventDefault();
       if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
-        alert("Connect GitHub first so issues are shared with the whole team.");
+        alert("Shared backend is not connected yet.");
         return;
       }
       const normalizedReported = normalizeMonthDayTo2026(issueFoundOn.value);
@@ -2027,7 +1847,7 @@
           renderTasks();
         })
         .catch((error) => {
-          alert(`Save failed on cloud: ${error.message}`);
+          alert(`Save failed on shared backend: ${error.message}`);
           clearForm();
           closeCreateModal();
           renderTasks();
@@ -2104,7 +1924,7 @@
 
     openCreateBtn.addEventListener("click", () => {
       if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
-        alert("Connect GitHub first so all team members can see the same cases.");
+        alert("Shared backend is not connected yet.");
         return;
       }
       clearForm();
@@ -2146,7 +1966,7 @@
     });
     deleteIssueBtn.addEventListener("click", () => {
       if (TEAM_MODE_REQUIRED && !canUseSharedMode()) {
-        alert("Connect GitHub first.");
+        alert("Shared backend is not connected yet.");
         return;
       }
       const id = taskId.value || "";
@@ -2161,7 +1981,7 @@
       saveTasks(tasks.filter((x) => x.id !== id));
       Promise.resolve(cloudDeleteTask(deletedTask))
         .catch((error) => {
-          alert(`Cloud delete failed: ${error.message}`);
+          alert(`Delete failed on shared backend: ${error.message}`);
         })
         .finally(() => {
           clearForm();
@@ -2201,13 +2021,10 @@
         await refreshFromCloud();
         updateInteractionState();
       } catch (error) {
-        githubToken = "";
-        githubUser = "";
         cloudReady = false;
-        localStorage.removeItem(GITHUB_TOKEN_KEY);
-        setCloudStatus(TEAM_MODE_REQUIRED ? "GitHub connect failed" : "Local mode (connect failed)");
+        setCloudStatus(TEAM_MODE_REQUIRED ? "Connection failed" : "Local mode (connect failed)");
         updateInteractionState();
-        alert(`GitHub connect failed: ${error.message}`);
+        alert(`Connection failed: ${error.message}`);
       }
     });
 
