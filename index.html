@@ -622,6 +622,35 @@
       padding: 18px;
     }
 
+    .quick-fields {
+      display: grid;
+      gap: 10px;
+      grid-column: 1 / -1;
+    }
+
+    .form-modal.case-open-mode {
+      grid-template-columns: minmax(260px, 320px) 1fr;
+      column-gap: 14px;
+      max-width: 1100px;
+      align-items: start;
+    }
+
+    .form-modal.case-open-mode .quick-fields {
+      grid-column: 1;
+      position: sticky;
+      top: 0;
+      align-self: start;
+      background: #ffffff;
+      padding-right: 6px;
+    }
+
+    .form-modal.case-open-mode .focus-table-wrap,
+    .form-modal.case-open-mode #mediaUrls,
+    .form-modal.case-open-mode #modalMediaPreview,
+    .form-modal.case-open-mode .modal-sticky-actions {
+      grid-column: 2;
+    }
+
     .form-modal label {
       gap: 6px;
     }
@@ -796,6 +825,18 @@
     @media (max-width: 980px) {
       .form { grid-template-columns: 1fr 1fr; }
       .form-modal { grid-template-columns: 1fr; padding: 14px; }
+      .form-modal.case-open-mode { grid-template-columns: 1fr; }
+      .form-modal.case-open-mode .quick-fields {
+        position: static;
+        padding-right: 0;
+        grid-column: 1 / -1;
+      }
+      .form-modal.case-open-mode .focus-table-wrap,
+      .form-modal.case-open-mode #mediaUrls,
+      .form-modal.case-open-mode #modalMediaPreview,
+      .form-modal.case-open-mode .modal-sticky-actions {
+        grid-column: 1 / -1;
+      }
     }
   </style>
 </head>
@@ -806,6 +847,8 @@
         <img src="https://gen-cert.com/assets/logo-Cv0yGe77.svg" alt="Gen-Cert Logo" />
       </div>
       <div class="head-actions">
+        <button id="connectCloudBtn" class="btn-lite" type="button">Connect SharePoint</button>
+        <span id="cloudStatus" class="sub">Local mode</span>
         <button id="openCreateBtn" class="btn-primary" type="button">Create Issue</button>
       </div>
     </header>
@@ -843,72 +886,74 @@
       <form id="taskForm" class="form form-modal">
         <input type="hidden" id="taskId" />
 
-        <label>
-          Title <span class="req-star">*</span>
-          <input id="title" required maxlength="120" placeholder="Test case 1" />
-        </label>
+        <div class="quick-fields">
+          <label>
+            Title <span class="req-star">*</span>
+            <input id="title" required maxlength="120" placeholder="Test case 1" />
+          </label>
 
-        <label>
-          QA Category <span class="req-star">*</span>
-          <select id="qaCategory" required>
-            <option>BUG</option>
-            <option>User Interface</option>
-            <option>Performance</option>
-            <option>Regression</option>
-          </select>
-        </label>
+          <label>
+            QA Category <span class="req-star">*</span>
+            <select id="qaCategory" required>
+              <option>BUG</option>
+              <option>User Interface</option>
+              <option>Performance</option>
+              <option>Regression</option>
+            </select>
+          </label>
 
-        <label>
-          Dev Assigned
-          <select id="devAssigned">
-            <option value="">Unassigned</option>
-            <option>Calin Muntean</option>
-            <option>Ruxandra Boca</option>
-            <option>Alexandra Pop</option>
-            <option>Robert Amatisei</option>
-          </select>
-        </label>
+          <label>
+            Dev Assigned
+            <select id="devAssigned">
+              <option value="">Unassigned</option>
+              <option>Calin Muntean</option>
+              <option>Ruxandra Boca</option>
+              <option>Alexandra Pop</option>
+              <option>Robert Amatisei</option>
+            </select>
+          </label>
 
-        <label>
-          Severity <span class="req-star">*</span>
-          <select id="severity" required>
-            <option>Low</option>
-            <option selected>Medium</option>
-            <option>High</option>
-            <option>Critical</option>
-          </select>
-        </label>
+          <label>
+            Severity <span class="req-star">*</span>
+            <select id="severity" required>
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </label>
 
-        <label>
-          Priority <span class="req-star">*</span>
-          <select id="priority" required>
-            <option>Normal</option>
-            <option>Low</option>
-            <option>High</option>
-            <option>Critical</option>
-          </select>
-        </label>
+          <label>
+            Priority <span class="req-star">*</span>
+            <select id="priority" required>
+              <option>Normal</option>
+              <option>Low</option>
+              <option>High</option>
+              <option>Critical</option>
+            </select>
+          </label>
 
-        <label>
-          Status <span class="req-star">*</span>
-          <select id="status" required>
-            <option>IN PROGRESS</option>
-            <option>ON HOLD</option>
-            <option>NOT STARTED</option>
-            <option>REVIEW</option>
-            <option>DONE</option>
-          </select>
-        </label>
+          <label>
+            Status <span class="req-star">*</span>
+            <select id="status" required>
+              <option>IN PROGRESS</option>
+              <option>ON HOLD</option>
+              <option>NOT STARTED</option>
+              <option>REVIEW</option>
+              <option>DONE</option>
+            </select>
+          </label>
 
-        <label>
-          Date Reported (2026) <span class="req-star">*</span>
-          <input id="issueFoundOn" type="date" min="2026-01-01" max="2026-12-31" required />
-        </label>
+          <label>
+            Date Reported (2026) <span class="req-star">*</span>
+            <input id="issueFoundOn" type="date" min="2026-01-01" max="2026-12-31" required />
+          </label>
 
-        <label>
-          Target Fix Date (2026)
-          <input id="targetFixDate" type="date" min="2026-01-01" max="2026-12-31" />
-        </label>
+          <label>
+            Target Fix Date (2026)
+            <input id="targetFixDate" type="date" min="2026-01-01" max="2026-12-31" />
+          </label>
+        </div>
 
         <div class="focus-table-wrap">
           <div class="focus-stack">
@@ -931,6 +976,10 @@
             <div class="focus-row">
               <strong>Steps to Reproduce</strong>
               <textarea id="stepsToReproduce" class="auto-grow" maxlength="5000" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+            </div>
+            <div class="focus-row">
+              <strong>DEV Comments</strong>
+              <textarea id="devComments" class="auto-grow" maxlength="5000" placeholder="Developer notes, investigation, fix details..."></textarea>
             </div>
           </div>
         </div>
@@ -963,8 +1012,35 @@
     </div>
   </div>
 
+  <script src="https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js"></script>
   <script>
     const STORAGE_KEY = "qa_simple_tasks_v1";
+    const GRAPH_CONFIG = {
+      tenantId: "", // e.g. "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      clientId: "", // Azure App Registration (public client)
+      siteId: "",   // Graph site id
+      listId: "",   // SharePoint list id
+      scopes: ["Sites.ReadWrite.All", "offline_access", "openid", "profile"]
+    };
+    const SP_FIELDS = {
+      title: "Title",
+      taskId: "TaskId",
+      qaCategory: "QaCategory",
+      issueDescription: "IssueDescription",
+      targetFixDate: "TargetFixDate",
+      issueFoundOn: "IssueFoundOn",
+      devAssigned: "DevAssigned",
+      severity: "Severity",
+      priority: "Priority",
+      status: "Status",
+      consoleEvidence: "ConsoleEvidence",
+      expectedResult: "ExpectedResult",
+      actualResult: "ActualResult",
+      stepsToReproduce: "StepsToReproduce",
+      devComments: "DevComments",
+      mediaUrls: "MediaUrls",
+      updatedAt: "UpdatedAt"
+    };
 
     const taskForm = document.getElementById("taskForm");
     const taskId = document.getElementById("taskId");
@@ -981,11 +1057,14 @@
     const expectedResult = document.getElementById("expectedResult");
     const actualResult = document.getElementById("actualResult");
     const stepsToReproduce = document.getElementById("stepsToReproduce");
+    const devComments = document.getElementById("devComments");
     const mediaUrls = document.getElementById("mediaUrls");
     const modalMediaPreview = document.getElementById("modalMediaPreview");
     const saveBtn = document.getElementById("saveBtn");
     const tableBody = document.getElementById("tableBody");
     const emptyState = document.getElementById("emptyState");
+    const connectCloudBtn = document.getElementById("connectCloudBtn");
+    const cloudStatus = document.getElementById("cloudStatus");
     const openCreateBtn = document.getElementById("openCreateBtn");
     const closeCreateBtn = document.getElementById("closeCreateBtn");
     const enableEditBtn = document.getElementById("enableEditBtn");
@@ -1031,29 +1110,218 @@
       expectedResult,
       actualResult,
       stepsToReproduce,
+      devComments,
       mediaUrls
     ];
+    let tasksCache = [];
+    let graphToken = "";
+    let msalApp = null;
+    let cloudEnabled = false;
+    let cloudReady = false;
+
+    function isCloudConfigured() {
+      return Boolean(
+        GRAPH_CONFIG.tenantId &&
+        GRAPH_CONFIG.clientId &&
+        GRAPH_CONFIG.siteId &&
+        GRAPH_CONFIG.listId &&
+        window.msal
+      );
+    }
+
+    function setCloudStatus(text) {
+      cloudStatus.textContent = text;
+    }
+
+    function parseJsonSafe(value, fallback) {
+      try {
+        const parsed = JSON.parse(value);
+        return parsed == null ? fallback : parsed;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function toSpFields(task) {
+      return {
+        [SP_FIELDS.title]: task.title || "",
+        [SP_FIELDS.taskId]: task.id || "",
+        [SP_FIELDS.qaCategory]: task.qaCategory || "",
+        [SP_FIELDS.issueDescription]: task.issueDescription || "",
+        [SP_FIELDS.targetFixDate]: task.targetFixDate || "",
+        [SP_FIELDS.issueFoundOn]: task.issueFoundOn || "",
+        [SP_FIELDS.devAssigned]: task.devAssigned || "",
+        [SP_FIELDS.severity]: task.severity || "",
+        [SP_FIELDS.priority]: task.priority || "",
+        [SP_FIELDS.status]: task.status || "",
+        [SP_FIELDS.consoleEvidence]: task.consoleEvidence || "",
+        [SP_FIELDS.expectedResult]: task.expectedResult || "",
+        [SP_FIELDS.actualResult]: task.actualResult || "",
+        [SP_FIELDS.stepsToReproduce]: task.stepsToReproduce || "",
+        [SP_FIELDS.devComments]: task.devComments || "",
+        [SP_FIELDS.mediaUrls]: JSON.stringify(task.mediaUrls || []),
+        [SP_FIELDS.updatedAt]: String(task.updatedAt || Date.now())
+      };
+    }
+
+    function fromSpFields(item) {
+      const f = item?.fields || {};
+      const mediaList = parseJsonSafe(f[SP_FIELDS.mediaUrls] || "[]", []);
+      return {
+        spItemId: String(item?.id || ""),
+        id: f[SP_FIELDS.taskId] || uid(),
+        title: f[SP_FIELDS.title] || "",
+        qaCategory: f[SP_FIELDS.qaCategory] || "BUG",
+        issueDescription: f[SP_FIELDS.issueDescription] || "",
+        targetFixDate: f[SP_FIELDS.targetFixDate] || "",
+        issueFoundOn: f[SP_FIELDS.issueFoundOn] || "",
+        devAssigned: f[SP_FIELDS.devAssigned] || "",
+        severity: f[SP_FIELDS.severity] || "Medium",
+        priority: f[SP_FIELDS.priority] || "Normal",
+        status: f[SP_FIELDS.status] || "IN PROGRESS",
+        consoleEvidence: f[SP_FIELDS.consoleEvidence] || "",
+        expectedResult: f[SP_FIELDS.expectedResult] || "",
+        actualResult: f[SP_FIELDS.actualResult] || "",
+        stepsToReproduce: f[SP_FIELDS.stepsToReproduce] || "",
+        devComments: f[SP_FIELDS.devComments] || "",
+        mediaUrls: Array.isArray(mediaList) ? mediaList.filter(Boolean) : [],
+        mediaUrl: Array.isArray(mediaList) && mediaList.length ? mediaList[0] : "",
+        updatedAt: Number(f[SP_FIELDS.updatedAt] || Date.now())
+      };
+    }
+
+    async function ensureGraphToken() {
+      if (!msalApp) throw new Error("MSAL not initialized.");
+      const account = msalApp.getAllAccounts()[0];
+      if (!account) throw new Error("Not authenticated.");
+      const result = await msalApp.acquireTokenSilent({
+        account,
+        scopes: GRAPH_CONFIG.scopes
+      });
+      graphToken = result.accessToken;
+      return graphToken;
+    }
+
+    async function graphFetch(path, options = {}) {
+      const token = await ensureGraphToken();
+      const response = await fetch(`https://graph.microsoft.com/v1.0${path}`, {
+        ...options,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          ...(options.headers || {})
+        }
+      });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Graph ${response.status}: ${text}`);
+      }
+      if (response.status === 204) return null;
+      return response.json();
+    }
+
+    async function cloudSignIn() {
+      if (!isCloudConfigured()) {
+        alert("SharePoint config missing. Fill GRAPH_CONFIG in index.html first.");
+        return false;
+      }
+      if (!msalApp) {
+        msalApp = new window.msal.PublicClientApplication({
+          auth: {
+            clientId: GRAPH_CONFIG.clientId,
+            authority: `https://login.microsoftonline.com/${GRAPH_CONFIG.tenantId}`
+          }
+        });
+      }
+      const result = await msalApp.loginPopup({ scopes: GRAPH_CONFIG.scopes });
+      graphToken = result.accessToken;
+      cloudReady = true;
+      setCloudStatus("Connected: SharePoint");
+      connectCloudBtn.textContent = "Refresh Cloud";
+      return true;
+    }
+
+    async function cloudFetchTasks() {
+      const data = await graphFetch(`/sites/${GRAPH_CONFIG.siteId}/lists/${GRAPH_CONFIG.listId}/items?$expand=fields&$top=999`);
+      const items = Array.isArray(data?.value) ? data.value : [];
+      return items.map(fromSpFields);
+    }
+
+    async function cloudCreateTask(task) {
+      const created = await graphFetch(`/sites/${GRAPH_CONFIG.siteId}/lists/${GRAPH_CONFIG.listId}/items`, {
+        method: "POST",
+        body: JSON.stringify({ fields: toSpFields(task) })
+      });
+      return String(created?.id || "");
+    }
+
+    async function cloudUpdateTask(task) {
+      if (!task.spItemId) return;
+      await graphFetch(`/sites/${GRAPH_CONFIG.siteId}/lists/${GRAPH_CONFIG.listId}/items/${task.spItemId}/fields`, {
+        method: "PATCH",
+        body: JSON.stringify(toSpFields(task))
+      });
+    }
+
+    async function cloudDeleteTask(task) {
+      if (!task?.spItemId) return;
+      await graphFetch(`/sites/${GRAPH_CONFIG.siteId}/lists/${GRAPH_CONFIG.listId}/items/${task.spItemId}`, {
+        method: "DELETE"
+      });
+    }
 
     function uid() {
       return `TASK-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
     }
 
     function loadTasks() {
-      try {
-        const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        return Array.isArray(value) ? value : [];
-      } catch {
-        return [];
-      }
+      return Array.isArray(tasksCache) ? tasksCache : [];
     }
 
     function saveTasks(tasks) {
+      tasksCache = Array.isArray(tasks) ? tasks : [];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    }
+
+    function loadTasksFromLocalStorage() {
+      const value = parseJsonSafe(localStorage.getItem(STORAGE_KEY) || "[]", []);
+      tasksCache = Array.isArray(value) ? value : [];
+      return tasksCache;
+    }
+
+    async function initializeData() {
+      loadTasksFromLocalStorage();
+      renderTasks();
+      if (!isCloudConfigured()) {
+        cloudEnabled = false;
+        setCloudStatus("Local mode");
+        return;
+      }
+      cloudEnabled = true;
+      setCloudStatus("Cloud available (connect)");
+    }
+
+    async function refreshFromCloud() {
+      if (!cloudEnabled || !cloudReady) return;
+      const cloudTasks = await cloudFetchTasks();
+      saveTasks(cloudTasks);
+      renderTasks();
+    }
+
+    async function persistTask(task) {
+      if (!cloudEnabled || !cloudReady) return task;
+      if (task.spItemId) {
+        await cloudUpdateTask(task);
+        return task;
+      }
+      const spItemId = await cloudCreateTask(task);
+      return { ...task, spItemId };
     }
 
     function clearForm() {
       taskForm.reset();
       taskForm.classList.add("new-case-mode");
+      taskForm.classList.remove("case-open-mode");
       taskId.value = "";
       issueFoundOn.value = "2026-01-01";
       targetFixDate.value = "";
@@ -1080,6 +1348,7 @@
 
     function openEditModal(task) {
       taskForm.classList.remove("new-case-mode");
+      taskForm.classList.add("case-open-mode");
       taskId.value = task.id || "";
       title.value = task.title || "";
       qaCategory.value = task.qaCategory || task.qaType || "BUG";
@@ -1094,6 +1363,7 @@
       expectedResult.value = task.expectedResult || "";
       actualResult.value = task.actualResult || "";
       stepsToReproduce.value = task.stepsToReproduce || "";
+      devComments.value = task.devComments || "";
       mediaUrls.value = getTaskMediaUrls(task).join("\n");
       saveBtn.textContent = "Save";
       issueModalTitle.textContent = "Create Issue";
@@ -1337,6 +1607,13 @@
       tasks[index].updatedAt = Date.now();
       saveTasks(tasks);
       renderTasks();
+      persistTask(tasks[index]).then((saved) => {
+        if (!saved || saved.spItemId === tasks[index].spItemId) return;
+        tasks[index] = saved;
+        saveTasks(tasks);
+      }).catch((error) => {
+        alert(`Cloud sync failed: ${error.message}`);
+      });
     }
 
     function getMediaKind(rawUrl) {
@@ -1580,6 +1857,7 @@
         expectedResult: expectedResult.value.trim(),
         actualResult: actualResult.value.trim(),
         stepsToReproduce: stepsToReproduce.value.trim(),
+        devComments: devComments.value.trim(),
         mediaUrls: mediaList,
         mediaUrl: mediaList[0] || "",
         updatedAt: Date.now()
@@ -1610,9 +1888,23 @@
       }
 
       saveTasks(tasks);
-      clearForm();
-      closeCreateModal();
-      renderTasks();
+      const persistedIndex = tasks.findIndex((x) => x.id === draft.id);
+      Promise.resolve(persistTask(tasks[persistedIndex]))
+        .then((saved) => {
+          if (saved) {
+            tasks[persistedIndex] = saved;
+            saveTasks(tasks);
+          }
+          clearForm();
+          closeCreateModal();
+          renderTasks();
+        })
+        .catch((error) => {
+          alert(`Save failed on cloud: ${error.message}`);
+          clearForm();
+          closeCreateModal();
+          renderTasks();
+        });
     });
 
     tableBody.addEventListener("click", (event) => {
@@ -1725,10 +2017,17 @@
       const taskTitle = (tasks[index].title || "this task").trim();
       const ok = window.confirm(`Delete "${taskTitle}"? This action cannot be undone.`);
       if (!ok) return;
+      const deletedTask = tasks[index];
       saveTasks(tasks.filter((x) => x.id !== id));
-      clearForm();
-      closeCreateModal();
-      renderTasks();
+      Promise.resolve(cloudDeleteTask(deletedTask))
+        .catch((error) => {
+          alert(`Cloud delete failed: ${error.message}`);
+        })
+        .finally(() => {
+          clearForm();
+          closeCreateModal();
+          renderTasks();
+        });
     });
     issueModal.addEventListener("click", (event) => {
       if (event.target === issueModal) closeCreateModal();
@@ -1755,8 +2054,19 @@
       if (event.key === "Escape" && !imageModal.hidden) closeImageModal();
     });
 
+    connectCloudBtn.addEventListener("click", async () => {
+      try {
+        const ok = await cloudSignIn();
+        if (!ok) return;
+        await refreshFromCloud();
+      } catch (error) {
+        setCloudStatus("Local mode (connect failed)");
+        alert(`SharePoint connect failed: ${error.message}`);
+      }
+    });
+
     clearForm();
-    renderTasks();
+    initializeData();
   </script>
 </body>
 </html>
