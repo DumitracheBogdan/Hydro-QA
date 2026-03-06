@@ -5,9 +5,26 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file=.env server.js",
-    "dev": "node --env-file=.env --watch server.js"
+    "dev": "node --env-file=.env --watch server.js",
+    "regression:bundle": "node scripts/run_regression_bundle.mjs"
   },
   "dependencies": {
     "express": "^4.21.2"
-  }
+  },
+  "description": "This repository contains the standalone QA tracker app used by QA/Dev teams.",
+  "main": "server.js",
+  "devDependencies": {
+    "playwright": "^1.58.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DumitracheBogdan/Hydro-QA.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DumitracheBogdan/Hydro-QA/issues"
+  },
+  "homepage": "https://github.com/DumitracheBogdan/Hydro-QA#readme"
 }
