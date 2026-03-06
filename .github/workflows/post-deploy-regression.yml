@@ -1,0 +1,141 @@
+name: Post-Deploy Regression
+run-name: >-
+  Regression - env=${{ inputs.environment }} - mode=${{ inputs.run_full_regression && 'full' || 'post-deploy' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      run_full_regression:
+        description: Run full regression test pack (184 tests)
+        required: true
+        type: boolean
+        default: false
+      trigger_repo:
+        description: Optional source repository that triggered this run
+        required: false
+        type: string
+      trigger_workflow:
+        description: Optional source workflow name
+        required: false
+        type: string
+      trigger_run_id:
+        description: Optional source workflow run id
+        required: false
+        type: string
+      trigger_run_url:
+        description: Optional source workflow run URL
+        required: false
+        type: string
+      deploy_ref:
+        description: Optional source branch or tag
+        required: false
+        type: string
+      image_tag:
+        description: Optional deployed image tag
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regression-${{ inputs.environment }}-${{ inputs.run_full_regression && 'full' || 'post-deploy' }}
+  cancel-in-progress: false
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.run_full_regression && 90 || 35 }}
+    env:
+      HYDROCERT_TARGET_ENV: ${{ inputs.environment }}
+      HYDROCERT_REGRESSION_MODE: ${{ inputs.run_full_regression && 'full' || 'standard' }}
+      HYDROCERT_WEB_BASE: ${{ inputs.environment == 'prod' && vars.HYDROCERT_PROD_WEB_BASE || vars.HYDROCERT_DEV_WEB_BASE }}
+      HYDROCERT_API_BASE: ${{ inputs.environment == 'prod' && vars.HYDROCERT_PROD_API_BASE || vars.HYDROCERT_DEV_API_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+
+    steps:
+      - name: Checkout QA Tracker repo
+        uses: actions/checkout@v4
+
+      - name: Validate regression configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${HYDROCERT_WEB_BASE}" ]]; then
+            echo "Missing HYDROCERT_WEB_BASE for env=${HYDROCERT_TARGET_ENV}" >&2
+            exit 1
+          fi
+          if [[ -z "${HYDROCERT_API_BASE}" ]]; then
+            echo "Missing HYDROCERT_API_BASE for env=${HYDROCERT_TARGET_ENV}" >&2
+            exit 1
+          fi
+          if [[ -z "${HYDROCERT_QA_EMAIL}" || -z "${HYDROCERT_QA_PASSWORD}" ]]; then
+            echo "Missing HYDROCERT_QA_EMAIL or HYDROCERT_QA_PASSWORD secret" >&2
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Excel dependency
+        run: python -m pip install --upgrade pip openpyxl
+
+      - name: Run regression bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/run_regression_bundle.mjs
+
+      - name: Upload regression artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrocert-${{ inputs.environment }}-${{ inputs.run_full_regression && 'full-regression' || 'post-deploy' }}-${{ github.run_id }}
+          path: ${{ steps.bundle.outputs.output_dir }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish workflow summary
+        shell: bash
+        run: |
+          {
+            echo "# Hydrocert Regression"
+            echo ""
+            echo "- Environment: ${{ inputs.environment }}"
+            echo "- Mode: ${{ inputs.run_full_regression && 'Full regression (184 tests)' || 'Post-deploy essential tests' }}"
+            echo "- Total tests: ${{ steps.bundle.outputs.total_tests }}"
+            echo "- Failed tests: ${{ steps.bundle.outputs.failed_tests }}"
+            echo "- Excel artifact: $(basename '${{ steps.bundle.outputs.excel_path }}')"
+            if [[ -n "${{ inputs.trigger_repo }}" ]]; then
+              echo "- Trigger repo: ${{ inputs.trigger_repo }}"
+            fi
+            if [[ -n "${{ inputs.trigger_run_url }}" ]]; then
+              echo "- Trigger run: ${{ inputs.trigger_run_url }}"
+            fi
+            if [[ -n "${{ inputs.image_tag }}" ]]; then
+              echo "- Image tag: ${{ inputs.image_tag }}"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
