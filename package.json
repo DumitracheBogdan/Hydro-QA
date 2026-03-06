@@ -9,5 +9,19 @@
   },
   "dependencies": {
     "express": "^4.21.2"
-  }
+  },
+  "description": "This repository contains the standalone QA tracker app used by QA/Dev teams.",
+  "main": "server.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DumitracheBogdan/Hydro-QA.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DumitracheBogdan/Hydro-QA/issues"
+  },
+  "homepage": "https://github.com/DumitracheBogdan/Hydro-QA#readme"
 }
