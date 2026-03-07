@@ -42,6 +42,7 @@ npm start
 ```
 
 Open `http://localhost:3000`.
+Recommended route: `http://localhost:3000/qa`.
 
 ## Team shared mode (recommended)
 
@@ -60,3 +61,5 @@ Deploy this as a Node app (App Service or existing company backend host) and set
 - (optional) `GITHUB_OWNER`, `GITHUB_REPO`
 
 Then expose it under your company route (example `/qa`).
+This app serves UI on `/qa` and API on `/qa/api/qa` (legacy `/api/qa` also works).
+Root `/` is not redirected to `/qa`; use `/qa` explicitly when needed.

@@ -3,6 +3,7 @@ node_modules/
 out/
 dist/
 coverage/
+qa-artifacts/
 
 .env
 .env.*
@@ -20,6 +21,13 @@ yarn-error.log*
 pnpm-debug.log*
 
 *.tsbuildinfo
+playwright-auth-state.json
+tmp_sp_cookies.txt
+tmp-dev-bundle.js
+tmp-live-bundle.js
+tmp_deepagent_cel.html
+tmp-*.mjs
+inspection-*.png
 
 .DS_Store
 Thumbs.db
