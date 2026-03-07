@@ -1,0 +1,570 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { chromium, request } from 'playwright';
+
+const WEB_BASE = process.env.HYDROCERT_WEB_BASE || 'https://hydrocert-dev-webapp-fzgveghygfc3enbt.ukwest-01.azurewebsites.net';
+const API_BASE = process.env.HYDROCERT_API_BASE || 'https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net';
+const EMAIL = process.env.HYDROCERT_QA_EMAIL || '';
+const PASS = process.env.HYDROCERT_QA_PASSWORD || '';
+
+const stamp = new Date().toISOString().replace(/[.:]/g, '-');
+const run = `dev-infra-deep-regression-${stamp}`;
+const runDir = path.join(process.cwd(), 'qa-artifacts', 'infra-regression', run);
+const shotsDir = path.join(runDir, 'screenshots');
+fs.mkdirSync(shotsDir, { recursive: true });
+
+const checks = [];
+const consoleErrors = [];
+const requestFailures = [];
+const responses5xx = [];
+let shotIndex = 1;
+let authToken = '';
+
+function pushCheck({ id, area, test, status, details, evidence = [] }) {
+  checks.push({ id, area, test, status, details, evidence });
+  console.log(`${id} | ${status} | ${test} | ${details}`);
+}
+
+async function settled(page, ms = 800) {
+  await page.waitForLoadState('domcontentloaded').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(ms);
+}
+
+async function shot(page, name) {
+  const file = path.join(shotsDir, `${String(shotIndex).padStart(2, '0')}-${name}.png`);
+  shotIndex += 1;
+  await page.screenshot({ path: file, fullPage: true });
+  return file;
+}
+
+async function runCheck(page, def, fn) {
+  const { id, area, test } = def;
+  try {
+    const out = await fn();
+    pushCheck({
+      id,
+      area,
+      test,
+      status: out?.status || 'PASS',
+      details: out?.details || '',
+      evidence: out?.evidence || [],
+    });
+  } catch (error) {
+    const ev = await shot(page, `${id.toLowerCase()}-error`).catch(() => null);
+    pushCheck({
+      id,
+      area,
+      test,
+      status: 'FAIL',
+      details: String(error).replace(/\s+/g, ' ').slice(0, 260),
+      evidence: ev ? [ev] : [],
+    });
+  }
+}
+
+function extractArrayLike(json) {
+  if (Array.isArray(json)) return json;
+  if (Array.isArray(json?.data)) return json.data;
+  if (Array.isArray(json?.items)) return json.items;
+  if (Array.isArray(json?.results)) return json.results;
+  return [];
+}
+
+function p95(values) {
+  if (!values.length) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const idx = Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1);
+  return sorted[idx];
+}
+
+async function probeApi(apiCtx, method, endpoint, body) {
+  const started = Date.now();
+  let response;
+  if (method === 'GET') response = await apiCtx.get(endpoint);
+  else if (method === 'POST') response = await apiCtx.post(endpoint, { data: body });
+  else if (method === 'PATCH') response = await apiCtx.patch(endpoint, { data: body });
+  else throw new Error(`Unsupported method: ${method}`);
+  const latencyMs = Date.now() - started;
+  let json = null;
+  try {
+    json = await response.json();
+  } catch {}
+  return { status: response.status(), latencyMs, json };
+}
+
+async function perfProbe(apiCtx, endpoint, expectedMaxP95, iterations = 18) {
+  const times = [];
+  let fails = 0;
+  for (let i = 0; i < iterations; i += 1) {
+    const started = Date.now();
+    const resp = await apiCtx.get(endpoint);
+    const ms = Date.now() - started;
+    times.push(ms);
+    if (resp.status() >= 400) fails += 1;
+  }
+  const p95v = p95(times);
+  return {
+    ok: fails === 0 && p95v <= expectedMaxP95,
+    p95: p95v,
+    avg: Math.round(times.reduce((a, b) => a + b, 0) / times.length),
+    min: Math.min(...times),
+    max: Math.max(...times),
+    fails,
+    expectedMaxP95,
+  };
+}
+
+const browser = await chromium.launch({ headless: true });
+const context = await browser.newContext({ viewport: { width: 1536, height: 864 } });
+const page = await context.newPage();
+
+page.on('console', (msg) => {
+  if (msg.type() === 'error') {
+    consoleErrors.push({ url: page.url(), text: msg.text() });
+  }
+});
+
+page.on('requestfailed', (req) => {
+  requestFailures.push({
+    url: req.url(),
+    method: req.method(),
+    failure: req.failure()?.errorText || 'requestfailed',
+  });
+});
+
+page.on('response', async (res) => {
+  const url = res.url();
+  const status = res.status();
+  if (status >= 500) {
+    responses5xx.push({ status, url, method: res.request().method() });
+  }
+  if (!authToken && /\/auth\/login/i.test(url) && res.request().method() === 'POST') {
+    try {
+      const data = await res.json();
+      authToken = data?.accessToken || data?.token || '';
+    } catch {}
+  }
+});
+
+let apiCtx;
+let firstVisitRef = '';
+let firstVisitDetailsUrl = '';
+let firstEditUrl = '';
+
+try {
+  await runCheck(page, { id: 'I01', area: 'WebApp', test: 'Web root is reachable' }, async () => {
+    const resp = await page.request.get(`${WEB_BASE}/`);
+    if (!resp.ok()) return { status: 'FAIL', details: `status=${resp.status()}` };
+    return { status: 'PASS', details: `status=${resp.status()}` };
+  });
+
+  await runCheck(page, { id: 'I02', area: 'WebApp', test: 'Main routes return HTTP success' }, async () => {
+    const routes = ['/dashboard', '/customers', '/visits-list', '/planner', '/visits/addnewvisit', '/visits'];
+    const bad = [];
+    for (const r of routes) {
+      const resp = await page.request.get(`${WEB_BASE}${r}`);
+      if (!resp.ok()) bad.push(`${r}:${resp.status()}`);
+    }
+    if (bad.length) return { status: 'FAIL', details: bad.join(' | ') };
+    return { status: 'PASS', details: `routes=${routes.length}` };
+  });
+
+  await runCheck(page, { id: 'I03', area: 'Auth', test: 'Login to WebApp succeeds' }, async () => {
+    await page.goto(`${WEB_BASE}/dashboard`, { waitUntil: 'domcontentloaded' });
+    await settled(page, 1000);
+    if (page.url().includes('/login')) {
+      await page.locator('input[name="email"],input[type="email"]').first().fill(EMAIL);
+      await page.locator('input[name="password"],input[type="password"]').first().fill(PASS);
+      await page.getByRole('button', { name: /sign in/i }).first().click();
+      await page.waitForURL((u) => !u.toString().includes('/login'), { timeout: 25000 }).catch(() => {});
+      await settled(page, 1200);
+    }
+    if (page.url().includes('/login')) {
+      const ev = await shot(page, 'i03-login-failed');
+      return { status: 'FAIL', details: 'Still on /login', evidence: [ev] };
+    }
+    const hasSessionUser = await page.getByText(/Tech Quarter|Admin/i).first().isVisible().catch(() => false);
+    if (!hasSessionUser) {
+      const ev = await shot(page, 'i03-login-no-user-header');
+      return { status: 'FAIL', details: 'Logged in but user header not visible', evidence: [ev] };
+    }
+    return { status: 'PASS', details: `url=${page.url()}` };
+  });
+
+  await runCheck(page, { id: 'I04', area: 'Auth', test: 'Session persists after page refresh' }, async () => {
+    await page.goto(`${WEB_BASE}/dashboard`);
+    await settled(page, 900);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await settled(page, 1000);
+    if (page.url().includes('/login')) {
+      const ev = await shot(page, 'i04-refresh-logged-out');
+      return { status: 'FAIL', details: 'Redirected to login after refresh', evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'Session persisted' };
+  });
+
+  await runCheck(page, { id: 'I05', area: 'Auth/API', test: 'Invalid login is rejected by API' }, async () => {
+    const anon = await request.newContext({ baseURL: API_BASE });
+    const resp = await anon.post('/auth/login', {
+      data: { email: EMAIL, password: 'WrongPassword!123' },
+    });
+    await anon.dispose();
+    if (![400, 401, 403].includes(resp.status())) {
+      return { status: 'FAIL', details: `unexpected status=${resp.status()}` };
+    }
+    return { status: 'PASS', details: `status=${resp.status()}` };
+  });
+
+  if (!authToken) {
+    const storageToken = await page
+      .evaluate(() => {
+        const directSession = sessionStorage.getItem('accessToken') || '';
+        if (directSession) return directSession;
+
+        const values = [
+          ...Object.values(localStorage),
+          ...Object.values(sessionStorage),
+        ].map((v) => String(v || ''));
+
+        for (const raw of values) {
+          if (/^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+$/.test(raw)) return raw;
+          try {
+            const parsed = JSON.parse(raw);
+            if (parsed?.accessToken) return parsed.accessToken;
+            if (parsed?.token) return parsed.token;
+          } catch {}
+        }
+        return '';
+      })
+      .catch(() => '');
+    if (storageToken) authToken = storageToken;
+  }
+
+  if (!authToken) {
+    const state = await context.storageState();
+    const statePath = path.join(runDir, 'storage-state.json');
+    fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+  }
+  if (!authToken) {
+    const ev = await shot(page, 'auth-token-missing');
+    pushCheck({
+      id: 'I06',
+      area: 'Auth/API',
+      test: 'Auth token captured from login',
+      status: 'FAIL',
+      details: 'No access token found in /auth/login response',
+      evidence: [ev],
+    });
+    throw new Error('Cannot continue deep API regression without token');
+  } else {
+    pushCheck({
+      id: 'I06',
+      area: 'Auth/API',
+      test: 'Auth token captured from login',
+      status: 'PASS',
+      details: 'Token captured successfully',
+    });
+  }
+
+  apiCtx = await request.newContext({
+    baseURL: API_BASE,
+    extraHTTPHeaders: { Authorization: `Bearer ${authToken}` },
+  });
+
+  const now = new Date();
+  const startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()).toISOString();
+  const endDate = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate()).toISOString();
+  const absStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const absEnd = new Date(now.getFullYear(), now.getMonth() + 2, 1).toISOString().slice(0, 10);
+
+  const apiChecks = [
+    { id: 'A01', endpoint: '/health', test: 'API health endpoint' },
+    { id: 'A02', endpoint: '/users/profile/me', test: 'Profile endpoint with auth' },
+    { id: 'A03', endpoint: '/users', test: 'Users list endpoint' },
+    { id: 'A04', endpoint: '/customers/filtered?page=1&limit=20', test: 'Customers filtered endpoint' },
+    { id: 'A05', endpoint: `/visits/calendar-filter?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1&limit=50`, test: 'Visits calendar filter endpoint' },
+    { id: 'A06', endpoint: '/job-types', test: 'Job types endpoint' },
+    { id: 'A07', endpoint: '/products', test: 'Products endpoint' },
+    { id: 'A08', endpoint: '/sample-types', test: 'Sample types endpoint' },
+    { id: 'A09', endpoint: '/labs', test: 'Labs endpoint' },
+    { id: 'A10', endpoint: `/users/absences?startDate=${absStart}&endDate=${absEnd}`, test: 'Users absences endpoint' },
+  ];
+
+  for (const item of apiChecks) {
+    await runCheck(page, { id: item.id, area: 'API', test: item.test }, async () => {
+      const p = await probeApi(apiCtx, 'GET', item.endpoint);
+      if (p.status >= 400) return { status: 'FAIL', details: `status=${p.status}, ${item.endpoint}` };
+      const arr = extractArrayLike(p.json);
+      const hasDataHint =
+        Array.isArray(arr) ||
+        p.json?.status ||
+        p.json?.message ||
+        p.json?.email ||
+        p.json?.id;
+      if (!hasDataHint) return { status: 'FAIL', details: `status=${p.status}, unexpected payload shape` };
+      return {
+        status: 'PASS',
+        details: `status=${p.status}, latency=${p.latencyMs}ms, items=${arr.length || 'n/a'}`,
+      };
+    });
+  }
+
+  await runCheck(page, { id: 'U01', area: 'WebApp', test: 'Customers page loads data table' }, async () => {
+    await page.goto(`${WEB_BASE}/customers`);
+    await settled(page, 1100);
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    if (rows < 1) {
+      const ev = await shot(page, 'u01-customers-no-rows');
+      return { status: 'FAIL', details: 'No rows in customers table', evidence: [ev] };
+    }
+    return { status: 'PASS', details: `rows=${rows}` };
+  });
+
+  await runCheck(page, { id: 'U02', area: 'WebApp', test: 'Customers search + clear filter flow works' }, async () => {
+    const search = page.getByPlaceholder(/search customers/i).first();
+    if (!(await search.isVisible().catch(() => false))) return { status: 'FAIL', details: 'Search input not visible' };
+    await search.fill('maida');
+    await settled(page, 700);
+    const filtered = await page.locator('table tbody tr').count().catch(() => 0);
+    await page.getByRole('button', { name: /clear filters/i }).first().click().catch(() => {});
+    await settled(page, 700);
+    const restored = await page.locator('table tbody tr').count().catch(() => 0);
+    if (restored < filtered) return { status: 'FAIL', details: `filtered=${filtered}, restored=${restored}` };
+    return { status: 'PASS', details: `filtered=${filtered}, restored=${restored}` };
+  });
+
+  await runCheck(page, { id: 'U03', area: 'WebApp', test: 'Visits List loads and reference search works' }, async () => {
+    await page.goto(`${WEB_BASE}/visits-list`);
+    await settled(page, 1100);
+    const firstRef = ((await page.locator('table tbody tr td').first().innerText().catch(() => '')) || '').trim();
+    if (!firstRef) {
+      const ev = await shot(page, 'u03-visits-no-first-ref');
+      return { status: 'FAIL', details: 'No first visit reference in table', evidence: [ev] };
+    }
+    firstVisitRef = firstRef;
+    const refInput = page.getByPlaceholder(/Visit reference/i).first();
+    if (!(await refInput.isVisible().catch(() => false))) return { status: 'FAIL', details: 'Visit reference input missing' };
+    await refInput.fill(firstRef);
+    await page.keyboard.press('Enter').catch(() => {});
+    let rows = 0;
+    for (let i = 0; i < 12; i += 1) {
+      await page.waitForTimeout(600);
+      const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+      rows = await page.locator('table tbody tr').count().catch(() => 0);
+      if (!loading && rows > 0) break;
+    }
+    if (rows < 1) {
+      const ev = await shot(page, 'u03-ref-not-found-after-search');
+      return { status: 'FAIL', details: `Reference ${firstRef} not found after search`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: `reference=${firstRef}, rows=${rows}` };
+  });
+
+  await runCheck(page, { id: 'U04', area: 'WebApp', test: 'Visit details page opens from visits list row' }, async () => {
+    await page.goto(`${WEB_BASE}/visits-list`);
+    await settled(page, 900);
+    const row = page.locator('table tbody tr').first();
+    if (!(await row.isVisible().catch(() => false))) return { status: 'FAIL', details: 'No visible row in visits list' };
+    await row.click().catch(() => {});
+    await settled(page, 1100);
+    const url = page.url();
+    if (!/\/visits\/details\//i.test(url)) {
+      const ev = await shot(page, 'u04-details-not-opened');
+      return { status: 'FAIL', details: `URL=${url}`, evidence: [ev] };
+    }
+    firstVisitDetailsUrl = url;
+    return { status: 'PASS', details: `url=${url}` };
+  });
+
+  await runCheck(page, { id: 'U05', area: 'WebApp', test: 'Visit details tabs switch without errors' }, async () => {
+    if (!firstVisitDetailsUrl) return { status: 'FAIL', details: 'No details URL from U04' };
+    await page.goto(firstVisitDetailsUrl);
+    await settled(page, 900);
+    await page.getByText(/^Attachments$/i).first().click().catch(() => {});
+    await settled(page, 500);
+    const attachPanel = await page.getByText(/No document yet|Upload/i).first().isVisible().catch(() => false);
+    await page.getByText(/^Visit Details$/i).first().click().catch(() => {});
+    await settled(page, 500);
+    const detailsPanel = await page.getByText(/Description|Visit Details|Client Signature/i).first().isVisible().catch(() => false);
+    if (!attachPanel || !detailsPanel) {
+      const ev = await shot(page, 'u05-tab-switch-fail');
+      return { status: 'FAIL', details: `attachPanel=${attachPanel}, detailsPanel=${detailsPanel}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'Attachments and Visit Details tabs both render' };
+  });
+
+  await runCheck(page, { id: 'U06', area: 'WebApp', test: 'Planner Month/Event toggle works' }, async () => {
+    await page.goto(`${WEB_BASE}/planner`);
+    await settled(page, 1000);
+    await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+    await settled(page, 700);
+    const eventSignal = await page.locator('table tbody tr').first().isVisible().catch(() => false);
+    await page.getByRole('button', { name: /Month View/i }).first().click().catch(() => {});
+    await settled(page, 700);
+    const monthSignal = await page.getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i).first().isVisible().catch(() => false);
+    if (!eventSignal || !monthSignal) {
+      const ev = await shot(page, 'u06-planner-toggle-fail');
+      return { status: 'FAIL', details: `eventSignal=${eventSignal}, monthSignal=${monthSignal}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'Both planner views render' };
+  });
+
+  await runCheck(page, { id: 'U07', area: 'WebApp', test: 'Planner eye action opens Edit Visit page' }, async () => {
+    await page.goto(`${WEB_BASE}/planner`);
+    await settled(page, 900);
+    await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+    await settled(page, 700);
+    const eye = page.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
+    if (!(await eye.isVisible().catch(() => false))) {
+      const ev = await shot(page, 'u07-eye-not-visible');
+      return { status: 'FAIL', details: 'Eye action button not visible', evidence: [ev] };
+    }
+    await eye.click().catch(() => {});
+    await settled(page, 1000);
+    const url = page.url();
+    if (!/\/visits\/edit\//i.test(url)) {
+      const ev = await shot(page, 'u07-edit-not-opened');
+      return { status: 'FAIL', details: `URL=${url}`, evidence: [ev] };
+    }
+    firstEditUrl = url;
+    return { status: 'PASS', details: `url=${url}` };
+  });
+
+  await runCheck(page, { id: 'U08', area: 'WebApp', test: 'Google Map renders on Edit Visit and after refresh' }, async () => {
+    if (!firstEditUrl) return { status: 'FAIL', details: 'No edit URL from U07' };
+    await page.goto(firstEditUrl);
+    await settled(page, 1600);
+    const before = await page.locator('.gm-style, [aria-label="Map"]').first().isVisible().catch(() => false);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await settled(page, 1800);
+    const after = await page.locator('.gm-style, [aria-label="Map"]').first().isVisible().catch(() => false);
+    if (!before || !after) {
+      const ev = await shot(page, 'u08-map-refresh-fail');
+      return { status: 'FAIL', details: `before=${before}, after=${after}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: `before=${before}, after=${after}` };
+  });
+
+  await runCheck(page, { id: 'U09', area: 'WebApp', test: 'Add New Visit page loads required controls' }, async () => {
+    await page.goto(`${WEB_BASE}/visits/addnewvisit`);
+    await settled(page, 1100);
+    const titleInput = page.locator('input[placeholder*="Enter title"], input[name="title"], input#title').first();
+    const hasTitle = await titleInput.isVisible().catch(() => false);
+    const hasSite = await page.getByPlaceholder(/search site/i).first().isVisible().catch(() => false);
+    const hasFrom = await page.locator('button#from').first().isVisible().catch(() => false);
+    const hasTo = await page.locator('button#to').first().isVisible().catch(() => false);
+    if (!hasTitle || !hasSite || !hasFrom || !hasTo) {
+      const ev = await shot(page, 'u09-addnew-controls-missing');
+      return { status: 'FAIL', details: `title=${hasTitle}, site=${hasSite}, from=${hasFrom}, to=${hasTo}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'Core controls visible' };
+  });
+
+  await runCheck(page, { id: 'U10', area: 'WebApp', test: 'No requestfailed events during deep route traversal' }, async () => {
+    if (requestFailures.length > 0) {
+      const ev = await shot(page, 'u10-requestfailed-events');
+      return { status: 'FAIL', details: `requestfailed=${requestFailures.length}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'No requestfailed events' };
+  });
+
+  await runCheck(page, { id: 'U11', area: 'WebApp/API', test: 'No 5xx responses during traversal' }, async () => {
+    if (responses5xx.length > 0) {
+      const ev = await shot(page, 'u11-5xx-seen');
+      return { status: 'FAIL', details: `5xx=${responses5xx.length}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'No 5xx seen' };
+  });
+
+  await runCheck(page, { id: 'U12', area: 'WebApp', test: 'No console error events during traversal' }, async () => {
+    if (consoleErrors.length > 0) {
+      const ev = await shot(page, 'u12-console-errors');
+      return { status: 'FAIL', details: `consoleErrors=${consoleErrors.length}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: 'No console errors' };
+  });
+
+  await runCheck(page, { id: 'P01', area: 'Performance', test: 'API /health latency stability (p95 <= 700ms)' }, async () => {
+    const perf = await perfProbe(apiCtx, '/health', 700, 20);
+    if (!perf.ok) return { status: 'FAIL', details: JSON.stringify(perf) };
+    return { status: 'PASS', details: JSON.stringify(perf) };
+  });
+
+  await runCheck(page, { id: 'P02', area: 'Performance', test: 'API /users/profile/me latency stability (p95 <= 900ms)' }, async () => {
+    const perf = await perfProbe(apiCtx, '/users/profile/me', 900, 20);
+    if (!perf.ok) return { status: 'FAIL', details: JSON.stringify(perf) };
+    return { status: 'PASS', details: JSON.stringify(perf) };
+  });
+
+  await runCheck(page, { id: 'P03', area: 'Performance', test: 'API /customers/filtered latency stability (p95 <= 1500ms)' }, async () => {
+    const perf = await perfProbe(apiCtx, '/customers/filtered?page=1&limit=20', 1500, 16);
+    if (!perf.ok) return { status: 'FAIL', details: JSON.stringify(perf) };
+    return { status: 'PASS', details: JSON.stringify(perf) };
+  });
+
+  await runCheck(page, { id: 'P04', area: 'Performance', test: 'API /visits/calendar-filter latency stability (p95 <= 1900ms)' }, async () => {
+    const perf = await perfProbe(apiCtx, `/visits/calendar-filter?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}&page=1&limit=50`, 1900, 14);
+    if (!perf.ok) return { status: 'FAIL', details: JSON.stringify(perf) };
+    return { status: 'PASS', details: JSON.stringify(perf) };
+  });
+} finally {
+  await apiCtx?.dispose().catch(() => {});
+  await context.close().catch(() => {});
+  await browser.close().catch(() => {});
+}
+
+const totals = {
+  total: checks.length,
+  pass: checks.filter((c) => c.status === 'PASS').length,
+  fail: checks.filter((c) => c.status === 'FAIL').length,
+  skip: checks.filter((c) => c.status === 'SKIP').length,
+};
+
+const summary = {
+  generatedAt: new Date().toISOString(),
+  environment: { webBase: WEB_BASE, apiBase: API_BASE },
+  totals,
+  checks,
+  telemetry: {
+    consoleErrors,
+    requestFailures,
+    responses5xx,
+  },
+};
+
+const summaryPath = path.join(runDir, 'summary.json');
+fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));
+
+const mdLines = [];
+mdLines.push('# DEV Azure Infra Deep Regression Report');
+mdLines.push(`Date: ${new Date().toISOString()}`);
+mdLines.push(`WebApp: ${WEB_BASE}`);
+mdLines.push(`API: ${API_BASE}`);
+mdLines.push('');
+mdLines.push('## Summary');
+mdLines.push(`- Total checks: ${totals.total}`);
+mdLines.push(`- Passed: ${totals.pass}`);
+mdLines.push(`- Failed: ${totals.fail}`);
+mdLines.push(`- Skipped: ${totals.skip}`);
+mdLines.push('');
+mdLines.push('## Checks');
+mdLines.push('| ID | Area | Test | Status | Details |');
+mdLines.push('|---|---|---|---|---|');
+for (const c of checks) {
+  mdLines.push(`| ${c.id} | ${c.area} | ${String(c.test).replace(/\|/g, '/')} | ${c.status} | ${String(c.details).replace(/\|/g, '/')} |`);
+}
+if (checks.some((c) => c.status === 'FAIL')) {
+  mdLines.push('');
+  mdLines.push('## Fail Evidence');
+  for (const c of checks.filter((x) => x.status === 'FAIL')) {
+    if (!c.evidence?.length) continue;
+    mdLines.push(`- ${c.id}: ${c.evidence.join(', ')}`);
+  }
+}
+const reportPath = path.join(runDir, 'report.md');
+fs.writeFileSync(reportPath, mdLines.join('\n'), 'utf-8');
+
+console.log(`SUMMARY_JSON=${summaryPath}`);
+console.log(`REPORT_MD=${reportPath}`);
+console.log(`TOTAL=${totals.total} PASS=${totals.pass} FAIL=${totals.fail} SKIP=${totals.skip}`);
