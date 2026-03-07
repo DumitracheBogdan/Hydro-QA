@@ -111,10 +111,20 @@ jobs:
           node scripts/run_regression_bundle.mjs
 
       - name: Upload regression artifacts
+        id: upload_bundle
         uses: actions/upload-artifact@v4
         with:
           name: hydrocert-${{ inputs.environment }}-${{ inputs.run_full_regression && 'full-regression' || 'post-deploy' }}-${{ github.run_id }}
           path: ${{ steps.bundle.outputs.output_dir }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Excel artifact
+        id: upload_excel
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrocert-${{ inputs.environment }}-${{ inputs.run_full_regression && 'full-regression' || 'post-deploy' }}-excel-${{ github.run_id }}
+          path: ${{ steps.bundle.outputs.excel_path }}
           if-no-files-found: error
           retention-days: 14
 
@@ -129,6 +139,8 @@ jobs:
             echo "- Total tests: ${{ steps.bundle.outputs.total_tests }}"
             echo "- Failed tests: ${{ steps.bundle.outputs.failed_tests }}"
             echo "- Excel artifact: $(basename '${{ steps.bundle.outputs.excel_path }}')"
+            echo "- [Download Excel artifact](${{ steps.upload_excel.outputs.artifact-url }})"
+            echo "- [Download full regression bundle](${{ steps.upload_bundle.outputs.artifact-url }})"
             if [[ -n "${{ inputs.trigger_repo }}" ]]; then
               echo "- Trigger repo: ${{ inputs.trigger_repo }}"
             fi
