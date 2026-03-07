@@ -17,6 +17,17 @@ const META_START = "QA_TRACKER_META_START";
 const META_END = "QA_TRACKER_META_END";
 
 app.use(express.json({ limit: "2mb" }));
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
+    res.status(204).send();
+    return;
+  }
+  next();
+});
+const qaApi = express.Router();
 
 function ensureConfig() {
   if (!GITHUB_TOKEN) {
@@ -30,9 +41,17 @@ function safeString(value) {
   return String(value ?? "").trim();
 }
 
+function hasNonEmptyImageDataUrl(value) {
+  const text = safeString(value);
+  const match = text.match(/^data:image\/[a-z0-9.+-]+;base64,(.*)$/i);
+  if (!match) return true;
+  const payload = String(match[1] || "").replace(/\s+/g, "");
+  return payload.length > 0;
+}
+
 function sanitizeTaskPayload(input) {
   const mediaUrls = Array.isArray(input?.mediaUrls)
-    ? input.mediaUrls.map((x) => safeString(x)).filter(Boolean)
+    ? input.mediaUrls.map((x) => safeString(x)).filter(Boolean).filter(hasNonEmptyImageDataUrl)
     : [];
 
   return {
@@ -149,7 +168,9 @@ function parseIssueMeta(body) {
 
 function issueToTask(issue) {
   const meta = parseIssueMeta(issue?.body) || {};
-  const mediaUrls = Array.isArray(meta.mediaUrls) ? meta.mediaUrls.map((x) => safeString(x)).filter(Boolean) : [];
+  const mediaUrls = Array.isArray(meta.mediaUrls)
+    ? meta.mediaUrls.map((x) => safeString(x)).filter(Boolean).filter(hasNonEmptyImageDataUrl)
+    : [];
   return {
     spItemId: String(issue?.number || ""),
     githubIssueId: String(issue?.id || ""),
@@ -198,7 +219,7 @@ async function githubFetch(pathname, options = {}) {
   return response.json();
 }
 
-app.get("/api/qa/health", (_req, res) => {
+qaApi.get("/health", (_req, res) => {
   try {
     ensureConfig();
     res.json({ ok: true, provider: "github-issues", repo: `${GITHUB_OWNER}/${GITHUB_REPO}` });
@@ -207,7 +228,7 @@ app.get("/api/qa/health", (_req, res) => {
   }
 });
 
-app.get("/api/qa/tasks", async (_req, res) => {
+qaApi.get("/tasks", async (_req, res) => {
   try {
     const all = [];
     let page = 1;
@@ -236,7 +257,7 @@ app.get("/api/qa/tasks", async (_req, res) => {
   }
 });
 
-app.post("/api/qa/tasks", async (req, res) => {
+qaApi.post("/tasks", async (req, res) => {
   try {
     const task = sanitizeTaskPayload(req.body || {});
     const payload = {
@@ -255,7 +276,7 @@ app.post("/api/qa/tasks", async (req, res) => {
   }
 });
 
-app.patch("/api/qa/tasks/:issueNumber", async (req, res) => {
+qaApi.patch("/tasks/:issueNumber", async (req, res) => {
   try {
     const issueNumber = safeString(req.params.issueNumber);
     if (!issueNumber) {
@@ -279,7 +300,7 @@ app.patch("/api/qa/tasks/:issueNumber", async (req, res) => {
   }
 });
 
-app.delete("/api/qa/tasks/:issueNumber", async (req, res) => {
+qaApi.delete("/tasks/:issueNumber", async (req, res) => {
   try {
     const issueNumber = safeString(req.params.issueNumber);
     if (!issueNumber) {
@@ -297,12 +318,23 @@ app.delete("/api/qa/tasks/:issueNumber", async (req, res) => {
   }
 });
 
-app.use(express.static(__dirname, { extensions: ["html"] }));
+app.use("/api/qa", qaApi);
+app.use("/qa/api/qa", qaApi);
 
-app.get("*", (_req, res) => {
+app.use("/qa", express.static(__dirname, { extensions: ["html"] }));
+
+app.get("/", (_req, res) => {
+  res.status(200).send("Hydro QA Tracker service is running.");
+});
+
+app.get(["/qa", "/qa/*"], (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+app.get("*", (_req, res) => {
+  res.status(404).send("Not found");
+});
+
 app.listen(PORT, () => {
-  console.log(`Hydro QA Tracker running on http://localhost:${PORT}`);
+  console.log(`Hydro QA Tracker running on http://localhost:${PORT}/qa`);
 });
