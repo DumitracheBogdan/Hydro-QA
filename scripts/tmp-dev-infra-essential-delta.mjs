@@ -308,7 +308,7 @@ try {
       const sample = visits.slice(0, 30);
       if (!sample.length) return { status: 'FAIL', details: 'no visits sample' };
       const parseable = sample.filter((v) => {
-        const d = v?.visitDate || v?.date || v?.startDate || v?.fromDate;
+        const d = v?.from || v?.to || v?.visitDate || v?.date || v?.startDate || v?.fromDate;
         return d ? !Number.isNaN(new Date(d).getTime()) : false;
       }).length;
       const pct = Math.round((parseable / sample.length) * 100);
