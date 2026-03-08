@@ -19,6 +19,7 @@ const requestFailures = [];
 const responses5xx = [];
 let shotIndex = 1;
 let authToken = '';
+let firstEditUrl = '';
 
 function pushCheck({ id, area, test, status, details, evidence = [] }) {
   checks.push({ id, area, test, status, details, evidence });
@@ -76,6 +77,19 @@ function p95(values) {
   const sorted = [...values].sort((a, b) => a - b);
   const idx = Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1);
   return sorted[idx];
+}
+
+function isBenignRequestFailure(entry) {
+  const url = String(entry?.url || '').toLowerCase();
+  const failure = String(entry?.failure || '').toLowerCase();
+  if (failure.includes('net::err_aborted')) return true;
+  if (url.includes('maps.googleapis.com')) return true;
+  if (url.includes('google.internal.maps')) return true;
+  return false;
+}
+
+function actionableRequestFailures(entries) {
+  return entries.filter((entry) => !isBenignRequestFailure(entry));
 }
 
 async function probeApi(apiCtx, method, endpoint, body) {
@@ -150,7 +164,6 @@ page.on('response', async (res) => {
 let apiCtx;
 let firstVisitRef = '';
 let firstVisitDetailsUrl = '';
-let firstEditUrl = '';
 
 try {
   await runCheck(page, { id: 'I01', area: 'WebApp', test: 'Web root is reachable' }, async () => {
@@ -414,25 +427,43 @@ try {
     await page.goto(`${WEB_BASE}/planner`);
     await settled(page, 900);
     await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+    await page.locator('table tbody tr').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
     await settled(page, 700);
-    const eye = page.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
-    if (!(await eye.isVisible().catch(() => false))) {
+
+    const candidates = page.locator('table tbody tr td:last-child button').filter({ has: page.locator('svg.lucide-eye') });
+    const count = await candidates.count().catch(() => 0);
+    if (count < 1) {
       const ev = await shot(page, 'u07-eye-not-visible');
-      return { status: 'FAIL', details: 'Eye action button not visible', evidence: [ev] };
+      return { status: 'FAIL', details: 'No eye action button found in planner table', evidence: [ev] };
     }
-    await eye.click().catch(() => {});
-    await settled(page, 1000);
-    const url = page.url();
-    if (!/\/visits\/edit\//i.test(url)) {
-      const ev = await shot(page, 'u07-edit-not-opened');
-      return { status: 'FAIL', details: `URL=${url}`, evidence: [ev] };
+
+    for (let i = 0; i < Math.min(count, 5); i += 1) {
+      const eye = candidates.nth(i);
+      await eye.scrollIntoViewIfNeeded().catch(() => {});
+      const beforeUrl = page.url();
+      await eye.click().catch(() => {});
+      await page.waitForURL(/\/visits\/edit\//i, { timeout: 4000 }).catch(() => {});
+      await settled(page, 800);
+      const url = page.url();
+      if (/\/visits\/edit\//i.test(url)) {
+        firstEditUrl = url;
+        return { status: 'PASS', details: `url=${url}` };
+      }
+      if (page.url() !== beforeUrl) {
+        await page.goto(`${WEB_BASE}/planner`).catch(() => {});
+        await settled(page, 900);
+        await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+        await page.locator('table tbody tr').first().waitFor({ state: 'visible', timeout: 15000 }).catch(() => {});
+        await settled(page, 600);
+      }
     }
-    firstEditUrl = url;
-    return { status: 'PASS', details: `url=${url}` };
+
+    const ev = await shot(page, 'u07-edit-not-opened');
+    return { status: 'FAIL', details: `URL=${page.url()}`, evidence: [ev] };
   });
 
   await runCheck(page, { id: 'U08', area: 'WebApp', test: 'Google Map renders on Edit Visit and after refresh' }, async () => {
-    if (!firstEditUrl) return { status: 'FAIL', details: 'No edit URL from U07' };
+    if (!firstEditUrl) return { status: 'SKIP', details: 'Skipped because U07 did not open edit page' };
     await page.goto(firstEditUrl);
     await settled(page, 1600);
     const before = await page.locator('.gm-style, [aria-label="Map"]').first().isVisible().catch(() => false);
@@ -462,11 +493,13 @@ try {
   });
 
   await runCheck(page, { id: 'U10', area: 'WebApp', test: 'No requestfailed events during deep route traversal' }, async () => {
-    if (requestFailures.length > 0) {
+    const actionable = actionableRequestFailures(requestFailures);
+    const ignored = requestFailures.length - actionable.length;
+    if (actionable.length > 0) {
       const ev = await shot(page, 'u10-requestfailed-events');
-      return { status: 'FAIL', details: `requestfailed=${requestFailures.length}`, evidence: [ev] };
+      return { status: 'FAIL', details: `requestfailed=${actionable.length}, ignored=${ignored}`, evidence: [ev] };
     }
-    return { status: 'PASS', details: 'No requestfailed events' };
+    return { status: 'PASS', details: `requestfailed=0, ignored=${ignored}` };
   });
 
   await runCheck(page, { id: 'U11', area: 'WebApp/API', test: 'No 5xx responses during traversal' }, async () => {

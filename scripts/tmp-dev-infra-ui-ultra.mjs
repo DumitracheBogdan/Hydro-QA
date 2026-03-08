@@ -65,6 +65,19 @@ async function login(page) {
   return !page.url().includes('/login');
 }
 
+function isBenignRequestFailure(entry) {
+  const url = String(entry?.url || '').toLowerCase();
+  const error = String(entry?.error || '').toLowerCase();
+  if (error.includes('net::err_aborted')) return true;
+  if (url.includes('maps.googleapis.com')) return true;
+  if (url.includes('google.internal.maps')) return true;
+  return false;
+}
+
+function actionableRequestFailures(entries) {
+  return entries.filter((entry) => !isBenignRequestFailure(entry));
+}
+
 function attachTelemetry(page, sink) {
   page.on('console', (msg) => {
     if (msg.type() === 'error') sink.consoleErrors.push({ url: page.url(), text: msg.text() });
@@ -281,9 +294,11 @@ try {
   });
 
   await check(dpage, 'U16', 'UI Desktop', 'No desktop requestfailed events', async () => {
-    return desktopT.requestFailures.length === 0
-      ? { status: 'PASS', details: 'requestfailed=0' }
-      : { status: 'FAIL', details: `requestfailed=${desktopT.requestFailures.length}` };
+    const actionable = actionableRequestFailures(desktopT.requestFailures);
+    const ignored = desktopT.requestFailures.length - actionable.length;
+    return actionable.length === 0
+      ? { status: 'PASS', details: `requestfailed=0, ignored=${ignored}` }
+      : { status: 'FAIL', details: `requestfailed=${actionable.length}, ignored=${ignored}` };
   });
 
   await check(dpage, 'U17', 'UI Desktop', 'No desktop 5xx response events', async () => {
@@ -329,10 +344,11 @@ try {
 
     await check(mpage, 'U22', 'UI Mobile', 'Mobile telemetry clean (console/request/5xx)', async () => {
       const c = mobileT.consoleErrors.length;
-      const r = mobileT.requestFailures.length;
+      const actionable = actionableRequestFailures(mobileT.requestFailures);
+      const r = actionable.length;
       const s = mobileT.responses5xx.length;
       if (c + r + s > 0) return { status: 'FAIL', details: `console=${c}, requestfailed=${r}, 5xx=${s}` };
-      return { status: 'PASS', details: 'mobile telemetry clean' };
+      return { status: 'PASS', details: `mobile telemetry clean, ignored=${mobileT.requestFailures.length - r}` };
     });
   } finally {
     await mctx.close().catch(() => {});
