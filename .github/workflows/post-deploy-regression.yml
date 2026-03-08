@@ -14,7 +14,7 @@ on:
           - dev
           - prod
       run_full_regression:
-        description: Run full regression test pack (184 tests)
+        description: Run full regression test pack
         required: true
         type: boolean
         default: false
@@ -135,7 +135,7 @@ jobs:
             echo "# Hydrocert Regression"
             echo ""
             echo "- Environment: ${{ inputs.environment }}"
-            echo "- Mode: ${{ inputs.run_full_regression && 'Full regression (184 tests)' || 'Post-deploy essential tests' }}"
+            echo "- Mode: ${{ inputs.run_full_regression && 'Full regression' || 'Post-deploy essential tests' }}"
             echo "- Total tests: ${{ steps.bundle.outputs.total_tests }}"
             echo "- Failed tests: ${{ steps.bundle.outputs.failed_tests }}"
             echo "- Excel artifact: $(basename '${{ steps.bundle.outputs.excel_path }}')"
