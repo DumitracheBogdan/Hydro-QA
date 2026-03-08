@@ -8,6 +8,7 @@ const WEB_BASE = process.env.HYDROCERT_WEB_BASE || 'https://hydrocert-dev-webapp
 const API_BASE = process.env.HYDROCERT_API_BASE || 'https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net';
 const EMAIL = process.env.HYDROCERT_QA_EMAIL || '';
 const PASSWORD = process.env.HYDROCERT_QA_PASSWORD || '';
+const REGRESSION_MODE = (process.env.HYDROCERT_REGRESSION_MODE || 'standard').toLowerCase();
 
 const stamp = new Date().toISOString().replace(/[.:]/g, '-');
 const runName = `dev-infra-api-ultra-${stamp}`;
@@ -356,6 +357,9 @@ try {
     });
 
     await check('L08', 'Load/Perf', 'Mixed burst avg <= 600ms', async () => {
+      if (REGRESSION_MODE !== 'full') {
+        return { status: 'SKIP', details: 'full regression only' };
+      }
       const p = await perfParallel(api, ['/health', '/users/profile/me', '/customers/filtered?page=1&limit=20', visitsEP50], 80, 16);
       return p.fails === 0 && p.avg <= 600 ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
     });
