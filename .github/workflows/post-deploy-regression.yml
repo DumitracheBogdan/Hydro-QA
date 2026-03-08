@@ -59,8 +59,8 @@ jobs:
       HYDROCERT_REGRESSION_MODE: ${{ inputs.run_full_regression && 'full' || 'standard' }}
       HYDROCERT_WEB_BASE: ${{ inputs.environment == 'prod' && vars.HYDROCERT_PROD_WEB_BASE || vars.HYDROCERT_DEV_WEB_BASE }}
       HYDROCERT_API_BASE: ${{ inputs.environment == 'prod' && vars.HYDROCERT_PROD_API_BASE || vars.HYDROCERT_DEV_API_BASE }}
-      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
-      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+      HYDROCERT_QA_EMAIL: ${{ inputs.environment == 'prod' && secrets.HYDROCERT_PROD_QA_EMAIL || secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ inputs.environment == 'prod' && secrets.HYDROCERT_PROD_QA_PASSWORD || secrets.HYDROCERT_QA_PASSWORD }}
 
     steps:
       - name: Checkout QA Tracker repo
@@ -79,7 +79,7 @@ jobs:
             exit 1
           fi
           if [[ -z "${HYDROCERT_QA_EMAIL}" || -z "${HYDROCERT_QA_PASSWORD}" ]]; then
-            echo "Missing HYDROCERT_QA_EMAIL or HYDROCERT_QA_PASSWORD secret" >&2
+            echo "Missing QA credentials for env=${HYDROCERT_TARGET_ENV}" >&2
             exit 1
           fi
 
