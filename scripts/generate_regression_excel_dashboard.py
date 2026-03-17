@@ -91,8 +91,195 @@ def load_summary(path: Path) -> dict:
     return json.loads(path.read_text(encoding='utf-8'))
 
 
+def unique_preserve_order(values):
+    seen = set()
+    result = []
+    for value in values:
+        if not value or value in seen:
+            continue
+        seen.add(value)
+        result.append(value)
+    return result
+
+
+def extract_paths(*texts):
+    import re
+
+    matches = []
+    pattern = re.compile(r'(/[a-zA-Z0-9][a-zA-Z0-9\-._~/%?=&:]*)(?=\s|$|,|\)|\|)')
+    for text in texts:
+        if not text:
+            continue
+        matches.extend(match.group(1) for match in pattern.finditer(str(text)))
+    return unique_preserve_order(matches)
+
+
+def endpoint_hint(check: dict) -> str:
+    text = ' '.join([
+        str(check.get('suite', '')),
+        str(check.get('area', '')),
+        str(check.get('test', '')),
+        str(check.get('details', '')),
+    ]).lower()
+    paths = extract_paths(check.get('test', ''), check.get('details', ''))
+    if paths:
+        return ', '.join(paths[:3])
+
+    hints = [
+        ('/api and /api-json', ['swagger', 'openapi', 'docs']),
+        ('/auth/register', ['self-registration', 'register']),
+        ('/auth/login', ['login']),
+        ('/users/profile/me', ['profile']),
+        ('/users', ['users endpoint']),
+        ('/customers/filtered?page=1&limit=20', ['customers filtered', 'customers page', 'customer']),
+        ('/customers', ['create customer', 'delete customer']),
+        ('/visits/calendar-filter', ['calendar filter', 'visits filter', 'own visits', 'visit']),
+        ('/users/absences', ['absences']),
+        ('/activity-logs', ['activity logs']),
+        ('/products', ['products']),
+        ('/sample-types', ['sample types']),
+        ('/labs', ['labs']),
+        ('/job-types', ['job types']),
+        ('/skills', ['skills']),
+        ('/sites', ['sites']),
+        ('/contracts', ['contracts']),
+        ('/health', ['health']),
+        ('/dashboard', ['dashboard']),
+        ('/planner', ['planner']),
+        ('/visits-list', ['visits list']),
+        ('/visits/addnewvisit', ['add new visit']),
+        ('/visits', ['visits']),
+        ('/settings', ['settings']),
+        ('/team-management', ['team management']),
+        ('/schedule', ['schedule']),
+        ('/', ['web root', 'root']),
+    ]
+    for endpoint, keywords in hints:
+        if any(keyword in text for keyword in keywords):
+            return endpoint
+    return ''
+
+
+def build_steps(check: dict) -> str:
+    existing = check.get('steps')
+    if isinstance(existing, list) and existing:
+        return '\n'.join(f'{idx}. {step}' for idx, step in enumerate(existing, start=1))
+    if isinstance(existing, str) and existing.strip():
+        return existing.strip()
+
+    suite = str(check.get('suite', '')).lower()
+    area = str(check.get('area', '')).lower()
+    test = str(check.get('test', ''))
+    test_lc = test.lower()
+    endpoint = endpoint_hint(check)
+
+    def lines(*items):
+        return '\n'.join(f'{idx}. {item}' for idx, item in enumerate(items, start=1))
+
+    if 'swagger docs and anonymous self-registration' in test_lc:
+        return lines(
+            'Open the API documentation endpoints without authentication.',
+            'Open `/api` and `/api-json`, then call `POST /auth/register` without prior login.',
+            'Check whether docs or self-registration are still accessible to anonymous users.',
+        )
+
+    if 'create or delete customers' in test_lc:
+        return lines(
+            'Log in with a `user` role account and keep the bearer token.',
+            'Call `POST /customers` with a unique test name, then call `DELETE /customers/{id}` if creation succeeds.',
+            'Verify that both actions are blocked for the `user` role.',
+        )
+
+    if 'only sees own visits' in test_lc:
+        return lines(
+            'Log in with a `user` role account and keep the bearer token.',
+            'Call `GET /visits/calendar-filter` for a date range that returns data.',
+            'Verify that the response contains only visits assigned to the logged-in user.',
+        )
+
+    if 'team absences' in test_lc:
+        return lines(
+            'Log in with a `user` role account and keep the bearer token.',
+            'Call `GET /users/absences` for a date range with known absence records.',
+            'Verify that the response does not expose absence data for other employees.',
+        )
+
+    if 'activity logs' in test_lc:
+        return lines(
+            'Log in with a `user` role account and keep the bearer token.',
+            'Call `GET /activity-logs`.',
+            'Verify that access is denied or limited according to the expected role permissions.',
+        )
+
+    if 'global reference data' in test_lc:
+        return lines(
+            'Log in with a `user` role account and keep the bearer token.',
+            'Call the shared reference endpoints such as `/sites`, `/products`, `/job-types`, `/skills`, and `/contracts`.',
+            'Verify that the `user` role cannot read global reference data unless explicitly allowed.',
+        )
+
+    if any(keyword in test_lc for keyword in ['without token', 'anonymous']):
+        return lines(
+            f'Call `{endpoint or "the target endpoint"}` without an `Authorization` header.',
+            'Observe the response status and payload.',
+            f'Verify that the result matches the expectation: {test}.',
+        )
+
+    if any(keyword in test_lc for keyword in ['invalid token', 'tampered token']):
+        return lines(
+            'Authenticate first and capture a valid bearer token.',
+            f'Call `{endpoint or "the target endpoint"}` with an invalid or modified token.',
+            f'Verify that the result matches the expectation: {test}.',
+        )
+
+    if 'valid login' in test_lc or ('login' in test_lc and 'invalid' not in test_lc):
+        return lines(
+            'Open the API client used for regression.',
+            'Call `POST /auth/login` with the QA credentials used by the pipeline.',
+            f'Verify that the result matches the expectation: {test}.',
+        )
+
+    if 'invalid login' in test_lc:
+        return lines(
+            'Open the API client used for regression.',
+            'Call `POST /auth/login` with the QA email and an invalid password.',
+            f'Verify that the result matches the expectation: {test}.',
+        )
+
+    if 'burst' in test_lc or 'p95' in test_lc or 'avg <=' in test_lc or 'avg <' in test_lc or 'load' in area or 'perf' in area:
+        return lines(
+            f'Authenticate if required, then target `{endpoint or "the endpoint under test"}`.',
+            'Repeat the request with the sequence or concurrency described in the test name.',
+            'Measure latency or failures and compare the result with the threshold in the test.',
+        )
+
+    if any(keyword in suite for keyword in ['api', 'roleaccess']) or any(keyword in area for keyword in ['api', 'auth', 'access control', 'security']):
+        auth_step = 'Authenticate with the QA account if the endpoint requires a bearer token.'
+        if 'public' in test_lc or 'http' in test_lc or 'tls' in test_lc or 'dns' in test_lc:
+            auth_step = 'No login is required unless the endpoint is protected.'
+        return lines(
+            auth_step,
+            f'Call `{endpoint or "the endpoint used by the check"}` with the same query or payload used by automation.',
+            f'Compare the response to the expected result from the test: {test}.',
+        )
+
+    if 'ui' in suite or 'web' in area:
+        route = endpoint or 'the target page'
+        return lines(
+            'Open the web app with the same environment used in the regression run.',
+            f'Log in if needed, then navigate to `{route}`.',
+            f'Perform the action described in the test and compare the actual result with: {test}.',
+        )
+
+    return lines(
+        'Open the same environment that was used by the regression run.',
+        'Repeat the action described in the test name using the same page or endpoint as the automation.',
+        f'Compare the actual result with the expected behavior from the test: {test}.',
+    )
+
+
 def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
-    checks = summary['checks']
+    checks = [{**check, 'steps_to_reproduce': build_steps(check)} for check in summary['checks']]
     totals = Counter(check['status'] for check in checks)
     suite_stats: dict[str, Counter] = defaultdict(Counter)
 
@@ -184,7 +371,7 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     all_tests = wb.create_sheet('All Tests')
     all_tests.freeze_panes = 'A2'
     all_tests.sheet_properties.tabColor = PALETTE['pass']
-    all_headers = ['#', 'Suite', 'ID', 'Area', 'Status', 'Test', 'Details']
+    all_headers = ['#', 'Suite', 'ID', 'Area', 'Status', 'Test', 'Details', 'Steps to Reproduce']
     all_tests.append(all_headers)
     style_table_header_row(all_tests, 1)
     for idx, check in enumerate(checks, start=1):
@@ -196,9 +383,10 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
             check['status'],
             check['test'],
             check.get('details', ''),
+            check.get('steps_to_reproduce', ''),
         ])
     add_table(all_tests, 1, len(checks) + 1, len(all_headers), 'AllTestsTable')
-    autosize(all_tests, max_width=70)
+    autosize(all_tests, max_width=72)
 
     for row_idx in range(2, len(checks) + 2):
         status_cell = all_tests.cell(row_idx, 5)
@@ -215,11 +403,12 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
         status_cell.alignment = Alignment(horizontal='center')
         all_tests.cell(row_idx, 6).alignment = Alignment(wrap_text=True, vertical='top')
         all_tests.cell(row_idx, 7).alignment = Alignment(wrap_text=True, vertical='top')
+        all_tests.cell(row_idx, 8).alignment = Alignment(wrap_text=True, vertical='top')
 
     failed_sheet = wb.create_sheet('Failed Details')
     failed_sheet.freeze_panes = 'A2'
     failed_sheet.sheet_properties.tabColor = PALETTE['fail']
-    failed_detail_headers = ['Suite', 'ID', 'Area', 'Status', 'Test', 'Details']
+    failed_detail_headers = ['Suite', 'ID', 'Area', 'Status', 'Test', 'Details', 'Steps to Reproduce']
     failed_sheet.append(failed_detail_headers)
     style_table_header_row(failed_sheet, 1)
     for check in failed_rows:
@@ -230,6 +419,7 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
             check['status'],
             check['test'],
             check.get('details', ''),
+            check.get('steps_to_reproduce', ''),
         ])
     add_table(failed_sheet, 1, max(2, len(failed_rows) + 1), len(failed_detail_headers), 'FailedTestsTable')
     autosize(failed_sheet, max_width=72)
