@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --env-file=.env server.js",
     "dev": "node --env-file=.env --watch server.js",
-    "regression:bundle": "node scripts/run_regression_bundle.mjs"
+    "regression:bundle": "node scripts/run_regression_bundle.mjs",
+    "regression:role-access": "node scripts/qa-role-access-security.mjs"
   },
   "dependencies": {
     "express": "^4.21.2"
