@@ -114,7 +114,232 @@ def extract_paths(*texts):
     return unique_preserve_order(matches)
 
 
-def endpoint_hint(check: dict) -> str:
+def manual_target_hint(check: dict) -> str:
+    suite = str(check.get('suite', '')).upper()
+    check_id = str(check.get('id', '')).upper()
+
+    if suite == 'ROLE06':
+        mapping = {
+            'RA01': '/api, /api-json, /auth/register',
+            'RA02': '/customers -> POST /customers, DELETE /customers/{id}',
+            'RA03': '/visits/calendar-filter',
+            'RA04': '/users/absences',
+            'RA05': '/activity-logs',
+            'RA06': '/sites, /products, /job-types, /skills, /contracts',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'API34':
+        mapping = {
+            'I01': 'GET /',
+            'I02': 'GET /health',
+            'I03': '/dashboard, /customers, /visits-list, /planner, /visits, /visits/addnewvisit',
+            'I04': 'Web host DNS',
+            'I05': 'API host DNS',
+            'I06': 'Web TLS certificate',
+            'I07': 'API TLS certificate',
+            'A01': 'POST /auth/login',
+            'A02': 'POST /auth/login',
+            'A03': 'GET /users/profile/me',
+            'A04': 'GET /users/profile/me',
+            'A05': 'GET /users/profile/me',
+            'A06': 'GET /users',
+            'A07': 'GET /users',
+            'A08': 'GET /customers/filtered?page=1&limit=20',
+            'A09': 'GET /customers/filtered?page=1&limit=1',
+            'A10': 'GET /customers/filtered?page=1&limit=5',
+            'A11': 'GET /customers/filtered?page=1..2&limit=20',
+            'A12': 'GET /visits/calendar-filter?...&limit=50',
+            'A13': 'GET /visits/calendar-filter?...&limit=10',
+            'A14': 'GET /visits/calendar-filter?...&limit=50',
+            'A15': 'GET /products',
+            'A16': 'GET /sample-types',
+            'A17': 'GET /labs',
+            'A18': 'GET /job-types',
+            'A19': 'GET /users/absences',
+            'L01': 'GET /health',
+            'L02': 'GET /users/profile/me',
+            'L03': 'GET /customers/filtered?page=1&limit=20',
+            'L04': 'GET /visits/calendar-filter?...&limit=50',
+            'L05': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+            'L06': 'GET /customers/filtered?page=1&limit=20',
+            'L07': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+            'L08': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'UI22':
+        mapping = {
+            'U01': '/dashboard -> /login',
+            'U02': '/dashboard',
+            'U03': '/customers',
+            'U04': '/customers',
+            'U05': '/visits-list',
+            'U06': '/visits-list',
+            'U07': '/visits-list -> first row -> /visits/details/{id}',
+            'U08': '/visits-list -> first row -> /visits/details/{id} -> Attachments / Visit Details tabs',
+            'U09': '/visits-list -> first row -> /visits/details/{id} -> Attachments tab',
+            'U10': '/planner',
+            'U11': '/planner -> Events View -> eye action -> /visits/edit/{id}',
+            'U12': '/planner -> Events View -> eye action -> /visits/edit/{id}',
+            'U13': '/visits/addnewvisit',
+            'U14': '/visits/addnewvisit',
+            'U15': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'U16': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'U17': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'U18': '/dashboard -> /login (mobile)',
+            'U19': '/dashboard (mobile)',
+            'U20': '/customers (mobile)',
+            'U21': '/visits-list (mobile)',
+            'U22': '/dashboard, /customers, /visits-list (mobile telemetry)',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'DEEP32':
+        mapping = {
+            'I01': 'GET /',
+            'I02': '/dashboard, /customers, /visits-list, /planner, /visits/addnewvisit, /visits',
+            'I03': '/dashboard -> /login',
+            'I04': '/dashboard',
+            'I05': 'POST /auth/login',
+            'I06': 'POST /auth/login',
+            'A01': 'GET /health',
+            'A02': 'GET /users/profile/me',
+            'A03': 'GET /users',
+            'A04': 'GET /customers/filtered?page=1&limit=20',
+            'A05': 'GET /visits/calendar-filter?...&limit=50',
+            'A06': 'GET /job-types',
+            'A07': 'GET /products',
+            'A08': 'GET /sample-types',
+            'A09': 'GET /labs',
+            'A10': 'GET /users/absences',
+            'U01': '/customers',
+            'U02': '/customers',
+            'U03': '/visits-list',
+            'U04': '/visits-list -> first row -> /visits/details/{id}',
+            'U05': '/visits-list -> first row -> /visits/details/{id} -> Attachments / Visit Details tabs',
+            'U06': '/planner',
+            'U07': '/planner -> Events View -> eye action -> /visits/edit/{id}',
+            'U08': '/planner -> Events View -> eye action -> /visits/edit/{id}',
+            'U09': '/visits/addnewvisit',
+            'U10': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'U11': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'U12': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
+            'P01': 'GET /health',
+            'P02': 'GET /users/profile/me',
+            'P03': 'GET /customers/filtered?page=1&limit=20',
+            'P04': 'GET /visits/calendar-filter?...&limit=50',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'ESS25':
+        mapping = {
+            'E01': 'GET http://web root',
+            'E02': 'GET http://api root or /health',
+            'E03': 'GET /',
+            'E04': 'GET / -> main JS bundle',
+            'E05': 'GET /health',
+            'E06': 'GET /health',
+            'E07': 'POST /auth/login',
+            'E08': 'GET /users/profile/me',
+            'E09': 'POST /auth/refresh, /auth/refresh-token, /auth/refreshToken',
+            'E10': 'POST /auth/login',
+            'E11': 'POST /auth/login -> JWT claims',
+            'E12': 'GET /users',
+            'E13': 'GET /customers/filtered?page=1&limit=50',
+            'E14': 'GET /visits/calendar-filter?...&limit=50',
+            'E15': 'GET /visits/calendar-filter?...&limit=50',
+            'E16': 'GET /visits/calendar-filter?...&limit=50 + GET /users',
+            'E17': 'GET /visits/calendar-filter?...&limit=50 + GET /users',
+            'E18': 'GET /customers/filtered?page=1..2&limit=50',
+            'E19': 'GET /customers/filtered?page=1&limit=20',
+            'E20': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20',
+            'E21': 'GET /users/profile/me',
+            'E22': '/dashboard, /customers, /visits-list, /planner',
+            'E23': '/dashboard -> logout',
+            'E24': '/dashboard after logout',
+            'E25': 'Desktop telemetry for the essential UI run',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'NEW60':
+        mapping = {
+            'R01': 'GET /',
+            'R02': 'GET /health',
+            'R03': 'Web host DNS',
+            'R04': 'API host DNS',
+            'R05': 'Web TLS certificate',
+            'R06': 'API TLS certificate',
+            'R07': 'GET /',
+            'R08': 'GET /',
+            'R09': 'GET /',
+            'R10': 'TRACE / and TRACE /health',
+            'R11': 'POST /auth/login',
+            'R12': 'POST /auth/login',
+            'R13': 'POST /auth/login -> JWT',
+            'R14': 'POST /auth/login -> JWT',
+            'R15': 'POST /auth/login -> JWT',
+            'R16': 'POST /auth/login',
+            'R17': 'POST /auth/login',
+            'R18': 'POST /auth/login',
+            'R19': 'GET /users/profile/me',
+            'R20': 'GET /users/profile/me',
+            'R21': 'GET /users',
+            'R22': 'GET /users',
+            'R23': 'GET /users?unknownParam=1',
+            'R24': 'GET /customers/filtered?page=-1&limit=20',
+            'R25': 'GET /customers/filtered?page=1&limit=0',
+            'R26': 'GET /customers/filtered?page=1&limit=5000',
+            'R27': 'GET /customers/filtered?page=1&limit=20&search=<script>',
+            'R28': 'GET /customers/filtered?page=1&limit=20&search=SQL-like payload',
+            'R29': 'GET /visits/calendar-filter?startDate=invalid&endDate=invalid&page=1&limit=20',
+            'R30': 'GET /visits/calendar-filter?startDate> endDate',
+            'R31': 'GET /visits/calendar-filter?...&limit=10',
+            'R32': 'GET /users/absences?startDate=invalid&endDate=invalid',
+            'R33': 'GET /users/absences?startDate> endDate',
+            'R34': 'GET /products?foo=bar&baz=1',
+            'R35': 'GET /definitely-not-existing-endpoint-xyz',
+            'R36': 'GET /health',
+            'R37': 'GET /users/profile/me',
+            'R38': 'GET /customers/filtered?page=1&limit=20',
+            'R39': 'GET /visits/calendar-filter?...&limit=50',
+            'R40': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+            'R41': 'GET /customers/filtered?page=1&limit=20',
+            'R42': 'GET /users',
+            'R43': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+            'R44': 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=50',
+            'R45': 'GET /health',
+            'R46': '/dashboard -> /login',
+            'R47': '/planner',
+            'R48': '/this-route-should-not-exist-senior-check',
+            'R49': '/dashboard -> /customers -> /planner -> browser back/forward',
+            'R50': '/visits-list -> first row -> /visits/details/{id}',
+            'R51': '/planner -> Events View -> eye action -> /visits/edit/{id}',
+            'R52': '/visits/edit/{id}',
+            'R53': '/dashboard -> sessionStorage',
+            'R54': '/dashboard -> localStorage',
+            'R55': 'Fresh browser context -> /dashboard',
+            'R56': '/dashboard -> /login (mobile)',
+            'R57': '/dashboard (mobile)',
+            'R58': '/customers (mobile)',
+            'R59': '/visits-list (mobile)',
+            'R60': '/dashboard, /customers, /visits-list (mobile telemetry)',
+        }
+        return mapping.get(check_id, '')
+
+    if suite == 'SOAK11':
+        if check_id == 'SOAK-00':
+            return 'POST /auth/login'
+        return 'GET /health + /users/profile/me + /customers/filtered?page=1&limit=20 + /visits/calendar-filter?...&limit=20 + /products'
+
+    return ''
+
+
+def target_hint(check: dict) -> str:
+    manual = manual_target_hint(check)
+    if manual:
+        return manual
+
     text = ' '.join([
         str(check.get('suite', '')),
         str(check.get('area', '')),
@@ -171,7 +396,7 @@ def build_steps(check: dict) -> str:
     area = str(check.get('area', '')).lower()
     test = str(check.get('test', ''))
     test_lc = test.lower()
-    endpoint = endpoint_hint(check)
+    endpoint = target_hint(check)
 
     def lines(*items):
         return '\n'.join(f'{idx}. {item}' for idx, item in enumerate(items, start=1))
@@ -257,17 +482,23 @@ def build_steps(check: dict) -> str:
         auth_step = 'Authenticate with the QA account if the endpoint requires a bearer token.'
         if 'public' in test_lc or 'http' in test_lc or 'tls' in test_lc or 'dns' in test_lc:
             auth_step = 'No login is required unless the endpoint is protected.'
+        target_step = f'Call `{endpoint or "the endpoint used by the check"}` with the same query or payload used by automation.'
+        if ' + ' in endpoint or ', ' in endpoint:
+            target_step = f'Use these endpoints and flows exactly as in automation: `{endpoint}`.'
         return lines(
             auth_step,
-            f'Call `{endpoint or "the endpoint used by the check"}` with the same query or payload used by automation.',
+            target_step,
             f'Compare the response to the expected result from the test: {test}.',
         )
 
     if 'ui' in suite or 'web' in area:
         route = endpoint or 'the target page'
+        route_step = f'Log in if needed, then navigate to `{route}`.'
+        if '->' in route or ', ' in route:
+            route_step = f'Log in if needed, then follow this path in the app: `{route}`.'
         return lines(
             'Open the web app with the same environment used in the regression run.',
-            f'Log in if needed, then navigate to `{route}`.',
+            route_step,
             f'Perform the action described in the test and compare the actual result with: {test}.',
         )
 
@@ -279,7 +510,7 @@ def build_steps(check: dict) -> str:
 
 
 def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
-    checks = [{**check, 'steps_to_reproduce': build_steps(check)} for check in summary['checks']]
+    checks = [{**check, 'target_path': target_hint(check), 'steps_to_reproduce': build_steps(check)} for check in summary['checks']]
     totals = Counter(check['status'] for check in checks)
     suite_stats: dict[str, Counter] = defaultdict(Counter)
 
@@ -371,7 +602,7 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     all_tests = wb.create_sheet('All Tests')
     all_tests.freeze_panes = 'A2'
     all_tests.sheet_properties.tabColor = PALETTE['pass']
-    all_headers = ['#', 'Suite', 'ID', 'Area', 'Status', 'Test', 'Details', 'Steps to Reproduce']
+    all_headers = ['#', 'Suite', 'ID', 'Area', 'Status', 'Test', 'Path / Endpoint', 'Details', 'Steps to Reproduce']
     all_tests.append(all_headers)
     style_table_header_row(all_tests, 1)
     for idx, check in enumerate(checks, start=1):
@@ -382,6 +613,7 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
             check['area'],
             check['status'],
             check['test'],
+            check.get('target_path', ''),
             check.get('details', ''),
             check.get('steps_to_reproduce', ''),
         ])
@@ -404,11 +636,12 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
         all_tests.cell(row_idx, 6).alignment = Alignment(wrap_text=True, vertical='top')
         all_tests.cell(row_idx, 7).alignment = Alignment(wrap_text=True, vertical='top')
         all_tests.cell(row_idx, 8).alignment = Alignment(wrap_text=True, vertical='top')
+        all_tests.cell(row_idx, 9).alignment = Alignment(wrap_text=True, vertical='top')
 
     failed_sheet = wb.create_sheet('Failed Details')
     failed_sheet.freeze_panes = 'A2'
     failed_sheet.sheet_properties.tabColor = PALETTE['fail']
-    failed_detail_headers = ['Suite', 'ID', 'Area', 'Status', 'Test', 'Details', 'Steps to Reproduce']
+    failed_detail_headers = ['Suite', 'ID', 'Area', 'Status', 'Test', 'Path / Endpoint', 'Details', 'Steps to Reproduce']
     failed_sheet.append(failed_detail_headers)
     style_table_header_row(failed_sheet, 1)
     for check in failed_rows:
@@ -418,6 +651,7 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
             check['area'],
             check['status'],
             check['test'],
+            check.get('target_path', ''),
             check.get('details', ''),
             check.get('steps_to_reproduce', ''),
         ])
