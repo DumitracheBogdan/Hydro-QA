@@ -28,6 +28,13 @@ const SUITES = {
     script: path.join('scripts', 'tmp-dev-infra-api-ultra.mjs'),
     tests: 34,
   },
+  roleaccess: {
+    key: 'roleaccess',
+    id: 'ROLE06',
+    label: 'Role Access Security',
+    script: path.join('scripts', 'qa-role-access-security.mjs'),
+    tests: 6,
+  },
   ui: {
     key: 'ui',
     id: 'UI22',
@@ -59,9 +66,11 @@ const SUITES = {
 };
 
 function selectedSuiteKeys(environment, mode) {
-  if (mode === 'full') return ['deep', 'api', 'ui', 'soak', 'advanced', 'essential'];
+  if (mode === 'full') return environment === 'dev'
+    ? ['deep', 'api', 'roleaccess', 'ui', 'soak', 'advanced', 'essential']
+    : ['deep', 'api', 'ui', 'soak', 'advanced', 'essential'];
   if (environment === 'prod') return ['deep'];
-  return ['deep', 'api', 'ui'];
+  return ['deep', 'api', 'roleaccess', 'ui'];
 }
 
 function ensureDir(dir) {
