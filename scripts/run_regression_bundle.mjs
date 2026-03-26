@@ -35,6 +35,13 @@ const SUITES = {
     script: path.join('scripts', 'qa-role-access-security.mjs'),
     tests: 6,
   },
+  roleaccessreadonly: {
+    key: 'roleaccessreadonly',
+    id: 'ROLERO06',
+    label: 'Role Access Read-Only',
+    script: path.join('scripts', 'qa-role-access-readonly.mjs'),
+    tests: 6,
+  },
   ui: {
     key: 'ui',
     id: 'UI22',
@@ -68,8 +75,8 @@ const SUITES = {
 function selectedSuiteKeys(environment, mode) {
   if (mode === 'full') return environment === 'dev'
     ? ['deep', 'api', 'roleaccess', 'ui', 'soak', 'advanced', 'essential']
-    : ['deep', 'api', 'ui', 'soak', 'advanced', 'essential'];
-  if (environment === 'prod') return ['deep'];
+    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'soak', 'advanced', 'essential'];
+  if (environment === 'prod') return ['deep', 'roleaccessreadonly'];
   return ['deep', 'api', 'roleaccess', 'ui'];
 }
 
