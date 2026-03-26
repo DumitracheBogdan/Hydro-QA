@@ -39,6 +39,19 @@ async function shot(page, name) {
   return file;
 }
 
+async function clickVisitDetailsTab(page, labelPattern) {
+  const tab = page.getByRole('tab', { name: labelPattern }).first();
+  if (await tab.isVisible().catch(() => false)) {
+    await tab.click().catch(() => {});
+    return;
+  }
+  await page.getByText(labelPattern).first().click().catch(() => {});
+}
+
+function visitAttachmentBucket(page) {
+  return page.locator('span').filter({ hasText: /^Visit \(\d+\)$/i }).first();
+}
+
 async function runCheck(page, def, fn) {
   const { id, area, test } = def;
   try {
@@ -394,12 +407,14 @@ try {
     if (!firstVisitDetailsUrl) return { status: 'FAIL', details: 'No details URL from U04' };
     await page.goto(firstVisitDetailsUrl);
     await settled(page, 900);
-    await page.getByText(/^Attachments$/i).first().click().catch(() => {});
+    await clickVisitDetailsTab(page, /^Attachments$/i);
     await settled(page, 500);
-    const attachPanel = await page.getByText(/No document yet|Upload/i).first().isVisible().catch(() => false);
-    await page.getByText(/^Visit Details$/i).first().click().catch(() => {});
+    const attachPanel = await visitAttachmentBucket(page).isVisible().catch(() => false);
+    await clickVisitDetailsTab(page, /^Visit Details$/i);
     await settled(page, 500);
-    const detailsPanel = await page.getByText(/Description|Visit Details|Client Signature/i).first().isVisible().catch(() => false);
+    const hasDescription = await page.getByText(/^Description$/i).first().isVisible().catch(() => false);
+    const hasSignature = await page.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
+    const detailsPanel = hasDescription || hasSignature;
     if (!attachPanel || !detailsPanel) {
       const ev = await shot(page, 'u05-tab-switch-fail');
       return { status: 'FAIL', details: `attachPanel=${attachPanel}, detailsPanel=${detailsPanel}`, evidence: [ev] };

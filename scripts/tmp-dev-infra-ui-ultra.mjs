@@ -52,6 +52,27 @@ async function shot(page, name) {
   return p;
 }
 
+async function clickVisitDetailsTab(page, labelPattern) {
+  const tab = page.getByRole('tab', { name: labelPattern }).first();
+  if (await tab.isVisible().catch(() => false)) {
+    await tab.click().catch(() => {});
+    return;
+  }
+  await page.getByText(labelPattern).first().click().catch(() => {});
+}
+
+function visitAttachmentBucket(page) {
+  return page.locator('span').filter({ hasText: /^Visit \(\d+\)$/i }).first();
+}
+
+function visitAttachmentTrigger(page) {
+  return page.locator('button').filter({ has: visitAttachmentBucket(page) }).first();
+}
+
+async function visibleUploadButtonCount(page) {
+  return await page.locator('button:visible').filter({ hasText: /Upload/i }).count().catch(() => 0);
+}
+
 async function login(page) {
   await page.goto(`${WEB_BASE}/dashboard`);
   await settled(page, 900);
@@ -188,12 +209,14 @@ try {
     if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL from U07' };
     await dpage.goto(firstDetailsUrl);
     await settled(dpage, 700);
-    await dpage.getByText(/^Attachments$/i).first().click().catch(() => {});
+    await clickVisitDetailsTab(dpage, /^Attachments$/i);
     await settled(dpage, 500);
-    const attach = await dpage.getByText(/No document yet|Upload/i).first().isVisible().catch(() => false);
-    await dpage.getByText(/^Visit Details$/i).first().click().catch(() => {});
+    const attach = await visitAttachmentBucket(dpage).isVisible().catch(() => false);
+    await clickVisitDetailsTab(dpage, /^Visit Details$/i);
     await settled(dpage, 500);
-    const details = await dpage.getByText(/Description|Visit Details|Client Signature/i).first().isVisible().catch(() => false);
+    const hasDescription = await dpage.getByText(/^Description$/i).first().isVisible().catch(() => false);
+    const hasSignature = await dpage.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
+    const details = hasDescription || hasSignature;
     if (!attach || !details) {
       const ev = await shot(dpage, 'u08-tabs-fail');
       return { status: 'FAIL', details: `attach=${attach}, details=${details}`, evidence: [ev] };
@@ -201,16 +224,23 @@ try {
     return { status: 'PASS', details: 'tab switch verified' };
   });
 
-  await check(dpage, 'U09', 'UI Desktop', 'Attachments tab has Upload button', async () => {
-    await dpage.getByText(/^Attachments$/i).first().click().catch(() => {});
+  await check(dpage, 'U09', 'UI Desktop', 'Attachments tab shows Upload button on hovered section', async () => {
+    await clickVisitDetailsTab(dpage, /^Attachments$/i);
     await settled(dpage, 400);
-    const up = dpage.getByRole('button', { name: /upload/i }).first();
-    const vis = await up.isVisible().catch(() => false);
-    if (!vis) {
-      const ev = await shot(dpage, 'u09-upload-missing');
-      return { status: 'FAIL', details: 'upload button not visible', evidence: [ev] };
+    const trigger = visitAttachmentTrigger(dpage);
+    const triggerVisible = await trigger.isVisible().catch(() => false);
+    if (!triggerVisible) {
+      const ev = await shot(dpage, 'u09-upload-target-missing');
+      return { status: 'FAIL', details: 'visit attachment section missing', evidence: [ev] };
     }
-    return { status: 'PASS', details: 'upload button visible' };
+    await trigger.hover().catch(() => {});
+    await settled(dpage, 250);
+    const visibleUploads = await visibleUploadButtonCount(dpage);
+    if (visibleUploads < 1) {
+      const ev = await shot(dpage, 'u09-upload-missing');
+      return { status: 'FAIL', details: `visibleUploadButtons=${visibleUploads}`, evidence: [ev] };
+    }
+    return { status: 'PASS', details: `visibleUploadButtons=${visibleUploads}` };
   });
 
   await check(dpage, 'U10', 'UI Desktop', 'Planner Month <-> Events toggles work', async () => {

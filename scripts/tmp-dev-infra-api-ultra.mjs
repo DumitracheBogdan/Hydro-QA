@@ -45,6 +45,18 @@ function p95(values) {
   return s[Math.max(0, Math.ceil(s.length * 0.95) - 1)];
 }
 
+function decodeJwt(token) {
+  try {
+    const payloadPart = String(token || '').split('.')[1];
+    if (!payloadPart) return null;
+    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    return JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'));
+  } catch {
+    return null;
+  }
+}
+
 async function certDays(host) {
   return await new Promise((resolve, reject) => {
     const socket = tls.connect(443, host, { servername: host, rejectUnauthorized: false }, () => {
@@ -192,13 +204,24 @@ try {
   const visitsEP50 = `/visits/calendar-filter?startDate=${encodeURIComponent(start)}&endDate=${encodeURIComponent(end)}&page=1&limit=50`;
 
   try {
-    await check('A05', 'API', 'Profile with token returns current user', async () => {
+    await check('A05', 'API', 'Profile with token returns authenticated account', async () => {
       const r = await api.get('/users/profile/me');
       let j = {};
       try { j = await r.json(); } catch {}
+      const claims = decodeJwt(token) || {};
       const mail = String(j?.email || '').toLowerCase();
-      if (r.status() >= 400 || !mail.includes('hydrocert.com')) return { status: 'FAIL', details: `status=${r.status()}, email=${mail}` };
-      return { status: 'PASS', details: `email=${mail}` };
+      const expectedEmails = new Set(
+        [String(EMAIL || '').trim().toLowerCase(), String(claims?.email || '').trim().toLowerCase()].filter(Boolean)
+      );
+      const hasIdentity = Boolean(String(j?.id || j?.userId || j?.email || '').trim());
+      const emailMatches = !expectedEmails.size || expectedEmails.has(mail);
+      if (r.status() >= 400 || !hasIdentity || !mail.includes('@') || !emailMatches) {
+        return {
+          status: 'FAIL',
+          details: `status=${r.status()}, email=${mail}, expected=${[...expectedEmails].join('|') || 'n/a'}`,
+        };
+      }
+      return { status: 'PASS', details: `email=${mail}, role=${String(j?.role || claims?.role || 'n/a')}` };
     });
 
     await check('A06', 'API', 'Users endpoint returns non-empty array', async () => {
