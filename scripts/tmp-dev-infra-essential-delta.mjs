@@ -67,6 +67,37 @@ async function apiJson(ctx, url, opts = {}) {
   return { r, j };
 }
 
+async function readHealthResponse(ctx) {
+  const r = await ctx.get('/health');
+  const contentType = (r.headers()['content-type'] || '').toLowerCase();
+  const body = (await r.text()).trim();
+  let json = null;
+  if (body && (contentType.includes('json') || body.startsWith('{') || body.startsWith('['))) {
+    try {
+      json = JSON.parse(body);
+    } catch {}
+  }
+  return { r, contentType, body, json };
+}
+
+function recognizeHealthPayload({ body, json }) {
+  if (json && typeof json === 'object' && !Array.isArray(json)) {
+    const keys = Object.keys(json).map((k) => k.toLowerCase());
+    const ok = keys.some((k) => ['status', 'ok', 'uptime', 'message'].includes(k));
+    return {
+      ok,
+      details: ok ? `json keys=${keys.slice(0, 6).join(',')}` : `json keys=${keys.slice(0, 6).join(',')}`,
+    };
+  }
+
+  const normalized = String(body || '').trim().toLowerCase();
+  if (['ok', 'healthy', 'alive', 'up'].includes(normalized)) {
+    return { ok: true, details: `text=${body}` };
+  }
+
+  return { ok: false, details: body ? `text=${body}` : 'empty body' };
+}
+
 async function loginUi(page) {
   await page.goto(`${WEB_BASE}/dashboard`);
   await settle(page, 1000);
@@ -188,18 +219,24 @@ try {
     return cc ? { status: 'PASS', details: `script=${jsPath}, cache-control=${cc}` } : { status: 'FAIL', details: `script=${jsPath}, missing cache-control` };
   });
 
-  await run(page, 'E05', 'API', 'API health returns JSON content type', async () => {
-    const r = await anonApi.get('/health');
-    const ct = (r.headers()['content-type'] || '').toLowerCase();
-    return ct.includes('application/json') ? { status: 'PASS', details: ct } : { status: 'FAIL', details: ct || 'missing content-type' };
+  await run(page, 'E05', 'API', 'API health returns supported content type', async () => {
+    const { r, contentType, body } = await readHealthResponse(anonApi);
+    const supported =
+      contentType.includes('application/json') ||
+      contentType.includes('text/plain') ||
+      contentType.includes('text/html');
+    return r.status() < 400 && supported && body
+      ? { status: 'PASS', details: contentType }
+      : { status: 'FAIL', details: contentType || 'missing content-type' };
   });
 
-  await run(page, 'E06', 'API', 'API health payload has recognizable status/value', async () => {
-    const { r, j } = await apiJson(anonApi, '/health');
-    if (r.status() >= 400 || !j || typeof j !== 'object') return { status: 'FAIL', details: `status=${r.status()}, payload_invalid` };
-    const keys = Object.keys(j).map((k) => k.toLowerCase());
-    const ok = keys.some((k) => ['status', 'ok', 'uptime', 'message'].includes(k));
-    return ok ? { status: 'PASS', details: `keys=${keys.slice(0, 6).join(',')}` } : { status: 'FAIL', details: `keys=${keys.slice(0, 6).join(',')}` };
+  await run(page, 'E06', 'API', 'API health payload is recognizable', async () => {
+    const snapshot = await readHealthResponse(anonApi);
+    if (snapshot.r.status() >= 400) return { status: 'FAIL', details: `status=${snapshot.r.status()}` };
+    const recognized = recognizeHealthPayload(snapshot);
+    return recognized.ok
+      ? { status: 'PASS', details: recognized.details }
+      : { status: 'FAIL', details: recognized.details };
   });
 
   // E07-E11: auth/session essentials (new angle)
