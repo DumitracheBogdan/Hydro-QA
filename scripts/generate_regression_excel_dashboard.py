@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from openpyxl import Workbook
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -112,6 +113,14 @@ def extract_paths(*texts):
             continue
         matches.extend(match.group(1) for match in pattern.finditer(str(text)))
     return unique_preserve_order(matches)
+
+
+def safe_excel_value(value):
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return ILLEGAL_CHARACTERS_RE.sub('', value)
+    return value
 
 
 def manual_target_hint(check: dict) -> str:
@@ -608,14 +617,14 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     for idx, check in enumerate(checks, start=1):
         all_tests.append([
             idx,
-            check['suite'],
-            check['id'],
-            check['area'],
-            check['status'],
-            check['test'],
-            check.get('target_path', ''),
-            check.get('details', ''),
-            check.get('steps_to_reproduce', ''),
+            safe_excel_value(check['suite']),
+            safe_excel_value(check['id']),
+            safe_excel_value(check['area']),
+            safe_excel_value(check['status']),
+            safe_excel_value(check['test']),
+            safe_excel_value(check.get('target_path', '')),
+            safe_excel_value(check.get('details', '')),
+            safe_excel_value(check.get('steps_to_reproduce', '')),
         ])
     add_table(all_tests, 1, len(checks) + 1, len(all_headers), 'AllTestsTable')
     autosize(all_tests, max_width=72)
@@ -646,14 +655,14 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     style_table_header_row(failed_sheet, 1)
     for check in failed_rows:
         failed_sheet.append([
-            check['suite'],
-            check['id'],
-            check['area'],
-            check['status'],
-            check['test'],
-            check.get('target_path', ''),
-            check.get('details', ''),
-            check.get('steps_to_reproduce', ''),
+            safe_excel_value(check['suite']),
+            safe_excel_value(check['id']),
+            safe_excel_value(check['area']),
+            safe_excel_value(check['status']),
+            safe_excel_value(check['test']),
+            safe_excel_value(check.get('target_path', '')),
+            safe_excel_value(check.get('details', '')),
+            safe_excel_value(check.get('steps_to_reproduce', '')),
         ])
     add_table(failed_sheet, 1, max(2, len(failed_rows) + 1), len(failed_detail_headers), 'FailedTestsTable')
     autosize(failed_sheet, max_width=72)
