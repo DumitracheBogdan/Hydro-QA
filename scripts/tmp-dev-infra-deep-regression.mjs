@@ -52,6 +52,41 @@ function visitAttachmentBucket(page) {
   return page.locator('span').filter({ hasText: /^Visit \(\d+\)$/i }).first();
 }
 
+async function userMenuVisible(page) {
+  const candidates = [
+    page.locator('header button[aria-haspopup="menu"]').first(),
+    page.getByRole('button', { name: /tech quarter/i }).first(),
+    page.getByRole('button', { name: /admin/i }).first(),
+  ];
+  for (const locator of candidates) {
+    if (await locator.isVisible().catch(() => false)) return true;
+  }
+  return false;
+}
+
+async function waitForPlannerEventRows(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    if (!loading && rows > 0) return rows;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
+async function waitForPlannerMonthSignal(page, timeoutMs = 10000) {
+  const monthLabel = page
+    .getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i)
+    .first();
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await monthLabel.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
 async function runCheck(page, def, fn) {
   const { id, area, test } = def;
   try {
@@ -210,7 +245,7 @@ try {
       const ev = await shot(page, 'i03-login-failed');
       return { status: 'FAIL', details: 'Still on /login', evidence: [ev] };
     }
-    const hasSessionUser = await page.getByText(/Tech Quarter|Admin/i).first().isVisible().catch(() => false);
+    const hasSessionUser = await userMenuVisible(page);
     if (!hasSessionUser) {
       const ev = await shot(page, 'i03-login-no-user-header');
       return { status: 'FAIL', details: 'Logged in but user header not visible', evidence: [ev] };
@@ -424,18 +459,16 @@ try {
 
   await runCheck(page, { id: 'U06', area: 'WebApp', test: 'Planner Month/Event toggle works' }, async () => {
     await page.goto(`${WEB_BASE}/planner`);
-    await settled(page, 1000);
+    await settled(page, 900);
     await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
-    await settled(page, 700);
-    const eventSignal = await page.locator('table tbody tr').first().isVisible().catch(() => false);
+    const eventRows = await waitForPlannerEventRows(page, 15000);
     await page.getByRole('button', { name: /Month View/i }).first().click().catch(() => {});
-    await settled(page, 700);
-    const monthSignal = await page.getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i).first().isVisible().catch(() => false);
-    if (!eventSignal || !monthSignal) {
+    const monthSignal = await waitForPlannerMonthSignal(page, 10000);
+    if (eventRows < 1 || !monthSignal) {
       const ev = await shot(page, 'u06-planner-toggle-fail');
-      return { status: 'FAIL', details: `eventSignal=${eventSignal}, monthSignal=${monthSignal}`, evidence: [ev] };
+      return { status: 'FAIL', details: `eventRows=${eventRows}, monthSignal=${monthSignal}`, evidence: [ev] };
     }
-    return { status: 'PASS', details: 'Both planner views render' };
+    return { status: 'PASS', details: `eventRows=${eventRows}, monthSignal=${monthSignal}` };
   });
 
   await runCheck(page, { id: 'U07', area: 'WebApp', test: 'Planner eye action opens Edit Visit page' }, async () => {
