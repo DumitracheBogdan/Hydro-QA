@@ -41,9 +41,9 @@ async function shot(page, name) {
 
 async function clickVisitDetailsTab(page, labelPattern) {
   const candidates = [
+    page.locator('[data-slot="tabs-trigger"]').filter({ hasText: labelPattern }).first(),
     page.getByRole('tab', { name: labelPattern }).first(),
     page.getByRole('button', { name: labelPattern }).first(),
-    page.getByText(labelPattern).first(),
   ];
 
   for (const tab of candidates) {
