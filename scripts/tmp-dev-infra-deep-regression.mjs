@@ -39,6 +39,10 @@ async function shot(page, name) {
   return file;
 }
 
+function escapeRegexLiteral(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 async function clickVisitDetailsTab(page, labelPattern) {
   const primaryTab = page.locator('[data-slot="tabs-trigger"]').filter({ hasText: labelPattern }).first();
   const candidates = [
@@ -99,8 +103,78 @@ async function attachmentsSectionVisible(page, timeoutMs = 10000) {
   return false;
 }
 
+async function waitForVisitsListRows(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    if (!loading && rows > 0) return rows;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
+async function waitForVisitReferenceResponse(page, reference, timeoutMs = 15000) {
+  return await page.waitForResponse((response) => {
+    if (!/\/visits\/calendar-filter/i.test(response.url())) return false;
+    try {
+      const url = new URL(response.url());
+      return response.ok() && url.searchParams.get('visitReference') === reference;
+    } catch {
+      return false;
+    }
+  }, { timeout: timeoutMs }).then(() => true).catch(() => false);
+}
+
+async function waitForVisitReferenceRow(page, reference, timeoutMs = 15000) {
+  const matcher = new RegExp(`^${escapeRegexLiteral(reference)}$`, 'i');
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    const matches = await page.locator('table tbody tr td:first-child').filter({ hasText: matcher }).count().catch(() => 0);
+    if (!loading && matches > 0) return matches;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
 function visitAttachmentBucket(page) {
   return page.locator('span').filter({ hasText: /^Visit \(\d+\)$/i }).first();
+}
+
+function visitAttachmentTrigger(page) {
+  return page.locator('button').filter({ has: visitAttachmentBucket(page) }).first();
+}
+
+async function attachmentTriggerVisible(page, timeoutMs = 10000) {
+  const trigger = visitAttachmentTrigger(page);
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await trigger.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
+async function openAttachmentsPanel(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    await clickVisitDetailsTab(page, /^Attachments$/i);
+    if (await attachmentTriggerVisible(page, 1800)) return true;
+    await page.waitForTimeout(500);
+  }
+  return false;
+}
+
+async function visitDetailsPanelVisible(page, timeoutMs = 10000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const hasDescription = await page.getByText(/^Description$/i).first().isVisible().catch(() => false);
+    const hasSignature = await page.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
+    if (hasDescription || hasSignature) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
 }
 
 async function userMenuVisible(page) {
@@ -448,7 +522,12 @@ try {
 
   await runCheck(page, { id: 'U03', area: 'WebApp', test: 'Visits List loads and reference search works' }, async () => {
     await page.goto(`${WEB_BASE}/visits-list`);
-    await settled(page, 1100);
+    const initialRows = await waitForVisitsListRows(page, 15000);
+    if (initialRows < 1) {
+      const ev = await shot(page, 'u03-visits-empty');
+      return { status: 'FAIL', details: `rows=${initialRows}`, evidence: [ev] };
+    }
+    await settled(page, 400);
     const firstRef = ((await page.locator('table tbody tr td').first().innerText().catch(() => '')) || '').trim();
     if (!firstRef) {
       const ev = await shot(page, 'u03-visits-no-first-ref');
@@ -457,20 +536,19 @@ try {
     firstVisitRef = firstRef;
     const refInput = page.getByPlaceholder(/Visit reference/i).first();
     if (!(await refInput.isVisible().catch(() => false))) return { status: 'FAIL', details: 'Visit reference input missing' };
+    const responsePromise = waitForVisitReferenceResponse(page, firstRef, 15000);
     await refInput.fill(firstRef);
-    await page.keyboard.press('Enter').catch(() => {});
-    let rows = 0;
-    for (let i = 0; i < 12; i += 1) {
-      await page.waitForTimeout(600);
-      const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
-      rows = await page.locator('table tbody tr').count().catch(() => 0);
-      if (!loading && rows > 0) break;
-    }
-    if (rows < 1) {
+    const responseSeen = await responsePromise;
+    const rows = await waitForVisitReferenceRow(page, firstRef, 15000);
+    if (!responseSeen || rows < 1) {
       const ev = await shot(page, 'u03-ref-not-found-after-search');
-      return { status: 'FAIL', details: `Reference ${firstRef} not found after search`, evidence: [ev] };
+      return {
+        status: 'FAIL',
+        details: `reference=${firstRef}, responseSeen=${responseSeen}, rows=${rows}`,
+        evidence: [ev],
+      };
     }
-    return { status: 'PASS', details: `reference=${firstRef}, rows=${rows}` };
+    return { status: 'PASS', details: `reference=${firstRef}, responseSeen=${responseSeen}, rows=${rows}` };
   });
 
   await runCheck(page, { id: 'U04', area: 'WebApp', test: 'Visit details page opens from visits list row' }, async () => {
@@ -494,13 +572,9 @@ try {
     await page.goto(firstVisitDetailsUrl);
     await waitForVisitDetailsTabsReady(page, 15000);
     await settled(page, 600);
-    const openedAttachments = await clickVisitDetailsTab(page, /^Attachments$/i);
-    const attachPanel = openedAttachments ? await attachmentsSectionVisible(page, 10000) : false;
+    const attachPanel = await openAttachmentsPanel(page, 15000);
     const openedDetails = await clickVisitDetailsTab(page, /^Visit Details$/i);
-    await settled(page, 500);
-    const hasDescription = await page.getByText(/^Description$/i).first().isVisible().catch(() => false);
-    const hasSignature = await page.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
-    const detailsPanel = openedDetails && (hasDescription || hasSignature);
+    const detailsPanel = openedDetails ? await visitDetailsPanelVisible(page, 6000) : false;
     if (!attachPanel || !detailsPanel) {
       const ev = await shot(page, 'u05-tab-switch-fail');
       return { status: 'FAIL', details: `attachPanel=${attachPanel}, detailsPanel=${detailsPanel}`, evidence: [ev] };
