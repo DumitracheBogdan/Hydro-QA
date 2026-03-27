@@ -5,6 +5,13 @@ import { chromium } from 'playwright';
 const WEB_BASE = process.env.HYDROCERT_WEB_BASE || 'https://hydrocert-dev-webapp-fzgveghygfc3enbt.ukwest-01.azurewebsites.net';
 const EMAIL = process.env.HYDROCERT_QA_EMAIL || '';
 const PASSWORD = process.env.HYDROCERT_QA_PASSWORD || '';
+const TEST_FILTER = new Set(
+  String(process.env.HYDROCERT_TEST_IDS || '')
+    .split(',')
+    .map((value) => value.trim().toUpperCase())
+    .filter(Boolean)
+);
+const VISIT_DETAILS_TAB_INDEX = { details: 0, inspections: 1, attachments: 2 };
 
 const stamp = new Date().toISOString().replace(/[.:]/g, '-');
 const runName = `dev-infra-ui-ultra-${stamp}`;
@@ -22,7 +29,12 @@ function add({ id, area, test, status, details, evidence = [] }) {
   console.log(`${id} | ${status} | ${test} | ${details}`);
 }
 
+function shouldRun(id) {
+  return TEST_FILTER.size === 0 || TEST_FILTER.has(String(id).toUpperCase());
+}
+
 async function check(page, id, area, test, fn) {
+  if (!shouldRun(id)) return;
   try {
     const r = await fn();
     add({ id, area, test, status: r?.status || 'PASS', details: r?.details || '', evidence: r?.evidence || [] });
@@ -43,6 +55,19 @@ async function settled(page, ms = 800) {
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(ms);
+}
+
+async function ensureLoggedIn(page) {
+  await page.goto(`${WEB_BASE}/dashboard`, { waitUntil: 'domcontentloaded' });
+  await settled(page, 1000);
+  if (page.url().includes('/login')) {
+    await page.locator('input[name="email"],input[type="email"]').first().fill(EMAIL);
+    await page.locator('input[name="password"],input[type="password"]').first().fill(PASSWORD);
+    await page.getByRole('button', { name: /sign in/i }).first().click();
+    await page.waitForURL((u) => !u.toString().includes('/login'), { timeout: 25000 }).catch(() => {});
+    await settled(page, 1200);
+  }
+  return !page.url().includes('/login');
 }
 
 async function shot(page, name) {
@@ -120,6 +145,10 @@ function visitDetailsTab(page, labelPattern) {
   return page.locator('[data-slot="tabs-trigger"]').filter({ hasText: labelPattern }).first();
 }
 
+function visitDetailsTabByKey(page, key) {
+  return page.locator('[data-slot="tabs-trigger"]').nth(VISIT_DETAILS_TAB_INDEX[key]);
+}
+
 async function visitDetailsTabActive(page, labelPattern, timeoutMs = 5000) {
   const tab = visitDetailsTab(page, labelPattern);
   const deadline = Date.now() + timeoutMs;
@@ -128,6 +157,67 @@ async function visitDetailsTabActive(page, labelPattern, timeoutMs = 5000) {
     const ariaSelected = await tab.getAttribute('aria-selected').catch(() => '');
     if (dataState === 'active' || ariaSelected === 'true') return true;
     await page.waitForTimeout(200);
+  }
+  return false;
+}
+
+async function clickVisitDetailsTabByKey(page, key) {
+  const tab = visitDetailsTabByKey(page, key);
+  if (!(await tab.isVisible().catch(() => false))) return false;
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    await tab.scrollIntoViewIfNeeded().catch(() => {});
+    await tab.click({ force: true }).catch(() => {});
+    await page.waitForTimeout(250);
+    const dataState = await tab.getAttribute('data-state').catch(() => '');
+    const ariaSelected = await tab.getAttribute('aria-selected').catch(() => '');
+    if (dataState === 'active' || ariaSelected === 'true') return true;
+  }
+  await page.evaluate((index) => {
+    const trigger = document.querySelectorAll('[data-slot="tabs-trigger"]')[index];
+    if (trigger instanceof HTMLElement) trigger.click();
+  }, VISIT_DETAILS_TAB_INDEX[key]).catch(() => {});
+  await page.waitForTimeout(300);
+  const dataState = await tab.getAttribute('data-state').catch(() => '');
+  const ariaSelected = await tab.getAttribute('aria-selected').catch(() => '');
+  return dataState === 'active' || ariaSelected === 'true';
+}
+
+async function tabPanelVisible(page, labelPattern, timeoutMs = 8000) {
+  const tab = visitDetailsTab(page, labelPattern);
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const panelId = await tab.getAttribute('aria-controls').catch(() => '');
+    const active = (await tab.getAttribute('data-state').catch(() => '')) === 'active'
+      || (await tab.getAttribute('aria-selected').catch(() => '')) === 'true';
+    if (panelId) {
+      const panel = page.locator(`#${panelId}`).first();
+      const visible = await panel.isVisible().catch(() => false);
+      const panelState = await panel.getAttribute('data-state').catch(() => '');
+      if (active && visible && panelState === 'active') return true;
+    } else if (active) {
+      return true;
+    }
+    await page.waitForTimeout(250);
+  }
+  return false;
+}
+
+async function tabPanelVisibleByKey(page, key, timeoutMs = 8000) {
+  const tab = visitDetailsTabByKey(page, key);
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const panelId = await tab.getAttribute('aria-controls').catch(() => '');
+    const active = (await tab.getAttribute('data-state').catch(() => '')) === 'active'
+      || (await tab.getAttribute('aria-selected').catch(() => '')) === 'true';
+    if (panelId) {
+      const panel = page.locator(`#${panelId}`).first();
+      const visible = await panel.isVisible().catch(() => false);
+      const panelState = await panel.getAttribute('data-state').catch(() => '');
+      if (active && visible && panelState === 'active') return true;
+    } else if (active) {
+      return true;
+    }
+    await page.waitForTimeout(250);
   }
   return false;
 }
@@ -188,8 +278,8 @@ async function attachmentTriggerVisible(page, timeoutMs = 10000) {
 async function openAttachmentsPanel(page, timeoutMs = 15000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    await clickVisitDetailsTab(page, /^Attachments$/i);
-    if (await attachmentTriggerVisible(page, 1800)) return true;
+    const switched = await clickVisitDetailsTabByKey(page, 'attachments');
+    if (switched && await tabPanelVisibleByKey(page, 'attachments', 2500)) return true;
     await page.waitForTimeout(500);
   }
   return false;
@@ -198,12 +288,36 @@ async function openAttachmentsPanel(page, timeoutMs = 15000) {
 async function visitDetailsPanelVisible(page, timeoutMs = 10000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
+    const tabActive = await tabPanelVisibleByKey(page, 'details', 1200);
     const hasDescription = await page.getByText(/^Description$/i).first().isVisible().catch(() => false);
     const hasSignature = await page.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
-    if (hasDescription || hasSignature) return true;
+    if (tabActive && (hasDescription || hasSignature)) return true;
     await page.waitForTimeout(300);
   }
   return false;
+}
+
+async function ensureFirstDetailsUrl(page, currentUrl = '') {
+  if (/\/visits\/details\//i.test(currentUrl)) return currentUrl;
+  const loggedIn = await ensureLoggedIn(page);
+  if (!loggedIn) return '';
+  await page.goto(`${WEB_BASE}/visits-list`);
+  const rows = await waitForVisitsListRows(page, 15000);
+  if (rows < 1) return '';
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const row = page.locator('table tbody tr').first();
+    await row.scrollIntoViewIfNeeded().catch(() => {});
+    const clickNav = page.waitForURL(/\/visits\/details\//i, { timeout: 5000 }).then(() => true).catch(() => false);
+    await row.click({ position: { x: 20, y: 20 } }).catch(() => {});
+    const navigated = await clickNav;
+    if (navigated) return page.url();
+    const enterNav = page.waitForURL(/\/visits\/details\//i, { timeout: 3000 }).then(() => true).catch(() => false);
+    await row.press('Enter').catch(() => {});
+    const entered = await enterNav;
+    if (entered) return page.url();
+    await page.waitForTimeout(600);
+  }
+  return '';
 }
 
 async function visibleUploadButtonCount(page) {
@@ -394,12 +508,13 @@ try {
   });
 
   await check(dpage, 'U08', 'UI Desktop', 'Visit details tabs switch active state', async () => {
-    if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL from U07' };
+    firstDetailsUrl = await ensureFirstDetailsUrl(dpage, firstDetailsUrl);
+    if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL available' };
     await dpage.goto(firstDetailsUrl);
     await waitForVisitDetailsTabsReady(dpage, 15000);
     await settled(dpage, 600);
     const attach = await openAttachmentsPanel(dpage, 15000);
-    const openedDetails = await clickVisitDetailsTab(dpage, /^Visit Details$/i);
+    const openedDetails = await clickVisitDetailsTabByKey(dpage, 'details');
     const details = openedDetails ? await visitDetailsPanelVisible(dpage, 6000) : false;
     if (!attach || !details) {
       const ev = await shot(dpage, 'u08-tabs-fail');
