@@ -53,12 +53,42 @@ async function shot(page, name) {
 }
 
 async function clickVisitDetailsTab(page, labelPattern) {
-  const tab = page.getByRole('tab', { name: labelPattern }).first();
-  if (await tab.isVisible().catch(() => false)) {
-    await tab.click().catch(() => {});
-    return;
+  const candidates = [
+    page.getByRole('tab', { name: labelPattern }).first(),
+    page.getByRole('button', { name: labelPattern }).first(),
+    page.getByText(labelPattern).first(),
+  ];
+
+  for (const tab of candidates) {
+    if (!(await tab.isVisible().catch(() => false))) continue;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await tab.scrollIntoViewIfNeeded().catch(() => {});
+      await tab.click().catch(() => {});
+      await page.waitForTimeout(250);
+      const dataState = await tab.getAttribute('data-state').catch(() => '');
+      const ariaSelected = await tab.getAttribute('aria-selected').catch(() => '');
+      if (dataState === 'active' || ariaSelected === 'true') return true;
+    }
   }
-  await page.getByText(labelPattern).first().click().catch(() => {});
+
+  return false;
+}
+
+async function attachmentsSectionVisible(page, timeoutMs = 10000) {
+  const candidates = [
+    page.getByText(/^Visit \(\d+\)$/i).first(),
+    page.getByText(/^Inspection \(\d+\)$/i).first(),
+    page.getByText(/^Inspection \(0\)$/i).first(),
+    page.locator('button').filter({ hasText: /Visit \(\d+\)|Inspection \(\d+\)|Inspection \(0\)/i }).first(),
+  ];
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    for (const candidate of candidates) {
+      if (await candidate.isVisible().catch(() => false)) return true;
+    }
+    await page.waitForTimeout(300);
+  }
+  return false;
 }
 
 function visitAttachmentBucket(page) {
@@ -261,14 +291,13 @@ try {
     if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL from U07' };
     await dpage.goto(firstDetailsUrl);
     await settled(dpage, 700);
-    await clickVisitDetailsTab(dpage, /^Attachments$/i);
-    await settled(dpage, 500);
-    const attach = await visitAttachmentBucket(dpage).isVisible().catch(() => false);
-    await clickVisitDetailsTab(dpage, /^Visit Details$/i);
+    const openedAttachments = await clickVisitDetailsTab(dpage, /^Attachments$/i);
+    const attach = openedAttachments ? await attachmentsSectionVisible(dpage, 10000) : false;
+    const openedDetails = await clickVisitDetailsTab(dpage, /^Visit Details$/i);
     await settled(dpage, 500);
     const hasDescription = await dpage.getByText(/^Description$/i).first().isVisible().catch(() => false);
     const hasSignature = await dpage.getByText(/^Client Signature$/i).first().isVisible().catch(() => false);
-    const details = hasDescription || hasSignature;
+    const details = openedDetails && (hasDescription || hasSignature);
     if (!attach || !details) {
       const ev = await shot(dpage, 'u08-tabs-fail');
       return { status: 'FAIL', details: `attach=${attach}, details=${details}`, evidence: [ev] };
