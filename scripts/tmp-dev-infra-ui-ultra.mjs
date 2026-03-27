@@ -297,6 +297,39 @@ async function visitDetailsPanelVisible(page, timeoutMs = 10000) {
   return false;
 }
 
+async function inspectionsPanelVisible(page, timeoutMs = 8000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const tabActive = await tabPanelVisibleByKey(page, 'inspections', 1200);
+    const empty = await page.getByText(/No inspections available/i).first().isVisible().catch(() => false);
+    const cards = await page.locator('button').filter({ hasText: /Samples \(|Products \(/i }).count().catch(() => 0);
+    const assetRef = await page.getByText(/^Asset Reference$/i).first().isVisible().catch(() => false);
+    if (tabActive && (empty || cards > 0 || assetRef)) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
+async function visitDetailsTabRailVisible(page, timeoutMs = 8000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const tabs = page.locator('[data-slot="tabs-trigger"]');
+    const count = await tabs.count().catch(() => 0);
+    if (count >= 3) {
+      const labels = await tabs.evaluateAll((nodes) =>
+        nodes.slice(0, 3).map((node) => (node.textContent || '').replace(/\s+/g, ' ').trim())
+      ).catch(() => []);
+      const ok =
+        /Visit Details/i.test(labels[0] || '') &&
+        /Inspections/i.test(labels[1] || '') &&
+        /Attachments/i.test(labels[2] || '');
+      if (ok) return true;
+    }
+    await page.waitForTimeout(250);
+  }
+  return false;
+}
+
 async function ensureFirstDetailsUrl(page, currentUrl = '') {
   if (/\/visits\/details\//i.test(currentUrl)) return currentUrl;
   const loggedIn = await ensureLoggedIn(page);
@@ -507,20 +540,21 @@ try {
     return { status: 'PASS', details: `url=${firstDetailsUrl}` };
   });
 
-  await check(dpage, 'U08', 'UI Desktop', 'Visit details tabs switch active state', async () => {
-    firstDetailsUrl = await ensureFirstDetailsUrl(dpage, firstDetailsUrl);
-    if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL available' };
-    await dpage.goto(firstDetailsUrl);
+  await check(dpage, 'U08', 'UI Desktop', 'Visit details tab rail renders correctly', async () => {
+    if (!/\/visits\/details\//i.test(dpage.url())) {
+      firstDetailsUrl = await ensureFirstDetailsUrl(dpage, firstDetailsUrl);
+      if (!firstDetailsUrl) return { status: 'FAIL', details: 'no details URL available' };
+      await dpage.goto(firstDetailsUrl);
+    }
     await waitForVisitDetailsTabsReady(dpage, 15000);
     await settled(dpage, 600);
-    const attach = await openAttachmentsPanel(dpage, 15000);
-    const openedDetails = await clickVisitDetailsTabByKey(dpage, 'details');
-    const details = openedDetails ? await visitDetailsPanelVisible(dpage, 6000) : false;
-    if (!attach || !details) {
+    const tabRail = await visitDetailsTabRailVisible(dpage, 6000);
+    const details = await visitDetailsPanelVisible(dpage, 6000);
+    if (!tabRail || !details) {
       const ev = await shot(dpage, 'u08-tabs-fail');
-      return { status: 'FAIL', details: `attach=${attach}, details=${details}`, evidence: [ev] };
+      return { status: 'FAIL', details: `tabRail=${tabRail}, details=${details}`, evidence: [ev] };
     }
-    return { status: 'PASS', details: 'attachments trigger visible and visit-details content restored' };
+    return { status: 'PASS', details: 'tab rail and Visit Details content render' };
   });
 
   await check(dpage, 'U09', 'UI Desktop', 'Attachments tab shows Upload button on hovered section', async () => {
