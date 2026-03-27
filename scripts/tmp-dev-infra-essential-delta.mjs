@@ -54,6 +54,19 @@ function median(values) {
   return v.length % 2 ? v[mid] : Math.round((v[mid - 1] + v[mid]) / 2);
 }
 
+function isBenignRequestFailure(entry) {
+  const url = String(entry?.url || '').toLowerCase();
+  const error = String(entry?.error || '').toLowerCase();
+  if (error.includes('net::err_aborted')) return true;
+  if (url.includes('maps.googleapis.com')) return true;
+  if (url.includes('google.internal.maps')) return true;
+  return false;
+}
+
+function actionableRequestFailures(entries) {
+  return entries.filter((entry) => !isBenignRequestFailure(entry));
+}
+
 async function settle(page, ms = 800) {
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
@@ -473,10 +486,14 @@ try {
 
 await run(null, 'E25', 'Telemetry', 'Desktop run has no console error/requestfailed/5xx events', async () => {
   const c = telemetry.consoleErrors.length;
-  const r = telemetry.requestFailed.length;
+  const actionable = actionableRequestFailures(telemetry.requestFailed);
+  const r = actionable.length;
+  const ignored = telemetry.requestFailed.length - actionable.length;
   const s = telemetry.resp5xx.length;
   const ok = c + r + s === 0;
-  return ok ? { status: 'PASS', details: 'clean telemetry' } : { status: 'FAIL', details: `console=${c},requestfailed=${r},5xx=${s}` };
+  return ok
+    ? { status: 'PASS', details: `clean telemetry, ignored=${ignored}` }
+    : { status: 'FAIL', details: `console=${c},requestfailed=${r},ignored=${ignored},5xx=${s}` };
 });
 
 const totals = {

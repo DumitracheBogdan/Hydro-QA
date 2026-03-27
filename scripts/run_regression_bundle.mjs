@@ -74,8 +74,8 @@ const SUITES = {
 
 function selectedSuiteKeys(environment, mode) {
   if (mode === 'full') return environment === 'dev'
-    ? ['deep', 'api', 'roleaccess', 'ui', 'soak', 'advanced', 'essential']
-    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'soak', 'advanced', 'essential'];
+    ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced']
+    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced'];
   if (environment === 'prod') return ['deep', 'roleaccessreadonly'];
   return ['deep', 'api', 'roleaccess', 'ui'];
 }
