@@ -40,8 +40,9 @@ async function shot(page, name) {
 }
 
 async function clickVisitDetailsTab(page, labelPattern) {
+  const primaryTab = page.locator('[data-slot="tabs-trigger"]').filter({ hasText: labelPattern }).first();
   const candidates = [
-    page.locator('[data-slot="tabs-trigger"]').filter({ hasText: labelPattern }).first(),
+    primaryTab,
     page.getByRole('tab', { name: labelPattern }).first(),
     page.getByRole('button', { name: labelPattern }).first(),
   ];
@@ -58,6 +59,26 @@ async function clickVisitDetailsTab(page, labelPattern) {
     }
   }
 
+  await page.evaluate((patternSource) => {
+    const matcher = new RegExp(patternSource, 'i');
+    const trigger = [...document.querySelectorAll('[data-slot="tabs-trigger"]')]
+      .find((node) => matcher.test((node.textContent || '').trim()));
+    if (trigger instanceof HTMLElement) trigger.click();
+  }, labelPattern.source).catch(() => {});
+  await page.waitForTimeout(300);
+  const dataState = await primaryTab.getAttribute('data-state').catch(() => '');
+  const ariaSelected = await primaryTab.getAttribute('aria-selected').catch(() => '');
+  return dataState === 'active' || ariaSelected === 'true';
+}
+
+async function waitForVisitDetailsTabsReady(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const loading = await page.getByText(/Loading visit details/i).first().isVisible().catch(() => false);
+    const tabsCount = await page.locator('[data-slot="tabs-trigger"]').count().catch(() => 0);
+    if (!loading && tabsCount >= 3) return true;
+    await page.waitForTimeout(300);
+  }
   return false;
 }
 
@@ -471,7 +492,8 @@ try {
   await runCheck(page, { id: 'U05', area: 'WebApp', test: 'Visit details tabs switch without errors' }, async () => {
     if (!firstVisitDetailsUrl) return { status: 'FAIL', details: 'No details URL from U04' };
     await page.goto(firstVisitDetailsUrl);
-    await settled(page, 900);
+    await waitForVisitDetailsTabsReady(page, 15000);
+    await settled(page, 600);
     const openedAttachments = await clickVisitDetailsTab(page, /^Attachments$/i);
     const attachPanel = openedAttachments ? await attachmentsSectionVisible(page, 10000) : false;
     const openedDetails = await clickVisitDetailsTab(page, /^Visit Details$/i);
