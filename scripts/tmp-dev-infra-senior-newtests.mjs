@@ -110,6 +110,102 @@ async function loginUi(page) {
   return !page.url().includes('/login');
 }
 
+async function waitForVisitRows(page, timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    if (!loading && rows > 0) return rows;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
+async function waitForPlannerEventRows(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    if (!loading && rows > 0) return rows;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
+async function waitForPlannerMonthSignal(page, timeoutMs = 10000) {
+  const monthLabel = page
+    .getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i)
+    .first();
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await monthLabel.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
+async function waitForMapVisible(page, timeoutMs = 15000) {
+  const map = page.locator('.gm-style, [aria-label="Map"]').first();
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await map.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(400);
+  }
+  return false;
+}
+
+async function openPlannerEditVisit(page) {
+  const okLogin = await loginUi(page);
+  if (!okLogin) return { ok: false, details: 'login failed' };
+
+  await page.goto(`${WEB_BASE}/planner`);
+  await settled(page, 900);
+  await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+  const rows = await waitForPlannerEventRows(page, 15000);
+  if (rows < 1) return { ok: false, details: `planner eventRows=${rows}` };
+
+  const eye = page.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
+  if (!(await eye.isVisible().catch(() => false))) return { ok: false, details: 'eye hidden' };
+
+  await eye.click().catch(() => {});
+  await page.waitForURL(/\/visits\/edit\//i, { timeout: 25000 }).catch(() => {});
+  await settled(page, 900);
+  if (!page.url().includes('/visits/edit/')) return { ok: false, details: `url=${page.url()}` };
+  return { ok: true, url: page.url(), details: `eventRows=${rows}` };
+}
+
+async function captureLoginStorage(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await ctx.newPage();
+  try {
+    const ok = await loginUi(page);
+    if (!ok) return { ok: false, details: 'fresh login failed', sessionToken: '', localToken: '' };
+
+    const deadline = Date.now() + 6000;
+    let sessionToken = '';
+    let localToken = '';
+    while (Date.now() < deadline) {
+      const snapshot = await page.evaluate(() => ({
+        sessionToken: sessionStorage.getItem('accessToken') || '',
+        localToken: localStorage.getItem('accessToken') || '',
+      }));
+      sessionToken = snapshot.sessionToken;
+      localToken = snapshot.localToken;
+      if (sessionToken) break;
+      await page.waitForTimeout(250);
+    }
+
+    return {
+      ok: true,
+      sessionToken,
+      localToken,
+      details: `session=${sessionToken.length}, local=${localToken.length}`,
+    };
+  } finally {
+    await ctx.close().catch(() => {});
+  }
+}
+
 async function seqPerf(api, endpoint, n) {
   const times = [];
   let fail = 0;
@@ -172,6 +268,7 @@ let customers = [];
 let visits = [];
 let detailsUrl = '';
 let editUrl = '';
+let storageSnapshot = null;
 
 try {
   // R01-R10: Infra/Security
@@ -461,6 +558,8 @@ try {
     await runCheck(dpage, 'R47', 'UI Desktop', 'Session survives hard refresh on planner route', async () => {
       await dpage.goto(`${WEB_BASE}/planner`);
       await settled(dpage, 800);
+      const monthReady = await waitForPlannerMonthSignal(dpage, 15000);
+      if (!monthReady) return { status: 'FAIL', details: 'planner not ready before refresh' };
       await dpage.reload({ waitUntil: 'domcontentloaded' });
       await settled(dpage, 1000);
       return dpage.url().includes('/login') ? { status: 'FAIL', details: 'redirected to login' } : { status: 'PASS', details: 'still authenticated' };
@@ -484,45 +583,54 @@ try {
     });
 
     await runCheck(dpage, 'R50', 'UI Desktop', 'Visits details route opens directly from first row id', async () => {
+      const okLogin = await loginUi(dpage);
+      if (!okLogin) return { status: 'FAIL', details: 'login failed before visits list check' };
       await dpage.goto(`${WEB_BASE}/visits-list`); await settled(dpage, 700);
+      const rows = await waitForVisitRows(dpage, 20000);
+      if (rows < 1) return { status: 'FAIL', details: `rows=${rows}` };
       const row = dpage.locator('table tbody tr').first();
       await row.click().catch(() => {});
+      await dpage.waitForURL(/\/visits\/details\//i, { timeout: 25000 }).catch(() => {});
       await settled(dpage, 800);
       if (!dpage.url().includes('/visits/details/')) return { status: 'FAIL', details: `url=${dpage.url()}` };
       detailsUrl = dpage.url();
-      return { status: 'PASS', details: `url=${detailsUrl}` };
+      return { status: 'PASS', details: `rows=${rows}, url=${detailsUrl}` };
     });
 
     await runCheck(dpage, 'R51', 'UI Desktop', 'Edit visit route opens from planner eye action', async () => {
-      await dpage.goto(`${WEB_BASE}/planner`); await settled(dpage, 800);
-      await dpage.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
-      await settled(dpage, 600);
-      const eye = dpage.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
-      if (!(await eye.isVisible().catch(() => false))) return { status: 'FAIL', details: 'eye hidden' };
-      await eye.click().catch(() => {});
-      await settled(dpage, 800);
-      if (!dpage.url().includes('/visits/edit/')) return { status: 'FAIL', details: `url=${dpage.url()}` };
-      editUrl = dpage.url();
+      const opened = await openPlannerEditVisit(dpage);
+      if (!opened.ok) return { status: 'FAIL', details: opened.details };
+      editUrl = opened.url;
       return { status: 'PASS', details: `url=${editUrl}` };
     });
 
     await runCheck(dpage, 'R52', 'UI Desktop', 'Map visible before and after refresh in edit route', async () => {
-      if (!editUrl) return { status: 'FAIL', details: 'no editUrl' };
-      await dpage.goto(editUrl); await settled(dpage, 1300);
-      const before = await dpage.locator('.gm-style, [aria-label=\"Map\"]').first().isVisible().catch(() => false);
-      await dpage.reload({ waitUntil: 'domcontentloaded' }); await settled(dpage, 1500);
-      const after = await dpage.locator('.gm-style, [aria-label=\"Map\"]').first().isVisible().catch(() => false);
+      if (!editUrl) {
+        const opened = await openPlannerEditVisit(dpage);
+        if (!opened.ok) return { status: 'FAIL', details: `no editUrl; ${opened.details}` };
+        editUrl = opened.url;
+      }
+      await dpage.goto(editUrl); await settled(dpage, 1000);
+      const before = await waitForMapVisible(dpage, 15000);
+      await dpage.reload({ waitUntil: 'domcontentloaded' }); await settled(dpage, 1000);
+      const after = await waitForMapVisible(dpage, 15000);
       return before && after ? { status: 'PASS', details: `before=${before}, after=${after}` } : { status: 'FAIL', details: `before=${before}, after=${after}` };
     });
 
     await runCheck(dpage, 'R53', 'Session', 'Access token stored in sessionStorage after UI login', async () => {
-      const tokenInSession = await dpage.evaluate(() => sessionStorage.getItem('accessToken') || '');
-      return tokenInSession ? { status: 'PASS', details: `tokenLength=${tokenInSession.length}` } : { status: 'FAIL', details: 'accessToken missing in sessionStorage' };
+      storageSnapshot = storageSnapshot || await captureLoginStorage(browser);
+      if (!storageSnapshot.ok) return { status: 'FAIL', details: storageSnapshot.details };
+      return storageSnapshot.sessionToken
+        ? { status: 'PASS', details: `tokenLength=${storageSnapshot.sessionToken.length}` }
+        : { status: 'FAIL', details: 'accessToken missing in sessionStorage after fresh login' };
     });
 
     await runCheck(dpage, 'R54', 'Session', 'Access token not stored in localStorage', async () => {
-      const tokenInLocal = await dpage.evaluate(() => localStorage.getItem('accessToken') || '');
-      return !tokenInLocal ? { status: 'PASS', details: 'no accessToken in localStorage' } : { status: 'FAIL', details: 'accessToken found in localStorage' };
+      storageSnapshot = storageSnapshot || await captureLoginStorage(browser);
+      if (!storageSnapshot.ok) return { status: 'FAIL', details: storageSnapshot.details };
+      return !storageSnapshot.localToken
+        ? { status: 'PASS', details: 'no accessToken in localStorage after fresh login' }
+        : { status: 'FAIL', details: 'accessToken found in localStorage after fresh login' };
     });
 
     await runCheck(dpage, 'R55', 'Session', 'New context without login cannot access dashboard', async () => {

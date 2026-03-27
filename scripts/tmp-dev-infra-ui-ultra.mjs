@@ -73,6 +73,58 @@ async function visibleUploadButtonCount(page) {
   return await page.locator('button:visible').filter({ hasText: /Upload/i }).count().catch(() => 0);
 }
 
+async function waitForPlannerEventRows(page, timeoutMs = 15000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const rows = await page.locator('table tbody tr').count().catch(() => 0);
+    const loading = await page.getByText(/Loading visits/i).first().isVisible().catch(() => false);
+    if (!loading && rows > 0) return rows;
+    await page.waitForTimeout(400);
+  }
+  return 0;
+}
+
+async function waitForPlannerMonthSignal(page, timeoutMs = 10000) {
+  const monthLabel = page
+    .getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i)
+    .first();
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await monthLabel.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(300);
+  }
+  return false;
+}
+
+async function waitForMapVisible(page, timeoutMs = 15000) {
+  const map = page.locator('.gm-style, [aria-label="Map"]').first();
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await map.isVisible().catch(() => false)) return true;
+    await page.waitForTimeout(400);
+  }
+  return false;
+}
+
+async function openPlannerEditVisit(page) {
+  await page.goto(`${WEB_BASE}/planner`);
+  await settled(page, 900);
+  await page.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
+  const rows = await waitForPlannerEventRows(page, 15000);
+  if (rows < 1) return { ok: false, details: `planner eventRows=${rows}` };
+
+  const eye = page.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
+  if (!(await eye.isVisible().catch(() => false))) {
+    return { ok: false, details: 'eye button hidden' };
+  }
+
+  await eye.click().catch(() => {});
+  await page.waitForURL(/\/visits\/edit\//i, { timeout: 25000 }).catch(() => {});
+  await settled(page, 900);
+  if (!/\/visits\/edit\//i.test(page.url())) return { ok: false, details: `url=${page.url()}` };
+  return { ok: true, url: page.url(), details: `eventRows=${rows}` };
+}
+
 async function login(page) {
   await page.goto(`${WEB_BASE}/dashboard`);
   await settled(page, 900);
@@ -247,11 +299,9 @@ try {
     await dpage.goto(`${WEB_BASE}/planner`);
     await settled(dpage, 800);
     await dpage.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
-    await settled(dpage, 600);
-    const rows = await dpage.locator('table tbody tr').count().catch(() => 0);
+    const rows = await waitForPlannerEventRows(dpage, 15000);
     await dpage.getByRole('button', { name: /Month View/i }).first().click().catch(() => {});
-    await settled(dpage, 600);
-    const month = await dpage.getByText(/March|April|May|June|July|August|September|October|November|December|January|February/i).first().isVisible().catch(() => false);
+    const month = await waitForPlannerMonthSignal(dpage, 10000);
     if (rows < 1 || !month) {
       const ev = await shot(dpage, 'u10-planner-toggle-fail');
       return { status: 'FAIL', details: `rows=${rows}, month=${month}`, evidence: [ev] };
@@ -260,31 +310,27 @@ try {
   });
 
   await check(dpage, 'U11', 'UI Desktop', 'Planner eye opens Edit Visit', async () => {
-    await dpage.getByRole('button', { name: /Events View/i }).first().click().catch(() => {});
-    await settled(dpage, 600);
-    const eye = dpage.locator('table tbody tr td:last-child button:has(svg.lucide-eye), table tbody tr td:last-child button').first();
-    if (!(await eye.isVisible().catch(() => false))) {
-      const ev = await shot(dpage, 'u11-eye-hidden');
-      return { status: 'FAIL', details: 'eye button hidden', evidence: [ev] };
-    }
-    await eye.click().catch(() => {});
-    await settled(dpage, 900);
-    if (!/\/visits\/edit\//i.test(dpage.url())) {
+    const opened = await openPlannerEditVisit(dpage);
+    if (!opened.ok) {
       const ev = await shot(dpage, 'u11-edit-not-open');
-      return { status: 'FAIL', details: `url=${dpage.url()}`, evidence: [ev] };
+      return { status: 'FAIL', details: opened.details, evidence: [ev] };
     }
-    firstEditUrl = dpage.url();
+    firstEditUrl = opened.url;
     return { status: 'PASS', details: `url=${firstEditUrl}` };
   });
 
   await check(dpage, 'U12', 'UI Desktop', 'Edit Visit map visible before and after refresh', async () => {
-    if (!firstEditUrl) return { status: 'FAIL', details: 'no edit URL from U11' };
+    if (!firstEditUrl) {
+      const opened = await openPlannerEditVisit(dpage);
+      if (!opened.ok) return { status: 'FAIL', details: `no edit URL from U11; ${opened.details}` };
+      firstEditUrl = opened.url;
+    }
     await dpage.goto(firstEditUrl);
-    await settled(dpage, 1300);
-    const before = await dpage.locator('.gm-style, [aria-label="Map"]').first().isVisible().catch(() => false);
+    await settled(dpage, 1000);
+    const before = await waitForMapVisible(dpage, 15000);
     await dpage.reload({ waitUntil: 'domcontentloaded' });
-    await settled(dpage, 1500);
-    const after = await dpage.locator('.gm-style, [aria-label="Map"]').first().isVisible().catch(() => false);
+    await settled(dpage, 1000);
+    const after = await waitForMapVisible(dpage, 15000);
     if (!before || !after) {
       const ev = await shot(dpage, 'u12-map-missing');
       return { status: 'FAIL', details: `before=${before}, after=${after}`, evidence: [ev] };

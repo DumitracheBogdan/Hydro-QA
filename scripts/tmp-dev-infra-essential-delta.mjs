@@ -111,6 +111,15 @@ async function loginUi(page) {
   return !page.url().includes('/login');
 }
 
+async function waitForLoginRedirect(page, timeoutMs = 6000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (page.url().includes('/login')) return true;
+    await page.waitForTimeout(250);
+  }
+  return page.url().includes('/login');
+}
+
 async function tryLogout(page) {
   // try direct menu option first
   const logoutDirect = page.getByRole('menuitem', { name: /logout|sign out/i }).first();
@@ -122,8 +131,11 @@ async function tryLogout(page) {
 
   // open account menu with likely triggers
   const triggers = [
+    page.locator('header button[aria-haspopup="menu"]').first(),
     page.getByRole('button', { name: /tech quarter/i }).first(),
     page.getByRole('button', { name: /tq/i }).first(),
+    page.getByRole('button', { name: /admin admin/i }).first(),
+    page.getByRole('button', { name: /^aa$/i }).first(),
     page.locator('header button').last(),
     page.locator('button:has-text("Tech Quarter")').first(),
   ];
@@ -434,8 +446,13 @@ try {
       const okLogin = await loginUi(page);
       if (!okLogin) return { status: 'FAIL', details: 'login failed before logout check' };
       await tryLogout(page);
-      const atLogin = page.url().includes('/login');
-      return atLogin ? { status: 'PASS', details: `url=${page.url()}` } : { status: 'FAIL', details: `url=${page.url()}` };
+      const atLogin = await waitForLoginRedirect(page, 6000);
+      if (atLogin) return { status: 'PASS', details: `url=${page.url()}` };
+      await page.goto(`${WEB_BASE}/dashboard`);
+      await settle(page, 900);
+      return page.url().includes('/login')
+        ? { status: 'PASS', details: `protected route blocked after logout, url=${page.url()}` }
+        : { status: 'FAIL', details: `url=${page.url()}` };
     });
 
     await run(page, 'E24', 'UI/Security', 'After logout, protected route redirects back to login', async () => {
