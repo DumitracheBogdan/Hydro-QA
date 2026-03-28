@@ -42,6 +42,13 @@ const SUITES = {
     script: path.join('scripts', 'qa-role-access-readonly.mjs'),
     tests: 6,
   },
+  postdeployhardening: {
+    key: 'postdeployhardening',
+    id: 'PRODPOST07',
+    label: 'Prod Post-Deploy Hardening',
+    script: path.join('scripts', 'qa-prod-postdeploy-hardening.mjs'),
+    tests: 7,
+  },
   ui: {
     key: 'ui',
     id: 'UI22',
@@ -76,7 +83,7 @@ function selectedSuiteKeys(environment, mode) {
   if (mode === 'full') return environment === 'dev'
     ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced']
     : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced'];
-  if (environment === 'prod') return ['deep', 'roleaccessreadonly'];
+  if (environment === 'prod') return ['deep', 'roleaccessreadonly', 'postdeployhardening'];
   return ['deep', 'api', 'roleaccess', 'ui'];
 }
 
