@@ -292,18 +292,26 @@ async function inspectionsPanelVisible(page, timeoutMs = 8000) {
 async function visitDetailsTabRailVisible(page, timeoutMs = 8000) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const tabs = page.locator('[data-slot="tabs-trigger"]');
-    const count = await tabs.count().catch(() => 0);
-    if (count >= 3) {
-      const labels = await tabs.evaluateAll((nodes) =>
-        nodes.slice(0, 3).map((node) => (node.textContent || '').replace(/\s+/g, ' ').trim())
-      ).catch(() => []);
-      const ok =
-        /Visit Details/i.test(labels[0] || '') &&
-        /Inspections/i.test(labels[1] || '') &&
-        /Attachments/i.test(labels[2] || '');
-      if (ok) return true;
-    }
+    const labels = await page.evaluate(() => {
+      const normalize = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+      const triggers = [...document.querySelectorAll('[data-slot="tabs-trigger"]')];
+      const detailsTab = triggers.find((node) => /visit details/i.test(normalize(node.textContent)));
+      const rail = detailsTab?.closest('[data-slot="tabs-list"]') || detailsTab?.parentElement;
+      const railTriggers = rail
+        ? [...rail.querySelectorAll('[data-slot="tabs-trigger"], [role="tab"], button')]
+        : triggers;
+      return railTriggers.map((node) => normalize(node.textContent)).filter(Boolean);
+    }).catch(() => []);
+
+    const hasDetails = labels.some((label) => /Visit Details/i.test(label));
+    const hasInspections = labels.some((label) => /Inspections/i.test(label));
+    const hasAttachments = labels.some((label) => /Attachments/i.test(label));
+    if (hasDetails && hasInspections && hasAttachments) return true;
+
+    const detailsVisible = await visitDetailsTab(page, /Visit Details/i).isVisible().catch(() => false);
+    const inspectionsVisible = await visitDetailsTab(page, /Inspections/i).isVisible().catch(() => false);
+    const attachmentsVisible = await visitDetailsTab(page, /Attachments/i).isVisible().catch(() => false);
+    if (detailsVisible && inspectionsVisible && attachmentsVisible) return true;
     await page.waitForTimeout(250);
   }
   return false;
