@@ -277,8 +277,8 @@ fs.writeFileSync(combinedReportPath, mdLines.join('\n'), 'utf8');
 
 const excelName = `Hydrocert_${TARGET_ENV.toUpperCase()}_${MODE === 'full' ? 'Full_Regression' : 'Post_Deploy_Regression'}_${stamp.slice(0, 10)}.xlsx`;
 const excelPath = path.join(outputDir, excelName);
-const title = `Hydrocert ${TARGET_ENV.toUpperCase()} ${MODE === 'full' ? 'Full Regression' : 'Post-Deploy Regression'}`;
-const subtitle = `Suites: ${suiteRuns.map((suite) => suite.suite).join(', ')}`;
+const title = `Hydrocert ${TARGET_ENV.toUpperCase()} ${MODE === 'full' ? 'Regresie completa' : 'Regresie post-deploy'}`;
+const subtitle = `Suite rulate: ${suiteRuns.map((suite) => suite.suite).join(', ')}`;
 await runPythonExcel(combinedJsonPath, excelPath, title, subtitle);
 
 writeGitHubOutput({
