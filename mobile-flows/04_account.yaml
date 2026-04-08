@@ -1,0 +1,44 @@
+appId: com.hydrocert.app
+name: "Account Screen - All Actions"
+tags:
+  - account
+  - settings
+  - smoke
+---
+
+# =============================================
+# ACCOUNT SCREEN
+# =============================================
+
+- launchApp
+
+# --- Navigate to Account tab ---
+- tapOn:
+    text: "Account"
+
+# --- Verify Account Info ---
+- assertVisible: "Bogdan Dumitrache"
+- assertVisible: "User"
+
+# --- My Signature Row (clickable, navigates to signature screen) ---
+- assertVisible: "My signature"
+- tapOn:
+    text: "My signature"
+# Go back
+- tapOn:
+    id: "Back"
+    optional: true
+- back
+
+# --- Change Password Row (clickable) ---
+- assertVisible: "Change Password"
+    optional: true
+
+# --- Logout Row (clickable) ---
+- assertVisible: "Logout"
+
+# --- Bottom Navigation ---
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Activity"
+- assertVisible: "Account"

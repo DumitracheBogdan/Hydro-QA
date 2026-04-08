@@ -1,0 +1,39 @@
+appId: dev.gen-cert.com
+name: "Login Page - All Interactive Elements"
+tags:
+  - login
+  - authentication
+  - smoke
+---
+
+# =============================================
+# LOGIN PAGE - https://dev.gen-cert.com/login
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+
+# --- Email Input ---
+- tapOn:
+    text: "you@example.com"
+- inputText: "tq@hydrocert.com"
+- assertVisible: "tq@hydrocert.com"
+
+# --- Password Input ---
+- tapOn:
+    text: "Password"
+- inputText: "TechQuarter2025!"
+
+# --- Keep me signed in Checkbox ---
+- tapOn:
+    text: "Keep me signed in"
+
+# --- Forgot password? Button ---
+# (Tested separately in 02_forgot_password.yaml)
+
+# --- Sign in Button ---
+- tapOn:
+    text: "Sign in"
+
+# --- Verify successful login (redirects to /visits) ---
+- assertVisible: "Visits"
+- assertVisible: "Add New Visit"

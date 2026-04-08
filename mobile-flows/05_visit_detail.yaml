@@ -1,0 +1,73 @@
+appId: com.hydrocert.app
+name: "Visit Detail Screen - All Tabs & Actions"
+tags:
+  - visit-detail
+  - tabs
+  - critical
+---
+
+# =============================================
+# VISIT DETAIL SCREEN
+# Accessed by tapping "View Visit Details" on a visit card
+# =============================================
+
+- launchApp
+
+# --- Open first visit detail ---
+- tapOn:
+    text: "View Visit Details"
+
+# === HEADER ===
+
+# --- Back Button ---
+- assertVisible:
+    id: "Back"
+    optional: true
+
+# --- Location Icon (clickable, opens map) ---
+# content-desc: "Location"
+
+# --- Visit Info ---
+# Address, Time range, Date, Visit Reference #, Booking Person
+
+# === TABS ===
+
+# --- Visit Details Tab (default active) ---
+- tapOn:
+    text: "Visit Details"
+- assertVisible: "Visit Details"
+- assertVisible: "Description"
+
+# --- Visit Details Expandable Row ---
+# clickable row with chevron
+
+# --- Client Signature Row ---
+- assertVisible: "Client Signature"
+
+# --- Actions Row ---
+- assertVisible: "Actions"
+
+# --- Inspections Tab ---
+- tapOn:
+    text: "Inspections.*"
+
+# --- Inspection Items Listed ---
+# Each inspection has a "Start Inspection" button
+- assertVisible: "Start Inspection"
+
+# Inspection form items like:
+# "1. Health and Safty Risk Assessment"
+# "2. Cooling Tower Disinfection form (one per system)"
+# "3. Calorifier/Water Heater temperatures"
+
+# --- Attachments Tab ---
+- tapOn:
+    text: "Attachments.*"
+
+# Shows "No attachments available." or attachment list
+
+# --- Quick Actions Button (floating, bottom-right) ---
+# content-desc: "Quick actions"
+
+# --- Go Back ---
+- back

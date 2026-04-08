@@ -1,0 +1,78 @@
+appId: dev.gen-cert.com
+name: "Visits List Page"
+tags:
+  - visits-list
+  - table
+  - smoke
+---
+
+# =============================================
+# VISITS LIST PAGE
+# URL: https://dev.gen-cert.com/visits-list
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "tq@hydrocert.com"
+- tapOn:
+    text: "Password"
+- inputText: "TechQuarter2025!"
+- tapOn:
+    text: "Sign in"
+
+# --- Navigate to Visits List via sidebar ---
+- tapOn:
+    text: "Visits List"
+
+# --- Verify Page Loaded ---
+- assertVisible: "Visit Reference"
+- assertVisible: "Title"
+- assertVisible: "Customer & Site"
+
+# === SEARCH & FILTER CONTROLS ===
+
+# --- Main Search Input ---
+- tapOn:
+    text: "Search visits, locations, clients..."
+- inputText: "Tackley"
+- clearText
+
+# --- Visit Reference Search Input ---
+- tapOn:
+    text: "Visit reference"
+- inputText: "V168"
+- clearText
+
+# --- Start Date Filter Button ---
+- tapOn:
+    text: "Start Date"
+
+# --- End Date Filter Button ---
+- tapOn:
+    text: "End Date"
+
+# --- Assigned To Filter Dropdown ---
+- tapOn:
+    text: "Assigned To"
+
+# --- Booked By Filter Dropdown ---
+- tapOn:
+    text: "Booked By"
+
+# --- Clear Filters Button ---
+- tapOn:
+    text: "Clear Filters"
+
+# === TABLE HEADERS (sortable columns) ===
+# - Visit Reference
+# - Title
+# - Customer & Site
+# - Visit Type
+# - Visit Date
+# - Booking Person
+# - Assigned Engineer
+# - Status
+
+# === TABLE ROW CLICK (navigates to visit detail) ===
+# Clicking any table row navigates to /visits/details/{id}

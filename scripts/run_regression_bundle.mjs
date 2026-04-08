@@ -77,14 +77,28 @@ const SUITES = {
     script: path.join('scripts', 'tmp-dev-infra-soak-10m.mjs'),
     tests: 11,
   },
+  maestro: {
+    key: 'maestro',
+    id: 'MAESTRO10',
+    label: 'Maestro Web Smoke',
+    script: path.join('scripts', 'qa-maestro-web-smoke.mjs'),
+    tests: 10,
+  },
+  mobile: {
+    key: 'mobile',
+    id: 'MOBILE07',
+    label: 'Maestro Mobile Smoke',
+    script: path.join('scripts', 'qa-maestro-mobile-smoke.mjs'),
+    tests: 7,
+  },
 };
 
 function selectedSuiteKeys(environment, mode) {
   if (mode === 'full') return environment === 'dev'
-    ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced']
-    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced'];
-  if (environment === 'prod') return ['deep', 'roleaccessreadonly', 'postdeployhardening'];
-  return ['deep', 'api', 'roleaccess', 'ui'];
+    ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced', 'maestro', 'mobile']
+    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced', 'maestro', 'mobile'];
+  if (environment === 'prod') return ['deep', 'roleaccessreadonly', 'postdeployhardening', 'maestro'];
+  return ['deep', 'api', 'roleaccess', 'ui', 'maestro'];
 }
 
 function ensureDir(dir) {

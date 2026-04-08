@@ -1,0 +1,70 @@
+appId: dev.gen-cert.com
+name: "Visit Detail Page"
+tags:
+  - visit-detail
+  - tabs
+  - smoke
+---
+
+# =============================================
+# VISIT DETAIL PAGE
+# URL: https://dev.gen-cert.com/visits/details/{id}
+# Accessed by clicking a row in Visits List
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "tq@hydrocert.com"
+- tapOn:
+    text: "Password"
+- inputText: "TechQuarter2025!"
+- tapOn:
+    text: "Sign in"
+
+# --- Navigate to Visits List and click first row ---
+- tapOn:
+    text: "Visits List"
+
+# (Click first table row - navigates to detail)
+
+# === VISIT DETAIL PAGE ELEMENTS ===
+
+# --- Back to Visits Button ---
+- assertVisible: "Back to Visits"
+
+# --- Download Report Button ---
+- assertVisible: "Download Report"
+
+# --- Status Badge ---
+# Displays: "Not started" / "In Progress" / "Completed" etc.
+
+# --- Visit Info Cards ---
+# Site card, Location card, Client card, Date card
+
+# === TABS ===
+
+# --- Visit Details Tab ---
+- tapOn:
+    text: "Visit Details"
+# Shows: Description section, Visit Details expandable section
+
+# --- Inspections Tab ---
+- tapOn:
+    text: "Inspections"
+
+# --- Attachments Tab ---
+- tapOn:
+    text: "Attachments"
+
+# === RIGHT SIDEBAR ===
+
+# --- Actions Section ---
+- assertVisible: "Actions"
+
+# --- Client Signature Section ---
+- assertVisible: "Client Signature"
+
+# --- Back to Visits ---
+- tapOn:
+    text: "Back to Visits"

@@ -34,8 +34,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Generate Hydrocert regression Excel dashboard.')
     parser.add_argument('--combined-json', default=str(DEFAULT_COMBINED_JSON))
     parser.add_argument('--output', default=str(DEFAULT_OUTPUT))
-    parser.add_argument('--title', default='Raport regresie Hydrocert DEV')
-    parser.add_argument('--subtitle', default='Generat din sumarul combinat al rularii')
+    parser.add_argument('--title', default='Hydrocert DEV Regression Report')
+    parser.add_argument('--subtitle', default='Generated from combined run summary')
     return parser.parse_args()
 
 
@@ -162,7 +162,7 @@ def format_evidence(check: dict) -> str:
         if lower.endswith(('.png', '.jpg', '.jpeg', '.webp')):
             formatted.append(f'Print-screen: {entry}')
         else:
-            formatted.append(f'Fisier: {entry}')
+            formatted.append(f'File: {entry}')
     return '\n'.join(formatted)
 
 
@@ -173,57 +173,57 @@ def build_issue_summary(check: dict) -> str:
     test = str(check.get('test', '') or '').strip()
 
     mapping = {
-        ('ROLE06', 'RA01'): 'Swagger este public pe dev si poate fi accesat fara autentificare.',
-        ('ROLE06', 'RA02'): 'Un user cu rol normal poate crea sau sterge customeri.',
-        ('ROLE06', 'RA03'): 'Un user vede visits care nu ii apartin.',
-        ('ROLE06', 'RA04'): 'Un user vede absentele altor persoane.',
-        ('ROLE06', 'RA05'): 'Un user poate vedea activity logs.',
-        ('ROLE06', 'RA06'): 'Un user poate citi reference data globala.',
-        ('ROLERO06', 'RR01'): 'Swagger este public pe prod si poate fi accesat fara autentificare.',
-        ('ROLERO06', 'RR02'): 'Contul user de QA nu s-a autentificat corect pe prod.',
-        ('ROLERO06', 'RR03'): 'Un user vede visits care nu ii apartin pe prod.',
-        ('ROLERO06', 'RR04'): 'Un user vede absentele altor persoane pe prod.',
-        ('ROLERO06', 'RR05'): 'Un user poate vedea activity logs pe prod.',
-        ('ROLERO06', 'RR06'): 'Un user poate citi reference data globala pe prod.',
-        ('ESS25', 'E04'): 'Bundle-ul JS principal nu are header de cache.',
-        ('ESS25', 'E05'): 'Endpoint-ul /health nu raspunde in formatul asteptat de test.',
-        ('ESS25', 'E06'): 'Payload-ul /health nu corespunde cu contractul verificat de test.',
-        ('NEW60', 'R07'): 'Lipseste headerul Strict-Transport-Security.',
-        ('NEW60', 'R08'): 'Lipseste headerul X-Content-Type-Options: nosniff.',
-        ('NEW60', 'R09'): 'Lipseste protectia anti-frame: X-Frame-Options sau CSP frame-ancestors.',
-        ('NEW60', 'R10'): 'Aplicatia web permite metoda TRACE si ar trebui sa o blocheze.',
-        ('API34', 'L08'): 'Burst-ul mixt de API este peste pragul de performanta setat.',
-        ('NEW60', 'R43'): 'Burst-ul mixt de API este peste pragul senior de performanta.',
-        ('DEEP32', 'P02'): 'Endpoint-ul /users/profile/me raspunde prea lent fata de prag.',
-        ('DEEP32', 'P04'): 'Endpoint-ul /visits/calendar-filter are spike de latenta peste prag.',
-        ('DEEP32', 'U03'): 'Visits List s-a incarcat fara randuri.',
-        ('DEEP32', 'U04'): 'Nu s-a putut deschide Visit Details din primul rand.',
-        ('DEEP32', 'U05'): 'Nu s-a putut valida rail-ul de tab-uri din Visit Details.',
-        ('DEEP32', 'U11'): 'Au aparut raspunsuri 5xx in timpul traversarii aplicatiei.',
-        ('DEEP32', 'U12'): 'Au aparut erori in consola in timpul traversarii aplicatiei.',
-        ('UI22', 'U11'): 'Butonul eye din Planner nu a deschis corect pagina de edit.',
-        ('UI22', 'U12'): 'Harta din pagina de edit nu a ramas stabila la refresh.',
+        ('ROLE06', 'RA01'): 'Swagger is public on dev and can be accessed without authentication.',
+        ('ROLE06', 'RA02'): 'A user with normal role can create or delete customers.',
+        ('ROLE06', 'RA03'): 'A user sees visits that don\'t belong to them.',
+        ('ROLE06', 'RA04'): 'A user sees other people\'s absences.',
+        ('ROLE06', 'RA05'): 'A user can view activity logs.',
+        ('ROLE06', 'RA06'): 'A user can read global reference data.',
+        ('ROLERO06', 'RR01'): 'Swagger is public on prod and can be accessed without authentication.',
+        ('ROLERO06', 'RR02'): 'QA user account did not authenticate correctly on prod.',
+        ('ROLERO06', 'RR03'): 'A user sees visits that don\'t belong to them on prod.',
+        ('ROLERO06', 'RR04'): 'A user sees other people\'s absences on prod.',
+        ('ROLERO06', 'RR05'): 'A user can view activity logs on prod.',
+        ('ROLERO06', 'RR06'): 'A user can read global reference data on prod.',
+        ('ESS25', 'E04'): 'Main JS bundle does not have a cache header.',
+        ('ESS25', 'E05'): '/health endpoint does not respond in the expected format.',
+        ('ESS25', 'E06'): '/health payload does not match the contract verified by the test.',
+        ('NEW60', 'R07'): 'Missing Strict-Transport-Security header.',
+        ('NEW60', 'R08'): 'Missing X-Content-Type-Options: nosniff header.',
+        ('NEW60', 'R09'): 'Missing anti-frame protection: X-Frame-Options or CSP frame-ancestors.',
+        ('NEW60', 'R10'): 'Web app allows TRACE method and should block it.',
+        ('API34', 'L08'): 'Mixed API burst exceeds the set performance threshold.',
+        ('NEW60', 'R43'): 'Mixed API burst exceeds the senior performance threshold.',
+        ('DEEP32', 'P02'): '/users/profile/me endpoint responds too slowly vs threshold.',
+        ('DEEP32', 'P04'): '/visits/calendar-filter has latency spike above threshold.',
+        ('DEEP32', 'U03'): 'Visits List loaded without any rows.',
+        ('DEEP32', 'U04'): 'Could not open Visit Details from first row.',
+        ('DEEP32', 'U05'): 'Could not validate the tab rail in Visit Details.',
+        ('DEEP32', 'U11'): '5xx responses appeared during app traversal.',
+        ('DEEP32', 'U12'): 'Console errors appeared during app traversal.',
+        ('UI22', 'U11'): 'Eye button in Planner did not correctly open the edit page.',
+        ('UI22', 'U12'): 'Map on the edit page did not remain stable on refresh.',
     }
 
     summary = mapping.get((suite, check_id))
     if summary:
         if details:
-            return f'{summary} Detalii: {details}.'
+            return f'{summary} Details: {details}.'
         return summary
 
     if '5xx' in details.lower():
-        return f'Aplicatia a returnat raspunsuri 5xx in acest flow. Detalii: {details}.'
+        return f'Application returned 5xx responses in this flow. Details: {details}.'
     if 'console' in test.lower() or 'console' in details.lower():
-        return f'Au aparut erori in consola in timpul rularii. Detalii: {details}.'
+        return f'Console errors appeared during the run. Details: {details}.'
     if 'cache-control' in details.lower():
-        return f'Resursa testata nu are Cache-Control. Detalii: {details}.'
+        return f'Tested resource does not have Cache-Control. Details: {details}.'
     if 'rows=0' in details.lower():
-        return 'Pagina sau tabelul s-a incarcat fara randuri, desi testul astepta date.'
+        return 'Page or table loaded without rows, although the test expected data.'
     if any(token in test.lower() for token in ['p95', 'latency', 'burst', 'load']) or any(token in details.lower() for token in ['p95', 'avg=', 'latency']):
-        return f'Testul de performanta a depasit pragul setat. Detalii: {details or test}.'
+        return f'Performance test exceeded the set threshold. Details: {details or test}.'
     if details:
-        return f'Rezultatul obtinut nu corespunde cu asteptarea testului. Detalii: {details}.'
-    return f'Rezultatul obtinut nu corespunde cu asteptarea testului: {test}.'
+        return f'Result does not match the test expectation. Details: {details}.'
+    return f'Result does not match the test expectation: {test}.'
 
 
 def manual_target_hint(check: dict) -> str:
@@ -515,109 +515,109 @@ def build_steps(check: dict) -> str:
 
     if 'swagger docs and anonymous self-registration' in test_lc:
         return lines(
-            'Deschide endpoint-urile de documentatie fara autentificare.',
-            'Acceseaza `/api` si `/api-json`, apoi incearca `POST /auth/register` fara login.',
-            'Verifica daca documentatia sau self-register-ul raman accesibile anonim.',
+            'Open documentation endpoints without authentication.',
+            'Access `/api` and `/api-json`, then try `POST /auth/register` without login.',
+            'Verify that documentation or self-registration remain anonymously accessible.',
         )
 
     if 'create or delete customers' in test_lc:
         return lines(
-            'Logheaza-te cu un cont cu rol `user` si pastreaza bearer token-ul.',
-            'Apeleaza `POST /customers` cu un nume unic de test, apoi `DELETE /customers/{id}` daca create-ul trece.',
-            'Verifica daca ambele actiuni sunt blocate pentru rolul `user`.',
+            'Log in with an account with `user` role and keep the bearer token.',
+            'Call `POST /customers` with a unique test name, then `DELETE /customers/{id}` if create succeeds.',
+            'Verify that both actions are blocked for the `user` role.',
         )
 
     if 'only sees own visits' in test_lc:
         return lines(
-            'Logheaza-te cu un cont cu rol `user` si pastreaza bearer token-ul.',
-            'Apeleaza `GET /visits/calendar-filter` pe un interval care intoarce date.',
-            'Verifica daca raspunsul contine doar visits asignate userului logat.',
+            'Log in with an account with `user` role and keep the bearer token.',
+            'Call `GET /visits/calendar-filter` on an interval that returns data.',
+            'Verify the response contains only visits assigned to the logged-in user.',
         )
 
     if 'team absences' in test_lc:
         return lines(
-            'Logheaza-te cu un cont cu rol `user` si pastreaza bearer token-ul.',
-            'Apeleaza `GET /users/absences` pe un interval cu absente cunoscute.',
-            'Verifica daca raspunsul nu expune absentele altor angajati.',
+            'Log in with an account with `user` role and keep the bearer token.',
+            'Call `GET /users/absences` on an interval with known absences.',
+            'Verify the response does not expose other employees\' absences.',
         )
 
     if 'activity logs' in test_lc:
         return lines(
-            'Logheaza-te cu un cont cu rol `user` si pastreaza bearer token-ul.',
-            'Apeleaza `GET /activity-logs`.',
-            'Verifica daca accesul este blocat sau limitat conform permisiunilor asteptate.',
+            'Log in with an account with `user` role and keep the bearer token.',
+            'Call `GET /activity-logs`.',
+            'Verify access is blocked or limited according to expected permissions.',
         )
 
     if 'global reference data' in test_lc:
         return lines(
-            'Logheaza-te cu un cont cu rol `user` si pastreaza bearer token-ul.',
-            'Apeleaza endpoint-urile comune de reference data: `/sites`, `/products`, `/job-types`, `/skills`, `/contracts`.',
-            'Verifica daca rolul `user` nu poate citi reference data globala decat daca este permis explicit.',
+            'Log in with an account with `user` role and keep the bearer token.',
+            'Call common reference data endpoints: `/sites`, `/products`, `/job-types`, `/skills`, `/contracts`.',
+            'Verify the `user` role cannot read global reference data unless explicitly allowed.',
         )
 
     if any(keyword in test_lc for keyword in ['without token', 'anonymous']):
         return lines(
-            f'Apeleaza `{endpoint or "endpoint-ul testat"}` fara header `Authorization`.',
-            'Uita-te la status code si la payload.',
-            f'Verifica daca rezultatul corespunde cu asteptarea testului: {test}.',
+            f'Call `{endpoint or "the tested endpoint"}` without `Authorization` header.',
+            'Check the status code and payload.',
+            f'Verify that the result matches the test expectation: {test}.',
         )
 
     if any(keyword in test_lc for keyword in ['invalid token', 'tampered token']):
         return lines(
-            'Autentifica-te intai si ia un bearer token valid.',
-            f'Apeleaza `{endpoint or "endpoint-ul testat"}` cu un token invalid sau modificat.',
-            f'Verifica daca rezultatul corespunde cu asteptarea testului: {test}.',
+            'Authenticate first and obtain a valid bearer token.',
+            f'Call `{endpoint or "the tested endpoint"}` with an invalid or tampered token.',
+            f'Verify that the result matches the test expectation: {test}.',
         )
 
     if 'valid login' in test_lc or ('login' in test_lc and 'invalid' not in test_lc):
         return lines(
-            'Deschide clientul API folosit pentru verificare.',
-            'Apeleaza `POST /auth/login` cu credentialele QA folosite de pipeline.',
-            f'Verifica daca rezultatul corespunde cu asteptarea testului: {test}.',
+            'Open the API client used for verification.',
+            'Call `POST /auth/login` with the QA credentials used by the pipeline.',
+            f'Verify that the result matches the test expectation: {test}.',
         )
 
     if 'invalid login' in test_lc:
         return lines(
-            'Deschide clientul API folosit pentru verificare.',
-            'Apeleaza `POST /auth/login` cu email-ul QA si o parola invalida.',
-            f'Verifica daca rezultatul corespunde cu asteptarea testului: {test}.',
+            'Open the API client used for verification.',
+            'Call `POST /auth/login` with the QA email and an invalid password.',
+            f'Verify that the result matches the test expectation: {test}.',
         )
 
     if 'burst' in test_lc or 'p95' in test_lc or 'avg <=' in test_lc or 'avg <' in test_lc or 'load' in area or 'perf' in area:
         return lines(
-            f'Autentifica-te daca este nevoie, apoi loveste `{endpoint or "endpoint-ul testat"}`.',
-            'Repeta request-ul cu secventa sau concurenta descrisa in test.',
-            'Masoara latenta sau erorile si compara rezultatul cu pragul definit de test.',
+            f'Authenticate if needed, then hit `{endpoint or "the tested endpoint"}`.',
+            'Repeat the request with the sequence or concurrency described in the test.',
+            'Measure latency or errors and compare the result with the threshold defined by the test.',
         )
 
     if any(keyword in suite for keyword in ['api', 'roleaccess']) or any(keyword in area for keyword in ['api', 'auth', 'access control', 'security']):
-        auth_step = 'Autentifica-te cu contul QA daca endpoint-ul cere bearer token.'
+        auth_step = 'Authenticate with the QA account if the endpoint requires a bearer token.'
         if 'public' in test_lc or 'http' in test_lc or 'tls' in test_lc or 'dns' in test_lc:
-            auth_step = 'Nu este nevoie de login daca endpoint-ul nu este protejat.'
-        target_step = f'Apeleaza `{endpoint or "endpoint-ul folosit de test"}` cu acelasi query sau payload folosit de automatizare.'
+            auth_step = 'No login needed if the endpoint is not protected.'
+        target_step = f'Call `{endpoint or "the endpoint used by the test"}` with the same query or payload used by automation.'
         if ' + ' in endpoint or ', ' in endpoint:
-            target_step = f'Foloseste exact aceste endpoint-uri sau flow-uri ca in automatizare: `{endpoint}`.'
+            target_step = f'Use exactly these endpoints or flows as in automation: `{endpoint}`.'
         return lines(
             auth_step,
             target_step,
-            f'Compara raspunsul cu rezultatul asteptat de test: {test}.',
+            f'Compare the response with the expected test result: {test}.',
         )
 
     if 'ui' in suite or 'web' in area:
-        route = endpoint or 'pagina testata'
-        route_step = f'Logheaza-te daca este nevoie, apoi intra in `{route}`.'
+        route = endpoint or 'the tested page'
+        route_step = f'Log in if needed, then navigate to `{route}`.'
         if '->' in route or ', ' in route:
-            route_step = f'Logheaza-te daca este nevoie, apoi urmeaza acest flow in aplicatie: `{route}`.'
+            route_step = f'Log in if needed, then follow this flow in the application: `{route}`.'
         return lines(
-            'Deschide aplicatia web pe acelasi mediu pe care a rulat regresia.',
+            'Open the web application on the same environment where the regression ran.',
             route_step,
-            f'Executa actiunea descrisa de test si compara rezultatul real cu asteptarea: {test}.',
+            f'Execute the action described by the test and compare the actual result with the expectation: {test}.',
         )
 
     return lines(
-        'Deschide acelasi mediu pe care a rulat regresia.',
-        'Repeta actiunea din numele testului pe aceeasi pagina sau pe acelasi endpoint folosit de automatizare.',
-        f'Compara rezultatul real cu comportamentul asteptat de test: {test}.',
+        'Open the same environment where the regression ran.',
+        'Repeat the action from the test name on the same page or endpoint used by automation.',
+        f'Compare the actual result with the expected test behavior: {test}.',
     )
 
 
@@ -646,16 +646,16 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     wb = Workbook()
     wb.properties.creator = 'Codex'
     wb.properties.title = title
-    wb.properties.subject = 'Raport regresie Hydrocert'
+    wb.properties.subject = 'Hydrocert Regression Report'
     wb.properties.description = subtitle
 
     dashboard = wb.active
-    dashboard.title = 'Sumar'
+    dashboard.title = 'Summary'
     dashboard.sheet_view.showGridLines = False
     dashboard.sheet_properties.tabColor = '2563EB'
 
     dashboard['A1'] = title
-    dashboard['A2'] = f"{subtitle} | Generat la {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    dashboard['A2'] = f"{subtitle} | Generated at {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     dashboard['A1'].font = Font(name='Aptos Display', bold=True, size=22, color='FFFFFF')
     dashboard['A2'].font = Font(name='Aptos', italic=True, size=10, color='E2E8F0')
     dashboard.merge_cells('A1:H1')
@@ -665,14 +665,14 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
             for cell in cells:
                 cell.fill = PatternFill('solid', fgColor=PALETTE['navy'])
 
-    card(dashboard, 'A4:B6', 'Total teste', len(checks), PALETTE['slate'])
-    card(dashboard, 'C4:D6', 'Trecute', totals['PASS'], PALETTE['pass'])
-    card(dashboard, 'E4:F6', 'Picate', totals['FAIL'], PALETTE['fail'])
-    card(dashboard, 'G4:H6', 'Sarite', totals['SKIP'], PALETTE['skip'])
+    card(dashboard, 'A4:B6', 'Total Tests', len(checks), PALETTE['slate'])
+    card(dashboard, 'C4:D6', 'Passed', totals['PASS'], PALETTE['pass'])
+    card(dashboard, 'E4:F6', 'Failed', totals['FAIL'], PALETTE['fail'])
+    card(dashboard, 'G4:H6', 'Skipped', totals['SKIP'], PALETTE['skip'])
 
-    dashboard['A8'] = 'Sumar pe suite'
+    dashboard['A8'] = 'Suite Summary'
     dashboard['A8'].font = Font(name='Aptos', bold=True, size=14, color=PALETTE['navy'])
-    headers = ['Suita', 'Total', 'Trecute', 'Picate', 'Sarite']
+    headers = ['Suite', 'Total', 'Passed', 'Failed', 'Skipped']
     for idx, header in enumerate(headers, start=1):
         dashboard.cell(9, idx, header)
     style_table_header_row(dashboard, 9)
@@ -687,9 +687,9 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
         dashboard.cell(row, 5, stats['SKIP'])
         row += 1
 
-    dashboard['G8'] = 'Fail-uri curente'
+    dashboard['G8'] = 'Current Failures'
     dashboard['G8'].font = Font(name='Aptos', bold=True, size=14, color=PALETTE['navy'])
-    failed_headers = ['Suita', 'ID', 'Arie', 'Test']
+    failed_headers = ['Suite', 'ID', 'Area', 'Test']
     for idx, header in enumerate(failed_headers, start=7):
         dashboard.cell(9, idx, header)
     style_table_header_row(dashboard, 9)
@@ -721,10 +721,10 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
     dashboard.column_dimensions['I'].width = 16
     dashboard.column_dimensions['J'].width = 44
 
-    all_tests = wb.create_sheet('Toate Testele')
+    all_tests = wb.create_sheet('All Tests')
     all_tests.freeze_panes = 'A2'
     all_tests.sheet_properties.tabColor = PALETTE['pass']
-    all_headers = ['#', 'Suita', 'ID', 'Arie', 'Status', 'Test', 'Cale / endpoint', 'Problema pe scurt', 'Detalii tehnice', 'Pasi de reproducere', 'Print evidence']
+    all_headers = ['#', 'Suite', 'ID', 'Area', 'Status', 'Test', 'Path / Endpoint', 'Issue Summary', 'Technical Details', 'Reproduction Steps', 'Evidence']
     all_tests.append(all_headers)
     style_table_header_row(all_tests, 1)
     for idx, check in enumerate(checks, start=1):
@@ -771,10 +771,10 @@ def build_workbook(summary: dict, output_path: Path, title: str, subtitle: str):
                 evidence_cell.hyperlink = relative_target
                 evidence_cell.style = 'Hyperlink'
 
-    failed_sheet = wb.create_sheet('Detalii Fail')
+    failed_sheet = wb.create_sheet('Failed Details')
     failed_sheet.freeze_panes = 'A2'
     failed_sheet.sheet_properties.tabColor = PALETTE['fail']
-    failed_detail_headers = ['Suita', 'ID', 'Arie', 'Status', 'Test', 'Cale / endpoint', 'Problema pe scurt', 'Detalii tehnice', 'Pasi de reproducere', 'Print evidence']
+    failed_detail_headers = ['Suite', 'ID', 'Area', 'Status', 'Test', 'Path / Endpoint', 'Issue Summary', 'Technical Details', 'Reproduction Steps', 'Evidence']
     failed_sheet.append(failed_detail_headers)
     style_table_header_row(failed_sheet, 1)
     for row_idx, check in enumerate(failed_rows, start=2):
