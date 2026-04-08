@@ -1,6 +1,5 @@
 name: Nightly Regression (DEV)
-run-name: >-
-  Nightly Regression - mode=${{ github.event.inputs.mode || (github.event.schedule == '0 0 * * 0' && 'full' || 'standard') }} - ${{ github.event.repository.updated_at || github.event.head_commit.timestamp || 'scheduled' }}
+run-name: "Nightly Regression (DEV) - ${{ github.event_name }}"
 
 on:
   schedule:
@@ -173,26 +172,28 @@ jobs:
           fi
 
           # Build the results JSON
-          cat > nightly-results.json <<ENDJSON
+          cat > nightly-results.json <<'ENDJSON'
           {
             "title": "Hydrocert Nightly QA Report",
-            "environment": "dev",
-            "mode": "${MODE}",
-            "date": "${DATE}",
-            "totals": {
-              "total": ${TOTAL:-0},
-              "pass": ${PASS:-0},
-              "fail": ${FAILED:-0},
-              "skip": ${SKIP:-0}
-            },
-            "failedTests": ${FAILED_DETAILS},
-            "links": {
-              "runUrl": "${RUN_URL}",
-              "excelArtifact": "${EXCEL_URL}",
-              "bundleArtifact": "${BUNDLE_URL}"
-            }
+            "environment": "dev"
           }
           ENDJSON
+          # Now build proper JSON with jq
+          jq -n \
+            --arg title "Hydrocert Nightly QA Report" \
+            --arg env "dev" \
+            --arg mode "${MODE}" \
+            --arg date "${DATE}" \
+            --argjson total "${TOTAL:-0}" \
+            --argjson pass "${PASS:-0}" \
+            --argjson fail "${FAILED:-0}" \
+            --argjson skip "${SKIP:-0}" \
+            --argjson failedTests "${FAILED_DETAILS}" \
+            --arg runUrl "${RUN_URL}" \
+            --arg excelArtifact "${EXCEL_URL:-}" \
+            --arg bundleArtifact "${BUNDLE_URL:-}" \
+            '{title:$title, environment:$env, mode:$mode, date:$date, totals:{total:$total, pass:$pass, fail:$fail, skip:$skip}, failedTests:$failedTests, links:{runUrl:$runUrl, excelArtifact:$excelArtifact, bundleArtifact:$bundleArtifact}}' \
+            > nightly-results.json
 
           echo "json_path=nightly-results.json" >> "$GITHUB_OUTPUT"
           echo "Results JSON written:"
@@ -200,13 +201,17 @@ jobs:
 
       # ── Send Teams notification via Power Automate webhook ─────
       - name: Notify Teams via Power Automate webhook
-        if: always() && secrets.TEAMS_WEBHOOK_URL != ''
+        if: always()
         continue-on-error: true
         shell: bash
         env:
           TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
         run: |
           set -euo pipefail
+          if [[ -z "${TEAMS_WEBHOOK_URL}" ]]; then
+            echo "No TEAMS_WEBHOOK_URL secret set — skipping Teams notification."
+            exit 0
+          fi
           echo "Sending results to Teams webhook..."
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -X POST \
