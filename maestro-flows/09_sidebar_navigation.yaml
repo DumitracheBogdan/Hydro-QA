@@ -1,0 +1,81 @@
+appId: dev.gen-cert.com
+name: "Sidebar Navigation - All Links"
+tags:
+  - navigation
+  - sidebar
+  - smoke
+---
+
+# =============================================
+# SIDEBAR NAVIGATION TEST
+# Tests all sidebar links and their destinations
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# === MAIN MENU SECTION ===
+
+# --- Dashboard Link ---
+- tapOn:
+    text: "Dashboard"
+- assertVisible: "Visits"
+
+# --- Customers Link ---
+# NOTE: Currently links to /visits (placeholder - no dedicated page)
+- tapOn:
+    text: "Customers"
+
+# --- Schedule Dropdown ---
+- tapOn:
+    text: "Schedule"
+# Sub-items appear:
+
+# --- Schedule > Visits ---
+- tapOn:
+    text: "Visits"
+- assertVisible: "Visits"
+
+# --- Schedule > Planner ---
+- tapOn:
+    text: "Schedule"
+- tapOn:
+    text: "Planner"
+
+# --- Visits List Link ---
+- tapOn:
+    text: "Visits List"
+- assertVisible: "Visit Reference"
+
+# === OTHER SECTION ===
+
+# --- Team Management Link ---
+# NOTE: Currently links to /visits (placeholder - no dedicated page)
+- tapOn:
+    text: "Team Management"
+
+# --- Settings Link ---
+# NOTE: Currently links to /visits (placeholder - no dedicated page)
+- tapOn:
+    text: "Settings"
+
+# === GLOBAL ELEMENTS ===
+
+# --- Toggle Sidebar ---
+- tapOn:
+    text: "Toggle Sidebar"
+# Sidebar collapses
+
+# --- Toggle Sidebar again (expand) ---
+- tapOn:
+    text: "Toggle Sidebar"
+
+# --- Logo (clickable) ---
+# Hydrocert logo at top of sidebar

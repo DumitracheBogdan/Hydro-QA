@@ -1,0 +1,35 @@
+appId: com.hydrocert.app
+name: "Bottom Navigation - All Tabs"
+tags:
+  - navigation
+  - smoke
+---
+
+# =============================================
+# BOTTOM NAVIGATION BAR TEST
+# Tests switching between all 4 bottom tabs
+# =============================================
+
+- launchApp
+
+# --- Visits Tab (default selected) ---
+- assertVisible: "Welcome.*"
+
+# --- Switch to History ---
+- tapOn:
+    text: "History"
+- assertVisible: "Type to search.*"
+
+# --- Switch to Activity ---
+- tapOn:
+    text: "Activity"
+
+# --- Switch to Account ---
+- tapOn:
+    text: "Account"
+- assertVisible: "Bogdan Dumitrache"
+
+# --- Switch back to Visits ---
+- tapOn:
+    text: "Visits"
+- assertVisible: "Welcome.*"

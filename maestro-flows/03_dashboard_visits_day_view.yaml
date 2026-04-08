@@ -1,0 +1,68 @@
+appId: dev.gen-cert.com
+name: "Dashboard Visits - Day View"
+tags:
+  - dashboard
+  - visits
+  - day-view
+  - smoke
+---
+
+# =============================================
+# DASHBOARD / VISITS - DAY VIEW
+# URL: https://dev.gen-cert.com/visits
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# --- Verify Dashboard Loaded ---
+- assertVisible: "Visits"
+- assertVisible: "Here is an overview of your current and upcoming visits."
+
+# --- Add New Visit Button ---
+- assertVisible: "Add New Visit"
+
+# --- Today Date Button ---
+- tapOn:
+    text: "Today.*"
+    optional: true
+
+# --- Previous Day Navigation Arrow ---
+# (Left arrow button next to date)
+# Tested by clicking the arrow buttons
+
+# --- Next Day Navigation Arrow ---
+# (Right arrow button next to date)
+
+# --- Day/Month Toggle ---
+- assertVisible: "Day"
+- assertVisible: "Month"
+
+# --- Day View (default) ---
+- tapOn:
+    text: "Day"
+
+# --- All Engineers Dropdown ---
+- tapOn:
+    text: "All Engineers"
+
+# --- Toggle Sidebar Button ---
+- tapOn:
+    text: "Toggle Sidebar"
+    optional: true
+
+# --- User Profile Menu ---
+- tapOn:
+    text: "Tech Quarter"
+
+# --- Logout Button (in dropdown) ---
+- assertVisible: "Logout"
+# Press Escape to close menu
+- pressKey: Escape

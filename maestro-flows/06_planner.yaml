@@ -1,0 +1,80 @@
+appId: dev.gen-cert.com
+name: "Planner Page"
+tags:
+  - planner
+  - schedule
+  - smoke
+---
+
+# =============================================
+# PLANNER PAGE
+# URL: https://dev.gen-cert.com/planner
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# --- Navigate to Planner via sidebar ---
+- tapOn:
+    text: "Schedule"
+- tapOn:
+    text: "Planner"
+
+# --- Verify Planner Page Loaded ---
+- assertVisible: "Month View"
+
+# --- Month View Button ---
+- tapOn:
+    text: "Month View"
+
+# --- Events View Button ---
+- tapOn:
+    text: "Events View"
+
+# --- Month Selector (April 2026) ---
+- assertVisible: "April 2026"
+
+# --- Search Locations Input ---
+- tapOn:
+    text: "Search locations, clients..."
+- inputText: "Tackley"
+
+# Clear search
+- clearText
+
+# --- Search Customer Input ---
+- tapOn:
+    text: "Search Customer..."
+
+# === FILTER BUTTONS ===
+
+# --- Status Filter Dropdown ---
+- tapOn:
+    text: "Status"
+
+# --- Job Type Filter Dropdown ---
+- tapOn:
+    text: "Job Type"
+
+# --- Assigned To Filter Dropdown ---
+- tapOn:
+    text: "Assigned To"
+
+# --- Booked By Filter Dropdown ---
+- tapOn:
+    text: "Booked By"
+
+# --- Sort Button ---
+- tapOn:
+    text: "Sort"
+
+# --- Clear Filters Button ---
+- tapOn:
+    text: "Clear"

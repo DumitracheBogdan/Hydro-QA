@@ -1,0 +1,39 @@
+appId: dev.gen-cert.com
+name: "User Profile Menu"
+tags:
+  - user-menu
+  - logout
+  - smoke
+---
+
+# =============================================
+# USER PROFILE MENU
+# Top-right corner, present on all authenticated pages
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# --- Open User Menu ---
+- tapOn:
+    text: "Tech Quarter"
+
+# --- Verify Menu Content ---
+- assertVisible: "Logout"
+
+# --- Close Menu (Escape) ---
+- pressKey: Escape
+
+# --- Open and Logout ---
+# - tapOn:
+#     text: "Tech Quarter"
+# - tapOn:
+#     text: "Logout"
+# - assertVisible: "Login to your account"

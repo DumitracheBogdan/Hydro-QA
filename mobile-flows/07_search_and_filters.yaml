@@ -1,0 +1,37 @@
+appId: com.hydrocert.app
+name: "Search & Filter Chips"
+tags:
+  - search
+  - filters
+  - smoke
+---
+
+# =============================================
+# SEARCH & FILTER FUNCTIONALITY
+# =============================================
+
+- launchApp
+
+# --- Search Input ---
+- tapOn:
+    text: "Type to search.*"
+- inputText: "Avondale"
+- assertVisible: "Avondale"
+- clearText
+
+# --- Filter: Today ---
+- tapOn:
+    text: "Today"
+# Verify filter applied (visits filtered)
+
+# --- Filter: Tomorrow ---
+- tapOn:
+    text: "Tomorrow"
+
+# --- Filter: Next week ---
+- tapOn:
+    text: "Next week"
+
+# --- Deselect all (tap active filter again) ---
+- tapOn:
+    text: "Next week"

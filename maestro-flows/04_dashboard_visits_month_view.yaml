@@ -1,0 +1,47 @@
+appId: dev.gen-cert.com
+name: "Dashboard Visits - Month View"
+tags:
+  - dashboard
+  - visits
+  - month-view
+---
+
+# =============================================
+# DASHBOARD / VISITS - MONTH VIEW
+# URL: https://dev.gen-cert.com/visits
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# --- Switch to Month View ---
+- tapOn:
+    text: "Month"
+
+# --- Verify Month View Loaded ---
+- assertVisible: "April 2026"
+
+# --- Month Navigation (previous/next month arrows) ---
+# Previous month arrow
+# Next month arrow
+
+# --- Add New Visit Button (still visible) ---
+- assertVisible: "Add New Visit"
+
+# --- Day/Month Toggle (Month active) ---
+- assertVisible: "Day"
+- assertVisible: "Month"
+
+# --- All Engineers Dropdown (still visible) ---
+- assertVisible: "All Engineers"
+
+# --- Switch Back to Day View ---
+- tapOn:
+    text: "Day"

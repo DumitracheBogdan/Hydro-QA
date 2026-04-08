@@ -1,0 +1,34 @@
+appId: com.hydrocert.app
+name: "History Screen"
+tags:
+  - history
+  - smoke
+---
+
+# =============================================
+# HISTORY SCREEN
+# =============================================
+
+- launchApp
+
+# --- Navigate to History tab ---
+- tapOn:
+    text: "History"
+
+# --- Verify History Screen Loaded ---
+# Profile avatar visible (top-right, clickable)
+
+# --- Search Input ---
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA"
+- clearText
+
+# --- Visit Cards (same format as home) ---
+- assertVisible: "View Visit Details"
+
+# --- Bottom Navigation ---
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Activity"
+- assertVisible: "Account"

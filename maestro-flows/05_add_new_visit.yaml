@@ -1,0 +1,103 @@
+appId: dev.gen-cert.com
+name: "Add New Visit Form"
+tags:
+  - visits
+  - add-new-visit
+  - form
+  - critical
+---
+
+# =============================================
+# ADD NEW VISIT FORM
+# URL: https://dev.gen-cert.com/visits/addnewvisit
+# =============================================
+
+- openLink: https://dev.gen-cert.com/login
+- tapOn:
+    text: "you@example.com"
+- inputText: "qa-admin@example.com"
+- tapOn:
+    text: "Password"
+- inputText: "***REMOVED***"
+- tapOn:
+    text: "Sign in"
+
+# --- Navigate to Add New Visit ---
+- tapOn:
+    text: "Add New Visit"
+
+# --- Verify Form Loaded ---
+- assertVisible: "Add New Visit"
+
+# === VISIT DETAILS SECTION ===
+- assertVisible: "Visit Details"
+
+# --- Title Input ---
+- tapOn:
+    text: "Enter title..."
+- inputText: "QA Test Visit"
+
+# --- Search Site Input ---
+- tapOn:
+    text: "Search Site..."
+
+# --- Search Customer Input ---
+- tapOn:
+    text: "Search Customer..."
+
+# --- Status Dropdown (default: Scheduled) ---
+- assertVisible: "Scheduled"
+- tapOn:
+    text: "Scheduled"
+
+# --- Select Date Button ---
+- tapOn:
+    text: "Select date"
+
+# --- Start Time Dropdown ---
+- tapOn:
+    text: "Start time"
+
+# --- End Time Dropdown ---
+- tapOn:
+    text: "End time"
+
+# --- Points Input (number) ---
+# Numeric input field
+
+# --- Notes Textarea ---
+- tapOn:
+    text: "Enter notes..."
+- inputText: "QA automated test notes"
+
+# === INSPECTIONS SECTION ===
+- assertVisible: "Inspections"
+
+# --- Inspection Button ---
+- tapOn:
+    text: "Inspection"
+
+# === BOOKING PERSON SECTION ===
+- assertVisible: "Booking Person"
+
+# === ENGINEER ASSIGNMENT SECTION ===
+- assertVisible: "Engineer Assignment"
+
+# --- Engineer Checkboxes ---
+# These are the qualification checkboxes:
+# - Chemistry Level 4
+# - Biology
+# - Physics
+# - Plumbing
+# - Electrical
+# - Safety Certified
+
+# --- Cancel Button ---
+- assertVisible: "Cancel"
+
+# --- Create Visit Button ---
+- assertVisible: "Create Visit"
+
+# --- Click Cancel to not create test data ---
+- tapOn:
+    text: "Cancel"

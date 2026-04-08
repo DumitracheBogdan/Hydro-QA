@@ -1,0 +1,222 @@
+name: Nightly Regression (DEV)
+run-name: >-
+  Nightly Regression - mode=${{ github.event.inputs.mode || (github.event.schedule == '0 0 * * 0' && 'full' || 'standard') }} - ${{ github.event.repository.updated_at || github.event.head_commit.timestamp || 'scheduled' }}
+
+on:
+  schedule:
+    # Weeknights Mon-Fri: 3 AM Romania (EEST, UTC+3) = 0:00 UTC
+    - cron: '0 0 * * 1-5'
+    # Sunday full regression: 3 AM Romania (EEST, UTC+3) = 0:00 UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Regression mode
+        required: true
+        type: choice
+        default: standard
+        options:
+          - standard
+          - full
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-regression-dev
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: Development
+    env:
+      HYDROCERT_TARGET_ENV: dev
+      HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+      HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+
+    steps:
+      # ── Determine regression mode ──────────────────────────────
+      - name: Determine regression mode
+        id: mode
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.mode }}" ]]; then
+            MODE="${{ github.event.inputs.mode }}"
+          elif [[ "${{ github.event.schedule }}" == "0 0 * * 0" ]]; then
+            MODE="full"
+          else
+            MODE="standard"
+          fi
+          echo "value=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "Regression mode: ${MODE}"
+
+      # ── Checkout ───────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Validate configuration ─────────────────────────────────
+      - name: Validate regression configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${HYDROCERT_WEB_BASE}" ]]; then
+            echo "Missing HYDROCERT_WEB_BASE" >&2; exit 1
+          fi
+          if [[ -z "${HYDROCERT_API_BASE}" ]]; then
+            echo "Missing HYDROCERT_API_BASE" >&2; exit 1
+          fi
+          if [[ -z "${HYDROCERT_QA_EMAIL}" || -z "${HYDROCERT_QA_PASSWORD}" ]]; then
+            echo "Missing QA credentials" >&2; exit 1
+          fi
+
+      # ── Node.js ────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # ── Python ─────────────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Excel dependency
+        run: python -m pip install --upgrade pip openpyxl
+
+      # ── Run regression bundle ──────────────────────────────────
+      - name: Run regression bundle
+        id: bundle
+        shell: bash
+        env:
+          HYDROCERT_REGRESSION_MODE: ${{ steps.mode.outputs.value }}
+        run: |
+          set -euo pipefail
+          node scripts/run_regression_bundle.mjs
+
+      # ── Upload artifacts ───────────────────────────────────────
+      - name: Upload regression artifacts
+        id: upload_bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrocert-dev-nightly-${{ steps.mode.outputs.value }}-${{ github.run_id }}
+          path: ${{ steps.bundle.outputs.output_dir }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload Excel artifact
+        id: upload_excel
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrocert-dev-nightly-${{ steps.mode.outputs.value }}-excel-${{ github.run_id }}
+          path: ${{ steps.bundle.outputs.excel_path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      # ── Publish workflow summary ───────────────────────────────
+      - name: Publish workflow summary
+        shell: bash
+        run: |
+          {
+            echo "# Hydrocert Nightly Regression"
+            echo ""
+            echo "- Environment: dev"
+            echo "- Mode: ${{ steps.mode.outputs.value }}"
+            echo "- Total tests: ${{ steps.bundle.outputs.total_tests }}"
+            echo "- Failed tests: ${{ steps.bundle.outputs.failed_tests }}"
+            echo "- Excel artifact: $(basename '${{ steps.bundle.outputs.excel_path }}')"
+            echo "- [Download Excel artifact](${{ steps.upload_excel.outputs.artifact-url }})"
+            echo "- [Download full regression bundle](${{ steps.upload_bundle.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Build results JSON for Teams notification ──────────────
+      - name: Build nightly results JSON
+        id: results
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOTAL="${{ steps.bundle.outputs.total_tests }}"
+          FAILED="${{ steps.bundle.outputs.failed_tests }}"
+          PASS=$((${TOTAL:-0} - ${FAILED:-0}))
+          SKIP="0"
+          DATE="$(date -u +%Y-%m-%d)"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          EXCEL_URL="${{ steps.upload_excel.outputs.artifact-url }}"
+          BUNDLE_URL="${{ steps.upload_bundle.outputs.artifact-url }}"
+          MODE="${{ steps.mode.outputs.value }}"
+
+          # Try to extract failed test details from the bundle summary JSON
+          FAILED_DETAILS="[]"
+          SUMMARY_FILE="${{ steps.bundle.outputs.output_dir }}/summary.json"
+          if [[ -f "$SUMMARY_FILE" ]]; then
+            # Extract skip count if available
+            SKIP_VAL=$(jq -r '.skipped // 0' "$SUMMARY_FILE" 2>/dev/null || echo "0")
+            if [[ "$SKIP_VAL" != "null" ]]; then
+              SKIP="$SKIP_VAL"
+              PASS=$((${TOTAL:-0} - ${FAILED:-0} - ${SKIP:-0}))
+            fi
+            # Extract failed test details if available
+            FAILED_DETAILS=$(jq -c '[.failures[]? | {suite: .suite, id: .id, test: .title}]' "$SUMMARY_FILE" 2>/dev/null || echo "[]")
+          fi
+
+          # Build the results JSON
+          cat > nightly-results.json <<ENDJSON
+          {
+            "title": "Hydrocert Nightly QA Report",
+            "environment": "dev",
+            "mode": "${MODE}",
+            "date": "${DATE}",
+            "totals": {
+              "total": ${TOTAL:-0},
+              "pass": ${PASS:-0},
+              "fail": ${FAILED:-0},
+              "skip": ${SKIP:-0}
+            },
+            "failedTests": ${FAILED_DETAILS},
+            "links": {
+              "runUrl": "${RUN_URL}",
+              "excelArtifact": "${EXCEL_URL}",
+              "bundleArtifact": "${BUNDLE_URL}"
+            }
+          }
+          ENDJSON
+
+          echo "json_path=nightly-results.json" >> "$GITHUB_OUTPUT"
+          echo "Results JSON written:"
+          cat nightly-results.json
+
+      # ── Send Teams notification via Power Automate webhook ─────
+      - name: Notify Teams via Power Automate webhook
+        if: always() && secrets.TEAMS_WEBHOOK_URL != ''
+        continue-on-error: true
+        shell: bash
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          echo "Sending results to Teams webhook..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d @nightly-results.json \
+            "${TEAMS_WEBHOOK_URL}")
+
+          echo "Webhook response status: ${HTTP_STATUS}"
+          if [[ "${HTTP_STATUS}" -ge 200 && "${HTTP_STATUS}" -lt 300 ]]; then
+            echo "Teams notification sent successfully."
+          else
+            echo "::warning::Teams webhook returned HTTP ${HTTP_STATUS}. Notification may not have been delivered."
+          fi
