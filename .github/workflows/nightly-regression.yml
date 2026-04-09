@@ -17,6 +17,11 @@ on:
         options:
           - standard
           - full
+      run_mobile_tests:
+        description: Run mobile app tests (Android emulator)
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -50,8 +55,17 @@ jobs:
           else
             MODE="standard"
           fi
+          # Determine if mobile tests should run
+          MOBILE="false"
+          if [[ "${{ github.event.inputs.run_mobile_tests }}" == "true" ]]; then
+            MOBILE="true"
+          elif [[ "${MODE}" == "full" ]]; then
+            MOBILE="true"
+          fi
+
           echo "value=${MODE}" >> "$GITHUB_OUTPUT"
-          echo "Regression mode: ${MODE}"
+          echo "mobile=${MOBILE}" >> "$GITHUB_OUTPUT"
+          echo "Regression mode: ${MODE} | Mobile: ${MOBILE}"
 
       # ── Checkout ───────────────────────────────────────────────
       - name: Checkout repository
@@ -94,12 +108,32 @@ jobs:
       - name: Install Excel dependency
         run: python -m pip install --upgrade pip openpyxl
 
+      # ── Set up Android emulator (only if mobile tests enabled) ─
+      - name: Set up Android emulator
+        if: steps.mode.outputs.mobile == 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          script: echo "Emulator booted"
+
+      - name: Download and install APK
+        if: steps.mode.outputs.mobile == 'true'
+        shell: bash
+        run: |
+          gh release download mobile-apk-v1 -p "app-debug.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber
+          adb install /tmp/app-debug.apk || echo "::warning::APK install failed — mobile tests will be skipped"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       # ── Run regression bundle ──────────────────────────────────
       - name: Run regression bundle
         id: bundle
         shell: bash
         env:
           HYDROCERT_REGRESSION_MODE: ${{ steps.mode.outputs.value }}
+          HYDROCERT_RUN_MOBILE: ${{ steps.mode.outputs.mobile }}
         run: |
           set -euo pipefail
           node scripts/run_regression_bundle.mjs
