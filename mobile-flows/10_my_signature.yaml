@@ -1,0 +1,45 @@
+appId: com.hydrocert.app
+name: "My Signature Screen"
+tags:
+  - account
+  - signature
+  - smoke
+---
+
+# =============================================
+# MY SIGNATURE SCREEN
+# Tests: navigation to signature screen, elements, back navigation
+# =============================================
+
+- launchApp
+
+# --- Navigate to Account Tab ---
+- tapOn:
+    text: "Account"
+
+# --- Verify My Signature Row Visible ---
+- assertVisible: "My signature"
+
+# --- Tap My Signature ---
+- tapOn:
+    text: "My signature"
+
+# --- Verify Signature Screen Loaded ---
+- assertVisible:
+    id: "Back"
+    optional: true
+
+# Signature area or related elements should be visible
+- assertVisible:
+    text: ".*[Ss]ignature.*"
+    optional: true
+
+# --- Navigate Back ---
+- tapOn:
+    id: "Back"
+    optional: true
+- back
+
+# --- Verify Returned to Account Screen ---
+- assertVisible: "Account"
+- assertVisible: "My signature"

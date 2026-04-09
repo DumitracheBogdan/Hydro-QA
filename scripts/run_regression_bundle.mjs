@@ -86,10 +86,10 @@ const SUITES = {
   },
   mobile: {
     key: 'mobile',
-    id: 'MOBILE07',
-    label: 'Maestro Mobile Smoke',
+    id: 'MOBILE15',
+    label: 'Maestro Mobile Smoke (15 flows)',
     script: path.join('scripts', 'qa-maestro-mobile-smoke.mjs'),
-    tests: 7,
+    tests: 15,
   },
 };
 

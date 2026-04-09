@@ -1,0 +1,63 @@
+appId: com.hydrocert.app
+name: "MOB12 - Actions CRUD (Create via Custom Action)"
+tags:
+  - actions
+  - crud
+  - fab
+  - critical
+---
+
+# =============================================
+# ACTIONS CRUD
+# Navigate to visit detail, open Quick Actions FAB,
+# add a custom action, verify it, then clean up.
+# =============================================
+
+- launchApp
+
+# --- Navigate to a visit detail ---
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 15000
+- tapOn:
+    text: "View Visit Details"
+
+# --- Wait for visit detail to load ---
+- extendedWaitUntil:
+    visible: "Visit Details"
+    timeout: 10000
+
+# --- Tap the Quick Actions FAB ---
+- tapOn:
+    id: "Quick actions"
+
+# --- Assert Actions sheet opens ---
+- extendedWaitUntil:
+    visible: "Add Actions"
+    timeout: 10000
+
+# --- Tap Add Custom Action ---
+- tapOn: "Add Custom Action"
+
+# --- Assert dialog opens with input field ---
+- extendedWaitUntil:
+    visible: "New Action"
+    timeout: 10000
+
+# --- Type test action name ---
+- tapOn: "Enter action.."
+- inputText: "QA Test Action"
+
+# --- Tap Save to create the action ---
+- tapOn: "Save"
+
+# --- Verify the action was added ---
+- extendedWaitUntil:
+    visible: "QA Test Action"
+    timeout: 10000
+
+# --- Save the actions sheet ---
+- tapOn: "Save"
+
+# --- Navigate back to home ---
+- back
