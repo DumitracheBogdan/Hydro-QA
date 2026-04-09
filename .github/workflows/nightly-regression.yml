@@ -119,6 +119,14 @@ jobs:
           set -euo pipefail
           node scripts/run_regression_bundle.mjs
 
+      # ── Enable KVM for Android emulator hardware acceleration ──
+      - name: Enable KVM
+        if: steps.mode.outputs.mobile == 'true'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       # ── Run mobile tests on Android emulator ───────────────────
       - name: Run mobile tests (Android emulator)
         id: mobile
