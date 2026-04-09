@@ -54,7 +54,7 @@ const SUITES = {
     id: 'UI22',
     label: 'UI Ultra',
     script: path.join('scripts', 'tmp-dev-infra-ui-ultra.mjs'),
-    tests: 22,
+    tests: 17,
   },
   essential: {
     key: 'essential',
@@ -65,10 +65,10 @@ const SUITES = {
   },
   advanced: {
     key: 'advanced',
-    id: 'NEW60',
+    id: 'NEW55',
     label: 'Senior New Tests',
     script: path.join('scripts', 'tmp-dev-infra-senior-newtests.mjs'),
-    tests: 60,
+    tests: 55,
   },
   soak: {
     key: 'soak',

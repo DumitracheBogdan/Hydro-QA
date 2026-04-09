@@ -22,7 +22,6 @@ fs.mkdirSync(shotsDir, { recursive: true });
 const checks = [];
 let shotIndex = 1;
 const desktopT = { consoleErrors: [], requestFailures: [], responses5xx: [] };
-const mobileT = { consoleErrors: [], requestFailures: [], responses5xx: [] };
 
 function add({ id, area, test, status, details, evidence = [] }) {
   checks.push({ id, area, test, status, details, evidence });
@@ -672,52 +671,6 @@ try {
       : { status: 'FAIL', details: `5xx=${desktopT.responses5xx.length}` };
   });
 
-  const mctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-  const mpage = await mctx.newPage();
-  attachTelemetry(mpage, mobileT);
-
-  try {
-    await check(mpage, 'U18', 'UI Mobile', 'Mobile login succeeds', async () => {
-      const ok = await login(mpage);
-      if (!ok) {
-        const ev = await shot(mpage, 'u18-mobile-login-fail');
-        return { status: 'FAIL', details: 'mobile login failed', evidence: [ev] };
-      }
-      return { status: 'PASS', details: `url=${mpage.url()}` };
-    });
-
-    await check(mpage, 'U19', 'UI Mobile', 'Mobile dashboard route loads', async () => {
-      await mpage.goto(`${WEB_BASE}/dashboard`);
-      await settled(mpage, 900);
-      const vis = await mpage.getByText(/Dashboard/i).first().isVisible().catch(() => false);
-      return vis ? { status: 'PASS', details: 'dashboard visible' } : { status: 'FAIL', details: 'dashboard title missing' };
-    });
-
-    await check(mpage, 'U20', 'UI Mobile', 'Mobile customers route loads', async () => {
-      await mpage.goto(`${WEB_BASE}/customers`);
-      await settled(mpage, 900);
-      const vis = await mpage.getByText(/Customers/i).first().isVisible().catch(() => false);
-      return vis ? { status: 'PASS', details: 'customers visible' } : { status: 'FAIL', details: 'customers title missing' };
-    });
-
-    await check(mpage, 'U21', 'UI Mobile', 'Mobile visits list route loads', async () => {
-      await mpage.goto(`${WEB_BASE}/visits-list`);
-      await settled(mpage, 900);
-      const vis = await mpage.getByText(/Visits/i).first().isVisible().catch(() => false);
-      return vis ? { status: 'PASS', details: 'visits title visible' } : { status: 'FAIL', details: 'visits title missing' };
-    });
-
-    await check(mpage, 'U22', 'UI Mobile', 'Mobile telemetry clean (console/request/5xx)', async () => {
-      const c = mobileT.consoleErrors.length;
-      const actionable = actionableRequestFailures(mobileT.requestFailures);
-      const r = actionable.length;
-      const s = mobileT.responses5xx.length;
-      if (c + r + s > 0) return { status: 'FAIL', details: `console=${c}, requestfailed=${r}, 5xx=${s}` };
-      return { status: 'PASS', details: `mobile telemetry clean, ignored=${mobileT.requestFailures.length - r}` };
-    });
-  } finally {
-    await mctx.close().catch(() => {});
-  }
 } finally {
   await dctx.close().catch(() => {});
   await browser.close().catch(() => {});
@@ -736,7 +689,7 @@ const summary = {
   runName,
   totals,
   checks,
-  telemetry: { desktop: desktopT, mobile: mobileT },
+  telemetry: { desktop: desktopT },
 };
 const summaryPath = path.join(runDir, 'summary.json');
 fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2));

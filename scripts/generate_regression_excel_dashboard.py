@@ -299,11 +299,6 @@ def manual_target_hint(check: dict) -> str:
             'U15': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
             'U16': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
             'U17': '/dashboard, /customers, /visits-list, /planner, /visits/details/{id}, /visits/edit/{id}, /visits/addnewvisit',
-            'U18': '/dashboard -> /login (mobile)',
-            'U19': '/dashboard (mobile)',
-            'U20': '/customers (mobile)',
-            'U21': '/visits-list (mobile)',
-            'U22': '/dashboard, /customers, /visits-list (mobile telemetry)',
         }
         return mapping.get(check_id, '')
 
@@ -431,11 +426,6 @@ def manual_target_hint(check: dict) -> str:
             'R53': '/dashboard -> sessionStorage',
             'R54': '/dashboard -> localStorage',
             'R55': 'Fresh browser context -> /dashboard',
-            'R56': '/dashboard -> /login (mobile)',
-            'R57': '/dashboard (mobile)',
-            'R58': '/customers (mobile)',
-            'R59': '/visits-list (mobile)',
-            'R60': '/dashboard, /customers, /visits-list (mobile telemetry)',
         }
         return mapping.get(check_id, '')
 

@@ -459,8 +459,14 @@ async function testM10_UserMenu(page) {
 // ============================================================
 // Main execution
 // ============================================================
+const artifactDir = path.join(process.cwd(), 'qa-artifacts');
+
 const browser = await chromium.launch({ headless: true });
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, ignoreHTTPSErrors: true });
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 900 },
+  ignoreHTTPSErrors: true,
+  recordVideo: { dir: path.join(artifactDir, 'videos'), size: { width: 1280, height: 720 } },
+});
 const page = await context.newPage();
 
 try {
