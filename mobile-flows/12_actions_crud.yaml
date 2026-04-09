@@ -7,6 +7,9 @@ tags:
   - critical
 ---
 
+- startRecording: 12_actions_crud
+
+
 # =============================================
 # ACTIONS CRUD
 # Navigate to visit detail, open Quick Actions FAB,
@@ -61,3 +64,5 @@ tags:
 
 # --- Navigate back to home ---
 - back
+
+- stopRecording

@@ -6,6 +6,9 @@ tags:
   - critical
 ---
 
+- startRecording: 13_start_inspection
+
+
 # =============================================
 # START INSPECTION
 # Navigate to visit detail, open Inspections tab,
@@ -51,3 +54,5 @@ tags:
 - extendedWaitUntil:
     visible: "Visit Details"
     timeout: 10000
+
+- stopRecording

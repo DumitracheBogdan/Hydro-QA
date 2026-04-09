@@ -6,6 +6,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 10_my_signature
+
+
 # =============================================
 # MY SIGNATURE SCREEN
 # Tests: navigation to signature screen, elements, back navigation
@@ -43,3 +46,5 @@ tags:
 # --- Verify Returned to Account Screen ---
 - assertVisible: "Account"
 - assertVisible: "My signature"
+
+- stopRecording

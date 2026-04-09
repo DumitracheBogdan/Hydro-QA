@@ -6,6 +6,9 @@ tags:
   - critical
 ---
 
+- startRecording: 05_visit_detail
+
+
 # =============================================
 # VISIT DETAIL SCREEN
 # Accessed by tapping "View Visit Details" on a visit card
@@ -71,3 +74,5 @@ tags:
 
 # --- Go Back ---
 - back
+
+- stopRecording

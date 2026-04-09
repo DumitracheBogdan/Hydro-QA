@@ -6,6 +6,9 @@ tags:
   - visit-detail
 ---
 
+- startRecording: 15_location_map
+
+
 # =============================================
 # LOCATION MAP
 # Navigate to visit detail, tap the Location icon,
@@ -49,3 +52,5 @@ tags:
     visible: "Visit Details"
     timeout: 10000
 - assertVisible: "Visit Details"
+
+- stopRecording

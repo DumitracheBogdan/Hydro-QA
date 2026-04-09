@@ -6,6 +6,9 @@ tags:
   - sections
 ---
 
+- startRecording: 14_visit_detail_sections
+
+
 # =============================================
 # VISIT DETAIL SECTIONS
 # Navigate to visit detail and expand each section row
@@ -50,3 +53,5 @@ tags:
 
 # --- Navigate back ---
 - back
+
+- stopRecording
