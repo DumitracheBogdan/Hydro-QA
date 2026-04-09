@@ -199,8 +199,8 @@ jobs:
           echo "Results JSON written:"
           cat nightly-results.json
 
-      # ── Send Teams notification via Power Automate webhook ─────
-      - name: Notify Teams via Power Automate webhook
+      # ── Send Teams notification via Incoming Webhook ─────────
+      - name: Notify Teams channel
         if: always()
         continue-on-error: true
         shell: bash
@@ -212,14 +212,151 @@ jobs:
             echo "No TEAMS_WEBHOOK_URL secret set — skipping Teams notification."
             exit 0
           fi
-          echo "Sending results to Teams webhook..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+
+          # Read results
+          TOTAL=$(jq -r '.totals.total' nightly-results.json 2>/dev/null || echo "0")
+          PASS=$(jq -r '.totals.pass' nightly-results.json 2>/dev/null || echo "0")
+          FAIL=$(jq -r '.totals.fail' nightly-results.json 2>/dev/null || echo "0")
+          SKIP=$(jq -r '.totals.skip' nightly-results.json 2>/dev/null || echo "0")
+          MODE=$(jq -r '.mode' nightly-results.json 2>/dev/null || echo "standard")
+          DATE=$(jq -r '.date' nightly-results.json 2>/dev/null || date -u +%Y-%m-%d)
+          RUN_URL=$(jq -r '.links.runUrl' nightly-results.json 2>/dev/null || echo "")
+
+          # Build failed tests rows for the table
+          FAILED_ROWS=""
+          FAIL_COUNT=$(jq '.failedTests | length' nightly-results.json 2>/dev/null || echo "0")
+          if [[ "$FAIL_COUNT" -gt 0 ]]; then
+            FAILED_ROWS=$(jq -r '.failedTests[] | "{\"type\":\"TableRow\",\"cells\":[{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.suite)\",\"size\":\"Small\"}]},{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.id)\",\"size\":\"Small\"}]},{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.test)\",\"size\":\"Small\",\"wrap\":true}]}]}"' nightly-results.json 2>/dev/null | paste -sd ',' -)
+          fi
+
+          # Determine status color and icon
+          if [[ "$FAIL" -eq 0 ]]; then
+            STATUS_COLOR="Good"
+            STATUS_TEXT="All tests passed!"
+            STATUS_ICON="✅"
+          else
+            STATUS_COLOR="Attention"
+            STATUS_TEXT="${FAIL} test(s) failed"
+            STATUS_ICON="❌"
+          fi
+
+          # Build failed tests section (only if failures exist)
+          FAILED_SECTION=""
+          if [[ "$FAIL_COUNT" -gt 0 ]]; then
+            FAILED_SECTION=',{
+              "type": "TextBlock",
+              "text": "Failed Tests:",
+              "weight": "Bolder",
+              "size": "Medium",
+              "spacing": "Medium"
+            },
+            {
+              "type": "Table",
+              "columns": [
+                {"width": 1},
+                {"width": 1},
+                {"width": 3}
+              ],
+              "rows": [
+                {
+                  "type": "TableRow",
+                  "style": "Accent",
+                  "cells": [
+                    {"type":"TableCell","items":[{"type":"TextBlock","text":"Suite","weight":"Bolder","size":"Small"}]},
+                    {"type":"TableCell","items":[{"type":"TextBlock","text":"ID","weight":"Bolder","size":"Small"}]},
+                    {"type":"TableCell","items":[{"type":"TextBlock","text":"Test","weight":"Bolder","size":"Small"}]}
+                  ]
+                },
+                '"${FAILED_ROWS}"'
+              ]
+            }'
+          else
+            FAILED_SECTION=',{
+              "type": "TextBlock",
+              "text": "✅ All tests passed!",
+              "size": "Medium",
+              "color": "Good",
+              "weight": "Bolder",
+              "spacing": "Medium"
+            }'
+          fi
+
+          # Build the Adaptive Card payload
+          cat > teams-payload.json <<ENDJSON
+          {
+            "type": "message",
+            "attachments": [
+              {
+                "contentType": "application/vnd.microsoft.card.adaptive",
+                "contentUrl": null,
+                "content": {
+                  "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                  "type": "AdaptiveCard",
+                  "version": "1.4",
+                  "body": [
+                    {
+                      "type": "TextBlock",
+                      "text": "${STATUS_ICON} Hydrocert Nightly QA Report",
+                      "weight": "Bolder",
+                      "size": "Large"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "text": "Date: ${DATE} | Environment: DEV | Mode: ${MODE}",
+                      "size": "Small",
+                      "isSubtle": true,
+                      "spacing": "None"
+                    },
+                    {
+                      "type": "ColumnSet",
+                      "spacing": "Medium",
+                      "columns": [
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [{"type":"TextBlock","text":"Total","size":"Small","isSubtle":true,"horizontalAlignment":"Center"},{"type":"TextBlock","text":"${TOTAL}","size":"ExtraLarge","weight":"Bolder","horizontalAlignment":"Center"}]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [{"type":"TextBlock","text":"Passed","size":"Small","color":"Good","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${PASS}","size":"ExtraLarge","weight":"Bolder","color":"Good","horizontalAlignment":"Center"}]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [{"type":"TextBlock","text":"Failed","size":"Small","color":"Attention","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${FAIL}","size":"ExtraLarge","weight":"Bolder","color":"Attention","horizontalAlignment":"Center"}]
+                        },
+                        {
+                          "type": "Column",
+                          "width": "stretch",
+                          "items": [{"type":"TextBlock","text":"Skipped","size":"Small","color":"Warning","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${SKIP}","size":"ExtraLarge","weight":"Bolder","color":"Warning","horizontalAlignment":"Center"}]
+                        }
+                      ]
+                    }
+                    ${FAILED_SECTION}
+                  ],
+                  "actions": [
+                    {
+                      "type": "Action.OpenUrl",
+                      "title": "View Run",
+                      "url": "${RUN_URL}"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+          ENDJSON
+
+          echo "Sending Adaptive Card to Teams..."
+          HTTP_STATUS=$(curl -s -o /tmp/teams-response.txt -w "%{http_code}" \
             -X POST \
             -H "Content-Type: application/json" \
-            -d @nightly-results.json \
+            -d @teams-payload.json \
             "${TEAMS_WEBHOOK_URL}")
 
           echo "Webhook response status: ${HTTP_STATUS}"
+          cat /tmp/teams-response.txt 2>/dev/null || true
           if [[ "${HTTP_STATUS}" -ge 200 && "${HTTP_STATUS}" -lt 300 ]]; then
             echo "Teams notification sent successfully."
           else
