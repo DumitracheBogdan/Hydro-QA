@@ -17,6 +17,20 @@ tags:
 
 - launchApp
 
+# --- Login if needed ---
+- runFlow:
+    when:
+      visible: "Welcome back"
+    commands:
+      - tapOn: "Email"
+      - inputText: "${MAESTRO_APP_EMAIL}"
+      - tapOn: "Password"
+      - inputText: "${MAESTRO_APP_PASSWORD}"
+      - tapOn: "Login"
+      - extendedWaitUntil:
+          visible: "Visits"
+          timeout: 15000
+
 # --- Navigate to a visit detail ---
 - extendedWaitUntil:
     visible: "View Visit Details"

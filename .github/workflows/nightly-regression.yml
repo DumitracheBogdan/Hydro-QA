@@ -145,6 +145,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
 
       # ── Upload artifacts ───────────────────────────────────────
       - name: Upload regression artifacts
