@@ -113,8 +113,10 @@ async function testM02_ForgotPassword(page) {
   const id = 'M02';
   if (!shouldRun(id)) return;
   try {
+    // Clear cookies/session so we land on the actual login page (not redirected to dashboard)
+    await page.context().clearCookies();
     await page.goto(`${WEB_BASE}/login`, { waitUntil: 'domcontentloaded' });
-    await settled(page, 800);
+    await settled(page, 1200);
 
     const forgotLink = page.getByText(/forgot password/i).first();
     const forgotVisible = await assertVisible(page, forgotLink);
