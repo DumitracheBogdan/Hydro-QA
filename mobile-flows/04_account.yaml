@@ -17,7 +17,7 @@ tags:
 # --- Login if needed ---
 - runFlow:
     when:
-      visible: "Welcome back"
+      visible: "Welcome"
     commands:
       - tapOn: "Email"
       - inputText: "${MAESTRO_APP_EMAIL}"
@@ -47,7 +47,8 @@ tags:
 - back
 
 # --- Change Password Row (clickable) ---
-- assertVisible: "Change Password"
+- assertVisible:
+    text: "Change Password"
     optional: true
 
 # --- Logout Row (clickable) ---

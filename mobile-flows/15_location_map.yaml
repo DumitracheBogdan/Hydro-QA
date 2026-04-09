@@ -20,7 +20,7 @@ tags:
 # --- Login if needed ---
 - runFlow:
     when:
-      visible: "Welcome back"
+      visible: "Welcome"
     commands:
       - tapOn: "Email"
       - inputText: "${MAESTRO_APP_EMAIL}"
