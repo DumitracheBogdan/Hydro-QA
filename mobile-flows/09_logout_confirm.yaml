@@ -1,0 +1,39 @@
+appId: com.hydrocert.app
+name: "Logout Confirmation Dialog"
+tags:
+  - logout
+  - account
+  - smoke
+---
+
+# =============================================
+# LOGOUT CONFIRMATION DIALOG
+# Tests: Cancel stays on Account, Confirm returns to Login
+# =============================================
+
+- launchApp
+
+# --- Navigate to Account Tab ---
+- tapOn:
+    text: "Account"
+
+# --- Verify Account Screen ---
+- assertVisible: "Logout"
+
+# --- Test Cancel on Logout Dialog ---
+- tapOn:
+    text: "Logout"
+- assertVisible: "Logout?"
+- assertVisible: "Cancel"
+- assertVisible: "Confirm"
+- tapOn: "Cancel"
+# Should return to Account screen
+- assertVisible: "Account"
+
+# --- Test Confirm on Logout Dialog ---
+- tapOn:
+    text: "Logout"
+- assertVisible: "Logout?"
+- tapOn: "Confirm"
+# Should return to Login screen
+- assertVisible: "Welcome.*"

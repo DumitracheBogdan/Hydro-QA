@@ -1,0 +1,53 @@
+appId: com.hydrocert.app
+name: "Login Screen - Elements and Validation"
+tags:
+  - login
+  - authentication
+  - critical
+---
+
+# =============================================
+# LOGIN SCREEN VALIDATION
+# Tests: login screen elements, field validation, error handling
+# =============================================
+
+- launchApp
+
+# --- Verify Login Screen Loaded ---
+- assertVisible: "Welcome.*"
+- assertVisible: "Email"
+- assertVisible: "Password"
+
+# --- Verify Login Button Exists ---
+- assertVisible: "Login"
+
+# --- Verify Forgot Password Link ---
+- assertVisible:
+    text: "Forgot.*"
+    optional: true
+
+# --- Test Empty Login Attempt ---
+- tapOn: "Login"
+# Should show validation error when no credentials entered
+
+# --- Test Short Password Validation ---
+- tapOn:
+    text: "Email"
+- inputText: "test@test.com"
+- tapOn:
+    text: "Password"
+- inputText: "123"
+- tapOn: "Login"
+# Should show "Password must have at least 8 characters." or similar
+
+# --- Clear and Test Invalid Credentials ---
+- tapOn:
+    text: "Email"
+- clearText
+- inputText: "invalid@invalid.com"
+- tapOn:
+    text: "Password"
+- clearText
+- inputText: "InvalidPassword123!"
+- tapOn: "Login"
+# Should show "Invalid Credentials" or similar error

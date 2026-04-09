@@ -23,6 +23,14 @@ const FLOWS = [
   { id: 'MOB05', yaml: '05_visit_detail.yaml', area: 'Visit Detail', test: 'Visit detail tabs and actions' },
   { id: 'MOB06', yaml: '06_bottom_navigation.yaml', area: 'Navigation', test: 'Bottom navigation tab switching' },
   { id: 'MOB07', yaml: '07_search_and_filters.yaml', area: 'Search', test: 'Search and filter chips' },
+  { id: 'MOB08', yaml: '08_login.yaml', area: 'Login', test: 'Login screen elements and validation' },
+  { id: 'MOB09', yaml: '09_logout_confirm.yaml', area: 'Account', test: 'Logout confirmation dialog (Cancel + Confirm)' },
+  { id: 'MOB10', yaml: '10_my_signature.yaml', area: 'Account', test: 'My Signature screen' },
+  { id: 'MOB11', yaml: '11_change_password.yaml', area: 'Account', test: 'Change Password screen and validation' },
+  { id: 'MOB12', yaml: '12_actions_crud.yaml', area: 'Visit Actions', test: 'Quick Actions FAB and Actions CRUD' },
+  { id: 'MOB13', yaml: '13_start_inspection.yaml', area: 'Inspections', test: 'Start Inspection from Inspections tab' },
+  { id: 'MOB14', yaml: '14_visit_detail_sections.yaml', area: 'Visit Detail', test: 'Visit Detail expandable sections (Details, Signature, Actions)' },
+  { id: 'MOB15', yaml: '15_location_map.yaml', area: 'Navigation', test: 'Location icon opens map' },
 ];
 
 const checks = [];
