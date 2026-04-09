@@ -5,7 +5,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 02_history
 
 
 # =============================================
@@ -39,7 +38,7 @@ tags:
 - tapOn:
     text: "Type to search.*"
 - inputText: "QA"
-- clearText
+- eraseText
 
 # --- Visit Cards (same format as home) ---
 - assertVisible: "View Visit Details"
@@ -50,4 +49,3 @@ tags:
 - assertVisible: "Activity"
 - assertVisible: "Account"
 
-- stopRecording

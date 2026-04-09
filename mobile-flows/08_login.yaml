@@ -6,7 +6,6 @@ tags:
   - critical
 ---
 
-- startRecording: 08_login
 
 
 # =============================================
@@ -46,11 +45,11 @@ tags:
 # --- Clear and Test Invalid Credentials ---
 - tapOn:
     text: "Email"
-- clearText
+- eraseText
 - inputText: "invalid@invalid.com"
 - tapOn:
     text: "Password"
-- clearText
+- eraseText
 - inputText: "InvalidPassword123!"
 - tapOn: "Login"
 # Should show "Invalid Credentials" or similar error
@@ -58,11 +57,11 @@ tags:
 # --- Test Successful Login ---
 - tapOn:
     text: "Email"
-- clearText
+- eraseText
 - inputText: "${MAESTRO_APP_EMAIL}"
 - tapOn:
     text: "Password"
-- clearText
+- eraseText
 - inputText: "${MAESTRO_APP_PASSWORD}"
 - tapOn: "Login"
 - extendedWaitUntil:
@@ -70,4 +69,3 @@ tags:
     timeout: 15000
 - assertVisible: "Welcome"
 
-- stopRecording

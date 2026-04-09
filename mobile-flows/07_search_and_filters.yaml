@@ -6,7 +6,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 07_search_and_filters
 
 
 # =============================================
@@ -34,7 +33,7 @@ tags:
     text: "Type to search.*"
 - inputText: "Avondale"
 - assertVisible: "Avondale"
-- clearText
+- eraseText
 
 # --- Filter: Today ---
 - tapOn:
@@ -53,4 +52,3 @@ tags:
 - tapOn:
     text: "Next week"
 
-- stopRecording

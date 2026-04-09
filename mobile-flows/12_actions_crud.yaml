@@ -7,7 +7,6 @@ tags:
   - critical
 ---
 
-- startRecording: 12_actions_crud
 
 
 # =============================================
@@ -79,4 +78,3 @@ tags:
 # --- Navigate back to home ---
 - back
 
-- stopRecording

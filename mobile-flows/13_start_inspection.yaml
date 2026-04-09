@@ -6,7 +6,6 @@ tags:
   - critical
 ---
 
-- startRecording: 13_start_inspection
 
 
 # =============================================
@@ -69,4 +68,3 @@ tags:
     visible: "Visit Details"
     timeout: 10000
 
-- stopRecording

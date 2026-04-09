@@ -6,7 +6,6 @@ tags:
   - sections
 ---
 
-- startRecording: 14_visit_detail_sections
 
 
 # =============================================
@@ -68,4 +67,3 @@ tags:
 # --- Navigate back ---
 - back
 
-- stopRecording
