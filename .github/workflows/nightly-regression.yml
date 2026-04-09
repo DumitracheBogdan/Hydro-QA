@@ -172,7 +172,7 @@ jobs:
           name: test-videos-${{ github.run_id }}
           path: |
             qa-artifacts/**/videos/
-            qa-artifacts/mobile-screenshots/
+            qa-artifacts/mobile-test-recording.mp4
           if-no-files-found: ignore
           retention-days: 14
 
