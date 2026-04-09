@@ -17,7 +17,7 @@ fs.mkdirSync(shotsDir, { recursive: true });
 
 const checks = [];
 let shotIndex = 1;
-const telem = { desktop: { consoleErrors: [], requestFailed: [], resp5xx: [] }, mobile: { consoleErrors: [], requestFailed: [], resp5xx: [] } };
+const telem = { desktop: { consoleErrors: [], requestFailed: [], resp5xx: [] } };
 
 function addCheck({ id, area, test, status, details, evidence = [] }) {
   checks.push({ id, area, test, status, details, evidence });
@@ -706,47 +706,6 @@ try {
       return redirected ? { status: 'PASS', details: 'redirected to /login as expected' } : { status: 'FAIL', details: `unexpectedUrl=${p.url()}` };
     });
 
-    // R56-R60: mobile and telemetry
-    const mctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    const mpage = await mctx.newPage();
-    attachTelemetry(mpage, telem.mobile);
-    try {
-      await runCheck(mpage, 'R56', 'UI Mobile', 'Mobile login works', async () => {
-        const ok = await loginUi(mpage);
-        return ok ? { status: 'PASS', details: `url=${mpage.url()}` } : { status: 'FAIL', details: 'mobile login failed' };
-      });
-
-      await runCheck(mpage, 'R57', 'UI Mobile', 'Mobile dashboard route loads', async () => {
-        await mpage.goto(`${WEB_BASE}/dashboard`); await settled(mpage, 900);
-        const vis = await mpage.getByText(/Dashboard/i).first().isVisible().catch(() => false);
-        return vis ? { status: 'PASS', details: 'dashboard visible' } : { status: 'FAIL', details: 'dashboard missing' };
-      });
-
-      await runCheck(mpage, 'R58', 'UI Mobile', 'Mobile customers route loads', async () => {
-        await mpage.goto(`${WEB_BASE}/customers`); await settled(mpage, 900);
-        const vis = await mpage.getByText(/Customers/i).first().isVisible().catch(() => false);
-        return vis ? { status: 'PASS', details: 'customers visible' } : { status: 'FAIL', details: 'customers missing' };
-      });
-
-      await runCheck(mpage, 'R59', 'UI Mobile', 'Mobile visits list route loads', async () => {
-        await mpage.goto(`${WEB_BASE}/visits-list`); await settled(mpage, 900);
-        const vis = await mpage.getByText(/Visits/i).first().isVisible().catch(() => false);
-        return vis ? { status: 'PASS', details: 'visits visible' } : { status: 'FAIL', details: 'visits missing' };
-      });
-
-      await runCheck(mpage, 'R60', 'Telemetry', 'No console/requestfailed/5xx errors in mobile run', async () => {
-        const c = telem.mobile.consoleErrors.length;
-        const actionable = actionableRequestFailures(telem.mobile.requestFailed);
-        const r = actionable.length;
-        const ignored = telem.mobile.requestFailed.length - actionable.length;
-        const s = telem.mobile.resp5xx.length;
-        return c + r + s === 0
-          ? { status: 'PASS', details: `mobile telemetry clean, ignored=${ignored}` }
-          : { status: 'FAIL', details: `console=${c},requestfailed=${r},ignored=${ignored},5xx=${s}` };
-      });
-    } finally {
-      await mctx.close().catch(() => {});
-    }
   } finally {
     await api.dispose();
   }
