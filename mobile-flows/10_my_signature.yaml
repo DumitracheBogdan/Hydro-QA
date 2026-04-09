@@ -6,7 +6,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 10_my_signature
 
 
 # =============================================
@@ -61,4 +60,3 @@ tags:
 - assertVisible: "Account"
 - assertVisible: "My signature"
 
-- stopRecording

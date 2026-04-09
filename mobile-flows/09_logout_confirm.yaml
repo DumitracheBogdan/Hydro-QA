@@ -6,7 +6,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 09_logout_confirm
 
 
 # =============================================
@@ -55,4 +54,3 @@ tags:
 # Should return to Login screen
 - assertVisible: "Welcome.*"
 
-- stopRecording

@@ -5,7 +5,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 06_bottom_navigation
 
 
 # =============================================
@@ -51,4 +50,3 @@ tags:
     text: "Visits"
 - assertVisible: "Welcome.*"
 
-- stopRecording

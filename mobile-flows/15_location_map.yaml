@@ -6,7 +6,6 @@ tags:
   - visit-detail
 ---
 
-- startRecording: 15_location_map
 
 
 # =============================================
@@ -67,4 +66,3 @@ tags:
     timeout: 10000
 - assertVisible: "Visit Details"
 
-- stopRecording

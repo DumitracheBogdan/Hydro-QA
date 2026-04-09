@@ -6,7 +6,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 01_visits_home
 
 
 # =============================================
@@ -42,7 +41,7 @@ tags:
 - tapOn:
     text: "Type to search.*"
 - inputText: "test"
-- clearText
+- eraseText
 
 # --- Filter Chips ---
 - tapOn:
@@ -67,4 +66,3 @@ tags:
 - assertVisible: "Activity"
 - assertVisible: "Account"
 
-- stopRecording

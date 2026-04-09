@@ -6,7 +6,6 @@ tags:
   - smoke
 ---
 
-- startRecording: 04_account
 
 
 # =============================================
@@ -60,4 +59,3 @@ tags:
 - assertVisible: "Activity"
 - assertVisible: "Account"
 
-- stopRecording
