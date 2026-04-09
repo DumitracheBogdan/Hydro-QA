@@ -6,6 +6,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 01_visits_home
+
+
 # =============================================
 # VISITS HOME SCREEN (Default landing screen)
 # =============================================
@@ -49,3 +52,5 @@ tags:
 - assertVisible: "History"
 - assertVisible: "Activity"
 - assertVisible: "Account"
+
+- stopRecording

@@ -6,6 +6,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 07_search_and_filters
+
+
 # =============================================
 # SEARCH & FILTER FUNCTIONALITY
 # =============================================
@@ -35,3 +38,5 @@ tags:
 # --- Deselect all (tap active filter again) ---
 - tapOn:
     text: "Next week"
+
+- stopRecording

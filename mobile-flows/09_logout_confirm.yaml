@@ -6,6 +6,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 09_logout_confirm
+
+
 # =============================================
 # LOGOUT CONFIRMATION DIALOG
 # Tests: Cancel stays on Account, Confirm returns to Login
@@ -37,3 +40,5 @@ tags:
 - tapOn: "Confirm"
 # Should return to Login screen
 - assertVisible: "Welcome.*"
+
+- stopRecording

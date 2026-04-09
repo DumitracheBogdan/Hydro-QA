@@ -5,6 +5,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 06_bottom_navigation
+
+
 # =============================================
 # BOTTOM NAVIGATION BAR TEST
 # Tests switching between all 4 bottom tabs
@@ -33,3 +36,5 @@ tags:
 - tapOn:
     text: "Visits"
 - assertVisible: "Welcome.*"
+
+- stopRecording

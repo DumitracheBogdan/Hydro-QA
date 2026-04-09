@@ -6,6 +6,9 @@ tags:
   - critical
 ---
 
+- startRecording: 08_login
+
+
 # =============================================
 # LOGIN SCREEN VALIDATION
 # Tests: login screen elements, field validation, error handling
@@ -51,3 +54,5 @@ tags:
 - inputText: "InvalidPassword123!"
 - tapOn: "Login"
 # Should show "Invalid Credentials" or similar error
+
+- stopRecording

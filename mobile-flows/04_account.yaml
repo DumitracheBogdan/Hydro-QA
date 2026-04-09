@@ -6,6 +6,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 04_account
+
+
 # =============================================
 # ACCOUNT SCREEN
 # =============================================
@@ -42,3 +45,5 @@ tags:
 - assertVisible: "History"
 - assertVisible: "Activity"
 - assertVisible: "Account"
+
+- stopRecording

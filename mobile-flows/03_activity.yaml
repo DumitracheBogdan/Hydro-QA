@@ -5,6 +5,9 @@ tags:
   - smoke
 ---
 
+- startRecording: 03_activity
+
+
 # =============================================
 # ACTIVITY SCREEN
 # =============================================
@@ -25,3 +28,5 @@ tags:
 - assertVisible: "History"
 - assertVisible: "Activity"
 - assertVisible: "Account"
+
+- stopRecording

@@ -138,7 +138,7 @@ jobs:
           target: default
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-window -gpu guest -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: bash $GITHUB_WORKSPACE/scripts/run-mobile-with-recording.sh
         env:
@@ -172,7 +172,7 @@ jobs:
           name: test-videos-${{ github.run_id }}
           path: |
             qa-artifacts/**/videos/
-            qa-artifacts/mobile-test-recording.mp4
+            qa-artifacts/mobile-videos/
           if-no-files-found: ignore
           retention-days: 14
 
