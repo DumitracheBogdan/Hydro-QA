@@ -23,8 +23,11 @@ for flow in mobile-flows/*.yaml; do
   # Screenshot before
   adb exec-out screencap -p > "$ARTIFACTS/mobile-screenshots/${FLOW_NAME}-before.png" 2>/dev/null || true
 
-  # Run flow
-  maestro test "$flow" 2>&1 || echo "Flow $FLOW_NAME completed with errors"
+  # Run flow with explicit env var passing via -e flags
+  maestro test \
+    -e MAESTRO_APP_EMAIL="${MAESTRO_APP_EMAIL}" \
+    -e MAESTRO_APP_PASSWORD="${MAESTRO_APP_PASSWORD}" \
+    "$flow" 2>&1 || echo "Flow $FLOW_NAME completed with errors"
 
   # Screenshot after
   adb exec-out screencap -p > "$ARTIFACTS/mobile-screenshots/${FLOW_NAME}-after.png" 2>/dev/null || true
