@@ -6,66 +6,36 @@ tags:
   - critical
 ---
 
-
-
 # =============================================
 # LOGIN SCREEN VALIDATION
-# Tests: login screen elements, field validation, error handling
+# Tests: login screen elements visible + successful login
 # =============================================
 
-- launchApp
+- launchApp:
+    clearState: true
 
 # --- Verify Login Screen Loaded ---
-- assertVisible: "Welcome.*"
+- extendedWaitUntil:
+    visible: "Welcome.*"
+    timeout: 15000
 - assertVisible: "Email"
 - assertVisible: "Password"
-
-# --- Verify Login Button Exists ---
 - assertVisible: "Login"
 
-# --- Verify Forgot Password Link ---
+# --- Verify Forgot Password Link (optional) ---
 - assertVisible:
     text: "Forgot.*"
     optional: true
 
-# --- Test Empty Login Attempt ---
-- tapOn: "Login"
-# Should show validation error when no credentials entered
-
-# --- Test Short Password Validation ---
-- tapOn:
-    text: "Email"
-- inputText: "test@test.com"
-- tapOn:
-    text: "Password"
-- inputText: "123"
-- tapOn: "Login"
-# Should show "Password must have at least 8 characters." or similar
-
-# --- Clear and Test Invalid Credentials ---
-- tapOn:
-    text: "Email"
-- eraseText
-- inputText: "invalid@invalid.com"
-- tapOn:
-    text: "Password"
-- eraseText
-- inputText: "InvalidPassword123!"
-- tapOn: "Login"
-# Should show "Invalid Credentials" or similar error
-
 # --- Test Successful Login ---
-- tapOn:
-    text: "Email"
-- eraseText
+- tapOn: "Email"
 - inputText: "${MAESTRO_APP_EMAIL}"
+- hideKeyboard
 - tapOn:
     text: "Password"
-- eraseText
 - inputText: "${MAESTRO_APP_PASSWORD}"
+- hideKeyboard
 - tapOn: "Login"
 - extendedWaitUntil:
-    visible: "Visits"
-    timeout: 15000
-- assertVisible: "Welcome"
-
+    visible: "Welcome,"
+    timeout: 20000

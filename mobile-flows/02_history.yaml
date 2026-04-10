@@ -20,9 +20,11 @@ tags:
     timeout: 15000
 - tapOn: "Email"
 - inputText: "${MAESTRO_APP_EMAIL}"
+- hideKeyboard
 - tapOn:
     text: "Password"
 - inputText: "${MAESTRO_APP_PASSWORD}"
+- hideKeyboard
 - tapOn: "Login"
 - extendedWaitUntil:
     visible: "Welcome,"
