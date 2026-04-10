@@ -12,21 +12,22 @@ tags:
 # SEARCH & FILTER FUNCTIONALITY
 # =============================================
 
-- launchApp
+- launchApp:
+    clearState: true
 
-# --- Login if needed ---
-- runFlow:
-    when:
-      visible: "Welcome"
-    commands:
-      - tapOn: "Email"
-      - inputText: "${MAESTRO_APP_EMAIL}"
-      - tapOn: "Password"
-      - inputText: "${MAESTRO_APP_PASSWORD}"
-      - tapOn: "Login"
-      - extendedWaitUntil:
-          visible: "Visits"
-          timeout: 15000
+# --- Always do login (fresh app state) ---
+- extendedWaitUntil:
+    visible: "Welcome.*"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: "${MAESTRO_APP_EMAIL}"
+- tapOn:
+    text: "Password"
+- inputText: "${MAESTRO_APP_PASSWORD}"
+- tapOn: "Login"
+- extendedWaitUntil:
+    visible: "Welcome,"
+    timeout: 20000
 
 # --- Search Input ---
 - tapOn:
