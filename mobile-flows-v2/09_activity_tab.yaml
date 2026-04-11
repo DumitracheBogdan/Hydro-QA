@@ -1,0 +1,29 @@
+appId: com.hydrocert.app
+name: "MOB09 V2 - Activity tab elements"
+tags:
+  - activity
+  - smoke
+---
+
+# Source of truth: discovery/hierarchies/11-activity-tab.xml
+# Activity screen is empty for the fixture user: single message
+# "No activities found." plus the app chrome.
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to Activity ---
+- tapOn:
+    text: "Activity"
+- extendedWaitUntil:
+    visible: "No activities found"
+    timeout: 15000
+
+# --- Header + empty state ---
+- assertVisible: "Activity"
+- assertVisible: "No activities found"
+- assertVisible: "BD"
+
+# --- Bottom navigation still visible ---
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Account"

@@ -1,0 +1,36 @@
+appId: com.hydrocert.app
+name: "MOB05 V2 - Date filter chips"
+tags:
+  - visits
+  - filters
+  - smoke
+---
+
+# Taps every date filter chip. Today and Tomorrow are empty for
+# the fixture user (text "No visits found"), Next week shows the
+# seeded "QA test" visit card.
+
+- runFlow: _shared/login.yaml
+
+# --- Today ---
+- tapOn:
+    text: "Today"
+- assertVisible:
+    text: "(No visits found|QA test)"
+
+# --- Tomorrow ---
+- tapOn:
+    text: "Tomorrow"
+- assertVisible:
+    text: "(No visits found|QA test)"
+
+# --- Next week ---
+- tapOn:
+    text: "Next week"
+- assertVisible:
+    text: "(No visits found|QA test)"
+
+# --- All chips still present ---
+- assertVisible: "Today"
+- assertVisible: "Tomorrow"
+- assertVisible: "Next week"

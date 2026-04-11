@@ -1,0 +1,51 @@
+appId: com.hydrocert.app
+name: "MOB07 V2 - Bottom navigation through all tabs"
+tags:
+  - navigation
+  - smoke
+  - critical
+---
+
+# Exercises every tab of the bottom navigation bar. The bounds
+# from the uiautomator dump:
+#   Visits  [0,556][74,636]
+#   History [82,556][156,636]
+#   Activity [164,556][238,636]
+#   Account [246,556][320,636]
+# When a tab is selected it is NOT in the clickable list, so we
+# round-trip through each.
+
+- runFlow: _shared/login.yaml
+
+# --- Visits tab is initial state ---
+- assertVisible: "overview of your visits"
+
+# --- Switch to History (has View Visit Details on the card) ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 15000
+
+# --- Switch to Activity (shows "No activities found.") ---
+- tapOn:
+    text: "Activity"
+- extendedWaitUntil:
+    visible: "No activities found"
+    timeout: 15000
+
+# --- Switch to Account (shows user name + My signature/Change Password/Logout) ---
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 15000
+- assertVisible: "Change Password"
+- assertVisible: "Logout"
+
+# --- Switch back to Visits ---
+- tapOn:
+    text: "Visits"
+- extendedWaitUntil:
+    visible: "overview of your visits"
+    timeout: 15000

@@ -1,0 +1,41 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Fresh Login"
+tags:
+  - shared
+  - login
+---
+
+# Shared login macro. Use from another flow via:
+#   - runFlow: _shared/login.yaml
+#
+# Clears app state, lands on the login screen, types creds via
+# Maestro params, and waits for the post-login Visits Home screen
+# using the "Here's an overview of your visits." subtitle — this
+# text is a single Compose Text node (verified by uiautomator dump)
+# and is unique to the logged-in home.
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 30000
+- assertVisible: "Welcome back"
+- assertVisible: "Email"
+- assertVisible: "Password"
+- assertVisible: "Login"
+
+- tapOn: "Email"
+- inputText: ${MAESTRO_APP_EMAIL}
+- hideKeyboard
+
+- tapOn:
+    text: "Password"
+- inputText: ${MAESTRO_APP_PASSWORD}
+- hideKeyboard
+
+- tapOn: "Login"
+
+- extendedWaitUntil:
+    visible: "overview of your visits"
+    timeout: 90000

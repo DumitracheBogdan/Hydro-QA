@@ -1,0 +1,45 @@
+appId: com.hydrocert.app
+name: "MOB10 V2 - Account tab elements"
+tags:
+  - account
+  - smoke
+---
+
+# Source of truth: discovery/hierarchies/12-account-tab.xml
+# Account screen shows the user card, phone/email rows, and
+# three clickable action rows: My signature, Change Password,
+# Logout. Clickable bounds:
+#   My signature    [36,353][300,401]
+#   Change Password [16,422][304,474]
+#   Logout          [16,490][304,542]
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to Account ---
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 15000
+
+# --- Header ---
+- assertVisible: "Account"
+
+# --- User card ---
+- assertVisible: "Bogdan Dumitrache"
+- assertVisible: "User"
+- assertVisible: "BD"
+
+# --- Contact info (email) ---
+- assertVisible:
+    text: ".*@.*"
+
+# --- Action rows ---
+- assertVisible: "My signature"
+- assertVisible: "Change Password"
+- assertVisible: "Logout"
+
+# --- Bottom navigation still visible ---
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Activity"
