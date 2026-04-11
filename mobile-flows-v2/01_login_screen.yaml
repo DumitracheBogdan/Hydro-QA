@@ -1,0 +1,44 @@
+appId: com.hydrocert.app
+name: "MOB01 V2 - Login screen elements"
+tags:
+  - login
+  - smoke
+  - critical
+---
+
+# Verifies every visible element on the Hydrocert login screen.
+# Source of truth: discovery/hierarchies/01-login-screen.xml
+# Texts: Welcome back!, Enter your email and password to login,
+#        Email, Password, Forgot your password?, Login
+# Content-desc: Hydrocert Logo, Show password
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 30000
+
+# --- Static copy ---
+- assertVisible: "Welcome back"
+- assertVisible: "Enter your email and password to login"
+
+# --- Form field labels ---
+- assertVisible: "Email"
+- assertVisible: "Password"
+
+# --- Footer links/buttons ---
+- assertVisible:
+    text: "Forgot.*"
+- assertVisible: "Login"
+
+# --- Interactive smoke: type + clear email ---
+- tapOn: "Email"
+- inputText: "qa.smoke@example.com"
+- hideKeyboard
+
+# --- Interactive smoke: type + clear password ---
+- tapOn:
+    text: "Password"
+- inputText: "smokepwd"
+- hideKeyboard

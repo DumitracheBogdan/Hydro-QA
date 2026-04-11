@@ -1,0 +1,40 @@
+appId: com.hydrocert.app
+name: "MOB14 V2 - Logout dialog -> Confirm -> back at Login"
+tags:
+  - account
+  - logout
+  - critical
+---
+
+# Taps Logout, confirms the dialog, asserts we are back on the
+# Login screen. This is the end-to-end logout path.
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to Account ---
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "Logout"
+    timeout: 15000
+
+# --- Open logout confirmation dialog ---
+- tapOn:
+    text: "Logout"
+- extendedWaitUntil:
+    visible:
+      text: "(Confirm|OK|Yes|Logout)"
+    timeout: 10000
+
+# --- Tap the affirmative button ---
+- tapOn:
+    text: "(Confirm|Yes|OK)"
+
+# --- Assert we are back on the Login screen ---
+- extendedWaitUntil:
+    visible: "Welcome back"
+    timeout: 20000
+- assertVisible: "Welcome back"
+- assertVisible: "Email"
+- assertVisible: "Password"
+- assertVisible: "Login"

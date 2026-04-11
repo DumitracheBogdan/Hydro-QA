@@ -1,0 +1,42 @@
+appId: com.hydrocert.app
+name: "MOB04 V2 - Visits Home screen elements"
+tags:
+  - visits
+  - home
+  - smoke
+---
+
+# Asserts every visible element on the Visits Home screen.
+# Source of truth: discovery/hierarchies/04-visits-home-default.xml
+
+- runFlow: _shared/login.yaml
+
+# --- Header ---
+- assertVisible: "Welcome, Bogdan!"
+- assertVisible: "overview of your visits"
+- assertVisible: "BD"
+
+# --- Search bar ---
+- assertVisible:
+    text: "Type to search.*"
+
+# --- Filter chips ---
+- assertVisible: "Today"
+- assertVisible: "Tomorrow"
+- assertVisible: "Next week"
+
+# --- Seeded QA visit card contents ---
+- assertVisible: "QA test"
+- assertVisible: "Upcoming"
+- assertVisible:
+    text: ".*Woodford.*"
+- assertVisible: "Booking Person"
+- assertVisible: "Bogdan Dumitrache"
+- assertVisible:
+    text: "INSPECTIONS.*"
+
+# --- Bottom navigation tabs ---
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Activity"
+- assertVisible: "Account"
