@@ -10,6 +10,14 @@ on:
           - discovery
           - test
         default: test
+  push:
+    branches:
+      - fix/maestro-v2
+    paths:
+      - '.github/workflows/mobile-v2.yml'
+      - 'scripts/run-mobile-v2-*.sh'
+      - 'mobile-flows-v2/**'
+      - '.v2-trigger'
 
 permissions:
   contents: read
@@ -21,6 +29,25 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Resolve run mode
+        id: mode
+        shell: bash
+        run: |
+          # workflow_dispatch -> inputs.mode, push -> read .v2-trigger or default "discovery"
+          RAW_MODE="${{ inputs.mode }}"
+          if [[ -z "$RAW_MODE" ]]; then
+            if [[ -f .v2-trigger ]]; then
+              RAW_MODE=$(tr -d '[:space:]' < .v2-trigger)
+            fi
+          fi
+          case "$RAW_MODE" in
+            discovery) ;;
+            test) ;;
+            *) RAW_MODE="discovery" ;;
+          esac
+          echo "value=$RAW_MODE" >> "$GITHUB_OUTPUT"
+          echo "Resolved mode: $RAW_MODE"
 
       - name: Enable KVM
         run: |
@@ -40,7 +67,7 @@ jobs:
           fi
           echo "Mobile secrets present"
 
-      - name: Run mobile V2 (${{ inputs.mode }}) on Android emulator
+      - name: Run mobile V2 (${{ steps.mode.outputs.value }}) on Android emulator
         id: mobile
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -51,7 +78,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           emulator-boot-timeout: 600
-          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ inputs.mode }}.sh
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ steps.mode.outputs.value }}.sh
         env:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
@@ -61,7 +88,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: mobile-v2-${{ inputs.mode }}-${{ github.run_id }}
+          name: mobile-v2-${{ steps.mode.outputs.value }}-${{ github.run_id }}
           path: qa-artifacts/mobile-v2/
           if-no-files-found: ignore
           retention-days: 14
@@ -70,15 +97,16 @@ jobs:
         if: always()
         shell: bash
         run: |
+          MODE="${{ steps.mode.outputs.value }}"
           {
-            echo "## Mobile V2 (${{ inputs.mode }})"
+            echo "## Mobile V2 ($MODE)"
             echo ""
-            SUMMARY_FILE="qa-artifacts/mobile-v2/${{ inputs.mode }}/summary.json"
+            SUMMARY_FILE="qa-artifacts/mobile-v2/$MODE/summary.json"
             if [[ -f "$SUMMARY_FILE" ]]; then
-              node -e "const s=require('./$SUMMARY_FILE'); console.log('- Mode: ' + (s.mode || '${{ inputs.mode }}')); console.log('- Total: ' + s.totals.total); console.log('- Passed: ' + s.totals.pass); console.log('- Failed: ' + s.totals.fail); console.log('- Skipped: ' + s.totals.skip);" || echo "Summary parse failed"
+              node -e "const s=require('./$SUMMARY_FILE'); console.log('- Mode: ' + (s.mode || '$MODE')); console.log('- Total: ' + s.totals.total); console.log('- Passed: ' + s.totals.pass); console.log('- Failed: ' + s.totals.fail); console.log('- Skipped: ' + s.totals.skip);" || echo "Summary parse failed"
             else
               echo "No summary file at $SUMMARY_FILE"
             fi
             echo ""
-            echo "Artifact: mobile-v2-${{ inputs.mode }}-${{ github.run_id }}"
+            echo "Artifact: mobile-v2-$MODE-${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"
