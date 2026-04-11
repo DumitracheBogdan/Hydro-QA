@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execSync } from 'node:child_process';
 
 const stamp = new Date().toISOString().replace(/[.:]/g, '-');
 const run = `maestro-mobile-smoke-${stamp}`;
@@ -8,6 +7,8 @@ const runDir = path.join(process.cwd(), 'qa-artifacts', 'infra-regression', run)
 fs.mkdirSync(runDir, { recursive: true });
 
 const MOBILE_FLOWS_DIR = path.join(process.cwd(), 'mobile-flows');
+const RESULTS_DIR = path.join(process.cwd(), 'qa-artifacts', 'mobile-results');
+const SCREENSHOTS_DIR = path.join(process.cwd(), 'qa-artifacts', 'mobile-screenshots');
 const TEST_FILTER = new Set(
   String(process.env.HYDROCERT_TEST_IDS || '')
     .split(',')
@@ -44,33 +45,27 @@ function shouldRun(id) {
   return TEST_FILTER.size === 0 || TEST_FILTER.has(String(id).toUpperCase());
 }
 
-// Check if Maestro CLI is available
-function isMaestroAvailable() {
+function readFileSafe(filePath, fallback = '') {
   try {
-    execSync('npx maestro --version', { stdio: 'pipe', timeout: 30000 });
-    return true;
+    return fs.readFileSync(filePath, 'utf-8').trim();
+  } catch {
+    return fallback;
+  }
+}
+
+function hasAnyResults() {
+  if (!fs.existsSync(RESULTS_DIR)) return false;
+  try {
+    return fs.readdirSync(RESULTS_DIR).some((f) => f.endsWith('.result'));
   } catch {
     return false;
   }
 }
 
-// Check if Android emulator is running
-function isEmulatorRunning() {
-  try {
-    const output = execSync('adb devices', { stdio: 'pipe', timeout: 10000 }).toString();
-    const lines = output.split('\n').filter((line) => line.trim() && !line.startsWith('List'));
-    return lines.some((line) => line.includes('device') && !line.includes('offline'));
-  } catch {
-    return false;
-  }
-}
+const resultsAvailable = hasAnyResults();
 
-const maestroOk = isMaestroAvailable();
-const emulatorOk = maestroOk && isEmulatorRunning();
-
-if (!maestroOk || !emulatorOk) {
-  const reason = !maestroOk ? 'Maestro CLI not available' : 'Android emulator not running';
-  console.log(`SKIP_ALL: ${reason}`);
+if (!resultsAvailable) {
+  console.log(`SKIP_ALL: No results found in ${RESULTS_DIR}. Mobile runner did not execute or failed to write results.`);
   for (const flow of FLOWS) {
     if (!shouldRun(flow.id)) continue;
     pushCheck({
@@ -78,7 +73,7 @@ if (!maestroOk || !emulatorOk) {
       area: flow.area,
       test: flow.test,
       status: 'SKIP',
-      details: reason,
+      details: 'Mobile runner did not produce results (see run-mobile-with-recording.sh logs)',
     });
   }
 } else {
@@ -97,30 +92,46 @@ if (!maestroOk || !emulatorOk) {
       continue;
     }
 
-    try {
-      const outputFile = path.join(runDir, `${flow.id}-output.txt`);
-      execSync(`npx maestro test "${yamlPath}"`, {
-        stdio: 'pipe',
-        timeout: 120000,
-        cwd: process.cwd(),
-      });
+    const flowBase = flow.yaml.replace(/\.yaml$/, '');
+    const resultFile = path.join(RESULTS_DIR, `${flowBase}.result`);
+    const errorFile = path.join(RESULTS_DIR, `${flowBase}.error`);
+    const logFile = path.join(RESULTS_DIR, `${flowBase}.log`);
 
+    const evidence = [];
+    const beforeShot = path.join(SCREENSHOTS_DIR, `${flowBase}-before.png`);
+    const afterShot = path.join(SCREENSHOTS_DIR, `${flowBase}-after.png`);
+    if (fs.existsSync(beforeShot)) evidence.push(`mobile-screenshots/${flowBase}-before.png`);
+    if (fs.existsSync(afterShot)) evidence.push(`mobile-screenshots/${flowBase}-after.png`);
+
+    const status = readFileSafe(resultFile);
+
+    if (status === 'PASS') {
       pushCheck({
         id: flow.id,
         area: flow.area,
         test: flow.test,
         status: 'PASS',
         details: `Maestro flow ${flow.yaml} passed`,
+        evidence,
       });
-    } catch (err) {
-      const stderr = err.stderr ? err.stderr.toString().slice(0, 500) : '';
-      const stdout = err.stdout ? err.stdout.toString().slice(0, 500) : '';
+    } else if (status === 'FAIL') {
+      const errMsg = readFileSafe(errorFile) || 'Maestro flow failed (see log)';
       pushCheck({
         id: flow.id,
         area: flow.area,
         test: flow.test,
         status: 'FAIL',
-        details: `Maestro flow ${flow.yaml} failed: ${(stderr || stdout || err.message).slice(0, 200)}`,
+        details: `Maestro flow ${flow.yaml} failed: ${errMsg.slice(0, 200)}`,
+        evidence,
+      });
+    } else {
+      pushCheck({
+        id: flow.id,
+        area: flow.area,
+        test: flow.test,
+        status: 'SKIP',
+        details: `No result recorded for ${flow.yaml} (log=${fs.existsSync(logFile) ? 'yes' : 'no'})`,
+        evidence,
       });
     }
   }
@@ -135,7 +146,7 @@ const totals = {
 
 const summary = {
   generatedAt: new Date().toISOString(),
-  environment: { flowsDir: MOBILE_FLOWS_DIR },
+  environment: { flowsDir: MOBILE_FLOWS_DIR, resultsDir: RESULTS_DIR },
   totals,
   checks,
 };

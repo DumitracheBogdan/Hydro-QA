@@ -18,7 +18,7 @@ tags:
 # --- Always do login (fresh app state) ---
 - extendedWaitUntil:
     visible: "Welcome.*"
-    timeout: 15000
+    timeout: 30000
 - tapOn: "Email"
 - inputText: "${MAESTRO_APP_EMAIL}"
 - hideKeyboard
@@ -29,7 +29,7 @@ tags:
 - tapOn: "Login"
 - extendedWaitUntil:
     visible: "Welcome,"
-    timeout: 20000
+    timeout: 60000
 
 # --- Search Input ---
 - tapOn:

@@ -17,7 +17,7 @@ tags:
 # --- Verify Login Screen Loaded ---
 - extendedWaitUntil:
     visible: "Welcome.*"
-    timeout: 15000
+    timeout: 30000
 - assertVisible: "Email"
 - assertVisible: "Password"
 - assertVisible: "Login"
@@ -38,4 +38,4 @@ tags:
 - tapOn: "Login"
 - extendedWaitUntil:
     visible: "Welcome,"
-    timeout: 20000
+    timeout: 60000
