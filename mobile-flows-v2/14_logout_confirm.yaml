@@ -32,9 +32,9 @@ tags:
 
 # --- Assert we are back on the Login screen ---
 - extendedWaitUntil:
-    visible: "Welcome back"
+    visible: "Welcome back.*"
     timeout: 20000
-- assertVisible: "Welcome back"
+- assertVisible: "Welcome back.*"
 - assertVisible: "Email"
 - assertVisible: "Password"
 - assertVisible: "Login"

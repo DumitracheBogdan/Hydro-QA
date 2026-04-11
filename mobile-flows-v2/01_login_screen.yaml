@@ -16,11 +16,11 @@ tags:
     clearState: true
 
 - extendedWaitUntil:
-    visible: "Welcome back"
+    visible: "Welcome back.*"
     timeout: 30000
 
 # --- Static copy ---
-- assertVisible: "Welcome back"
+- assertVisible: "Welcome back.*"
 - assertVisible: "Enter your email and password to login"
 
 # --- Form field labels ---

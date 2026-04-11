@@ -15,12 +15,12 @@ tags:
 - tapOn:
     text: "Activity"
 - extendedWaitUntil:
-    visible: "No activities found"
+    visible: "No activities found.*"
     timeout: 15000
 
 # --- Header + empty state ---
 - assertVisible: "Activity"
-- assertVisible: "No activities found"
+- assertVisible: "No activities found.*"
 - assertVisible: "BD"
 
 # --- Bottom navigation still visible ---

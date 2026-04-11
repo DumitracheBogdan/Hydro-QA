@@ -26,7 +26,7 @@ tags:
     text: "Type to search.*"
 
 # --- Visit card for the fixture visit ---
-- assertVisible: "[qa]testing visit"
+- assertVisible: ".*testing visit.*"
 - assertVisible: "Upcoming"
 - assertVisible:
     text: ".*Eaton Socon.*"

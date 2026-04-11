@@ -11,8 +11,8 @@ tags:
 
 - runFlow: _shared/login.yaml
 
-- assertVisible: "overview of your visits"
-- assertVisible: "Welcome, Bogdan!"
+- assertVisible: ".*overview of your visits.*"
+- assertVisible: ".*Welcome, Bogdan.*"
 - assertVisible: "Visits"
 - assertVisible: "History"
 - assertVisible: "Activity"

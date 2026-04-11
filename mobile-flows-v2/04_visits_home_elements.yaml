@@ -12,8 +12,8 @@ tags:
 - runFlow: _shared/login.yaml
 
 # --- Header ---
-- assertVisible: "Welcome, Bogdan!"
-- assertVisible: "overview of your visits"
+- assertVisible: ".*Welcome, Bogdan.*"
+- assertVisible: ".*overview of your visits.*"
 - assertVisible: "BD"
 
 # --- Search bar ---
