@@ -28,7 +28,7 @@ tags:
 - hideKeyboard
 - tapOn: "Login"
 - extendedWaitUntil:
-    visible: "Welcome,"
+    visible: "overview of your visits"
     timeout: 60000
 
 # --- Search Input ---

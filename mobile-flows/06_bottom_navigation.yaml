@@ -28,11 +28,11 @@ tags:
 - hideKeyboard
 - tapOn: "Login"
 - extendedWaitUntil:
-    visible: "Welcome,"
+    visible: "overview of your visits"
     timeout: 60000
 
 # --- Visits Tab (default selected) ---
-- assertVisible: "Welcome.*"
+- assertVisible: "overview of your visits"
 
 # --- Switch to History ---
 - tapOn:
@@ -51,5 +51,5 @@ tags:
 # --- Switch back to Visits ---
 - tapOn:
     text: "Visits"
-- assertVisible: "Welcome.*"
+- assertVisible: "overview of your visits"
 
