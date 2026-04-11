@@ -18,9 +18,9 @@ tags:
     clearState: true
 
 - extendedWaitUntil:
-    visible: "Welcome back"
+    visible: "Welcome back.*"
     timeout: 30000
-- assertVisible: "Welcome back"
+- assertVisible: "Welcome back.*"
 - assertVisible: "Email"
 - assertVisible: "Password"
 - assertVisible: "Login"
@@ -37,5 +37,5 @@ tags:
 - tapOn: "Login"
 
 - extendedWaitUntil:
-    visible: "overview of your visits"
+    visible: ".*overview of your visits.*"
     timeout: 90000

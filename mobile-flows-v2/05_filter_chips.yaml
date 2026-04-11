@@ -16,19 +16,19 @@ tags:
 - tapOn:
     text: "Today"
 - assertVisible:
-    text: "(No visits found|QA test)"
+    text: "(No visits found.*|QA test)"
 
 # --- Tomorrow ---
 - tapOn:
     text: "Tomorrow"
 - assertVisible:
-    text: "(No visits found|QA test)"
+    text: "(No visits found.*|QA test)"
 
 # --- Next week ---
 - tapOn:
     text: "Next week"
 - assertVisible:
-    text: "(No visits found|QA test)"
+    text: "(No visits found.*|QA test)"
 
 # --- All chips still present ---
 - assertVisible: "Today"

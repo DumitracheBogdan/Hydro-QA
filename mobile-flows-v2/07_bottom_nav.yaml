@@ -18,7 +18,7 @@ tags:
 - runFlow: _shared/login.yaml
 
 # --- Visits tab is initial state ---
-- assertVisible: "overview of your visits"
+- assertVisible: ".*overview of your visits.*"
 
 # --- Switch to History (has View Visit Details on the card) ---
 - tapOn:
@@ -31,7 +31,7 @@ tags:
 - tapOn:
     text: "Activity"
 - extendedWaitUntil:
-    visible: "No activities found"
+    visible: "No activities found.*"
     timeout: 15000
 
 # --- Switch to Account (shows user name + My signature/Change Password/Logout) ---
@@ -47,5 +47,5 @@ tags:
 - tapOn:
     text: "Visits"
 - extendedWaitUntil:
-    visible: "overview of your visits"
+    visible: ".*overview of your visits.*"
     timeout: 15000
