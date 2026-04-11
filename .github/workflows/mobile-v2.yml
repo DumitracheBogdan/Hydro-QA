@@ -1,0 +1,84 @@
+name: Mobile V2 (Android)
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Which V2 script to run"
+        type: choice
+        options:
+          - discovery
+          - test
+        default: test
+
+permissions:
+  contents: read
+
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Validate mobile secrets
+        shell: bash
+        env:
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+        run: |
+          if [[ -z "${MAESTRO_APP_EMAIL}" || -z "${MAESTRO_APP_PASSWORD}" ]]; then
+            echo "::error::Missing HYDROCERT_MOBILE_QA_EMAIL or HYDROCERT_MOBILE_QA_PASSWORD secret"
+            exit 1
+          fi
+          echo "Mobile secrets present"
+
+      - name: Run mobile V2 (${{ inputs.mode }}) on Android emulator
+        id: mobile
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ inputs.mode }}.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+
+      - name: Upload mobile V2 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-v2-${{ inputs.mode }}-${{ github.run_id }}
+          path: qa-artifacts/mobile-v2/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Publish workflow summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Mobile V2 (${{ inputs.mode }})"
+            echo ""
+            SUMMARY_FILE="qa-artifacts/mobile-v2/${{ inputs.mode }}/summary.json"
+            if [[ -f "$SUMMARY_FILE" ]]; then
+              node -e "const s=require('./$SUMMARY_FILE'); console.log('- Mode: ' + (s.mode || '${{ inputs.mode }}')); console.log('- Total: ' + s.totals.total); console.log('- Passed: ' + s.totals.pass); console.log('- Failed: ' + s.totals.fail); console.log('- Skipped: ' + s.totals.skip);" || echo "Summary parse failed"
+            else
+              echo "No summary file at $SUMMARY_FILE"
+            fi
+            echo ""
+            echo "Artifact: mobile-v2-${{ inputs.mode }}-${{ github.run_id }}"
+          } >> "$GITHUB_STEP_SUMMARY"

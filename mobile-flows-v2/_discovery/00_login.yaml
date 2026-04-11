@@ -1,0 +1,39 @@
+appId: com.hydrocert.app
+name: "V2 Discovery - Fresh Login"
+tags:
+  - discovery
+  - login
+---
+
+# =============================================
+# Discovery: Fresh login flow
+# Clears state, logs in, lands on Visits Home.
+# Uses "overview of your visits" as post-login
+# marker because "Welcome, Bogdan!" is split across
+# text nodes in the view hierarchy.
+# =============================================
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: "Email"
+    timeout: 30000
+- assertVisible: "Email"
+- assertVisible: "Password"
+- assertVisible: "Login"
+
+- tapOn: "Email"
+- inputText: ${MAESTRO_APP_EMAIL}
+- hideKeyboard
+
+- tapOn:
+    text: "Password"
+- inputText: ${MAESTRO_APP_PASSWORD}
+- hideKeyboard
+
+- tapOn: "Login"
+
+- extendedWaitUntil:
+    visible: "overview of your visits"
+    timeout: 90000
