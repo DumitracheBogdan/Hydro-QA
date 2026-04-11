@@ -127,8 +127,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      # ── Run mobile tests on Android emulator ───────────────────
-      - name: Run mobile tests (Android emulator)
+      # ── Run mobile V2 tests on Android emulator ───────────────
+      - name: Run mobile V2 tests (Android emulator)
         id: mobile
         if: steps.mode.outputs.mobile == 'true'
         continue-on-error: true
@@ -140,7 +140,8 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
-          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-with-recording.sh
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
         env:
           GH_TOKEN: ${{ github.token }}
           HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
@@ -167,14 +168,14 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload test videos
+      - name: Upload test videos and mobile V2 artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-videos-${{ github.run_id }}
           path: |
             qa-artifacts/**/videos/
-            qa-artifacts/mobile-screenshots/
+            qa-artifacts/mobile-v2/
           if-no-files-found: ignore
           retention-days: 14
 

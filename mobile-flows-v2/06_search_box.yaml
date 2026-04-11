@@ -1,0 +1,37 @@
+appId: com.hydrocert.app
+name: "MOB06 V2 - Search box"
+tags:
+  - visits
+  - search
+  - smoke
+---
+
+# Taps the search EditText on Visits Home, types, erases.
+# The search EditText lives at bounds [16,104][304,164] per the
+# uiautomator dump, and its placeholder is "Type to search…".
+
+- runFlow: _shared/login.yaml
+
+# --- Tap search bar and type ---
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA"
+- hideKeyboard
+
+# Filter chips must still be present during search
+- assertVisible: "Today"
+- assertVisible: "Tomorrow"
+- assertVisible: "Next week"
+
+# --- Erase the search text ---
+- tapOn:
+    id: "android:id/content"
+    optional: true
+- tapOn:
+    text: "(QA|Type to search.*)"
+- eraseText: 10
+- hideKeyboard
+
+# Visits home is still functional after erase
+- assertVisible: "Today"
+- assertVisible: "Visits"
