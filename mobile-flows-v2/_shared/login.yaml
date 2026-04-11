@@ -7,41 +7,34 @@ tags:
 
 # Shared login macro. Use from another flow via:
 #   - runFlow: _shared/login.yaml
-#
-# Clears state, waits for the FULL login screen to render by
-# waiting for the Login button (the last element to paint in the
-# Compose tree), then logs in. Lands on Visits Home verified by
-# the "Here's an overview of your visits." subtitle.
 
 - launchApp:
     clearState: true
 
-# Wait for the login screen to appear
+# Wait for the login screen to appear. We use "Forgot" (the link
+# text in the middle of the screen) instead of Welcome back or
+# Login because it tends to be the most reliable signal that the
+# Compose tree has finished its initial paint pass on CI.
 - extendedWaitUntil:
-    visible: "Welcome back.*"
-    timeout: 30000
+    visible:
+      text: "Forgot.*"
+    timeout: 45000
 
-# Wait until the Login button is rendered. Compose paints
-# elements incrementally; Login is the last one. Once it is
-# visible the rest of the form (Email, Password, Forgot) is
-# guaranteed to also be in the accessibility tree.
-- extendedWaitUntil:
-    visible: "Login"
-    timeout: 15000
-
-# Tap Email and type credentials
-- tapOn: "Email"
+# Tap Email and type credentials (tapOn has internal retry)
+- tapOn:
+    text: "^Email$"
 - inputText: ${MAESTRO_APP_EMAIL}
 - hideKeyboard
 
-# Tap Password (use the field label as selector)
+# Tap Password field and type
 - tapOn:
-    text: "Password"
+    text: "^Password$"
 - inputText: ${MAESTRO_APP_PASSWORD}
 - hideKeyboard
 
 # Submit
-- tapOn: "Login"
+- tapOn:
+    text: "^Login$"
 
 # Wait for Visits Home - the "Here's an overview..." subtitle is
 # unique to the logged-in home screen
