@@ -2,11 +2,18 @@
 set +e
 
 # =============================================================
-# Mobile V2 Discovery Script
-# Logs into the Hydrocert Android app and dumps the Android
-# view hierarchy + a screenshot for every major screen. The
-# resulting XML files are the source of truth for the V2 flow
-# generator.
+# Mobile V2 Discovery Script (v2 - post-first-run lessons)
+#
+# Lessons from the previous discovery run:
+# 1. The visit cards on Visits Home are NOT clickable — there is
+#    no "View Visit Details" button anywhere in the Compose tree.
+#    We remove the visit-detail section entirely.
+# 2. `adb shell input keyevent 4` (back) popped the task stack
+#    past the activity root and killed the app. We must use
+#    Maestro `- back` inside a stub flow instead, so Maestro can
+#    re-resolve the app foreground on the next step.
+# 3. Each stub flow must NOT contain `launchApp: clearState: true`,
+#    otherwise it logs us out between steps.
 # =============================================================
 
 ARTIFACTS="$GITHUB_WORKSPACE/qa-artifacts/mobile-v2/discovery"
@@ -32,7 +39,6 @@ cd "$GITHUB_WORKSPACE"
 
 dump_state() {
   local name="$1"
-  # Give the app a moment to settle before snapshotting
   sleep 3
   echo ">>> dumping $name"
   adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null 2>&1
@@ -48,7 +54,7 @@ dump_state() {
 }
 
 write_stub() {
-  # Writes a tiny Maestro flow that does NOT clear state.
+  # Writes a Maestro stub that does NOT clear state.
   local name="$1"
   shift
   local yaml="$TMP_DIR/${name}.yaml"
@@ -56,7 +62,7 @@ write_stub() {
     echo "appId: com.hydrocert.app"
     echo "---"
     for cmd in "$@"; do
-      echo "$cmd"
+      printf '%s\n' "$cmd"
     done
   } > "$yaml"
   echo "$yaml"
@@ -75,141 +81,137 @@ run_stub() {
 # Discovery timeline
 # ------------------------------------------------------------------
 
-echo "=== Step 1: dump fresh login screen (before login) ==="
-LOGIN_DUMP_YAML=$(write_stub "just-launch" \
+echo "=== Step 1: launch fresh (login screen) ==="
+LAUNCH_YAML=$(write_stub "launch-fresh" \
   "- launchApp:" \
   "    clearState: true" \
   "- extendedWaitUntil:" \
   "    visible: \"Email\"" \
   "    timeout: 30000")
-run_stub "$LOGIN_DUMP_YAML"
+run_stub "$LAUNCH_YAML"
 dump_state "01-login-screen"
 
-echo "=== Step 2: run full login flow ==="
-run_stub "$GITHUB_WORKSPACE/mobile-flows-v2/_discovery/00_login.yaml"
-dump_state "02-visits-home"
+echo "=== Step 2: tap Forgot your password (dump dialog/new screen) ==="
+FP_YAML=$(write_stub "tap-forgot" \
+  "- tapOn:" \
+  "    text: \"Forgot.*\"")
+run_stub "$FP_YAML"
+dump_state "02-forgot-password-screen"
 
-echo "=== Step 3: tap filter chip Today ==="
+# Return to login via back
+BACK1_YAML=$(write_stub "back-1" "- back")
+run_stub "$BACK1_YAML"
+dump_state "03-back-to-login"
+
+echo "=== Step 3: run full login flow ==="
+run_stub "$GITHUB_WORKSPACE/mobile-flows-v2/_discovery/00_login.yaml"
+dump_state "04-visits-home-default"
+
+echo "=== Step 4: tap filter chip Today ==="
 TODAY_YAML=$(write_stub "tap-today" "- tapOn: \"Today\"")
 run_stub "$TODAY_YAML"
-dump_state "03-visits-filter-today"
+dump_state "05-visits-filter-today"
 
-echo "=== Step 4: tap filter chip Tomorrow ==="
+echo "=== Step 5: tap filter chip Tomorrow ==="
 TOMORROW_YAML=$(write_stub "tap-tomorrow" "- tapOn: \"Tomorrow\"")
 run_stub "$TOMORROW_YAML"
-dump_state "04-visits-filter-tomorrow"
+dump_state "06-visits-filter-tomorrow"
 
-echo "=== Step 5: tap filter chip Next week ==="
+echo "=== Step 6: tap filter chip Next week ==="
 NEXTW_YAML=$(write_stub "tap-nextweek" "- tapOn: \"Next week\"")
 run_stub "$NEXTW_YAML"
-dump_state "05-visits-filter-nextweek"
+dump_state "07-visits-filter-nextweek"
 
-echo "=== Step 6: tap first visit card -> Visit Detail ==="
-VD_YAML=$(write_stub "tap-visit-details" \
+echo "=== Step 7: type in search box ==="
+SEARCH_YAML=$(write_stub "search-qa" \
   "- tapOn:" \
-  "    text: \"View Visit Details\"" \
-  "- extendedWaitUntil:" \
-  "    visible: \"Visit Details\"" \
-  "    timeout: 20000")
-run_stub "$VD_YAML"
-dump_state "06-visit-detail-default"
+  "    text: \"Type to search.*\"" \
+  "- inputText: \"QA\"" \
+  "- hideKeyboard")
+run_stub "$SEARCH_YAML"
+dump_state "08-visits-search-qa"
 
-echo "=== Step 7: tap Inspections tab ==="
-INS_YAML=$(write_stub "tap-inspections" \
+echo "=== Step 8: erase search text ==="
+ERASE_YAML=$(write_stub "erase-search" \
   "- tapOn:" \
-  "    text: \"Inspections.*\"")
-run_stub "$INS_YAML"
-dump_state "07-visit-detail-inspections"
+  "    text: \"Type to search.*\"" \
+  "- eraseText" \
+  "- hideKeyboard")
+run_stub "$ERASE_YAML"
+dump_state "09-visits-search-cleared"
 
-echo "=== Step 8: tap Attachments tab ==="
-ATT_YAML=$(write_stub "tap-attachments" \
-  "- tapOn:" \
-  "    text: \"Attachments.*\"")
-run_stub "$ATT_YAML"
-dump_state "08-visit-detail-attachments"
-
-echo "=== Step 9: open Quick Actions FAB ==="
-FAB_YAML=$(write_stub "tap-quick-actions" \
-  "- tapOn:" \
-  "    id: \"Quick actions\"")
-run_stub "$FAB_YAML"
-dump_state "09-quick-actions-sheet"
-
-echo "=== Step 10: dismiss sheet and go back to home ==="
-# Press back to close the Quick Actions sheet
-adb shell input keyevent 4
-sleep 1
-# Press back again to leave visit details
-adb shell input keyevent 4
-sleep 1
-dump_state "10-back-at-visits-home"
-
-echo "=== Step 11: tap History tab ==="
+echo "=== Step 9: tap History tab ==="
 HIST_YAML=$(write_stub "tap-history" \
   "- tapOn:" \
   "    text: \"History\"")
 run_stub "$HIST_YAML"
-dump_state "11-history-tab"
+dump_state "10-history-tab"
 
-echo "=== Step 12: tap Activity tab ==="
+echo "=== Step 10: tap Activity tab ==="
 ACT_YAML=$(write_stub "tap-activity" \
   "- tapOn:" \
   "    text: \"Activity\"")
 run_stub "$ACT_YAML"
-dump_state "12-activity-tab"
+dump_state "11-activity-tab"
 
-echo "=== Step 13: tap Account tab ==="
+echo "=== Step 11: tap Account tab ==="
 ACC_YAML=$(write_stub "tap-account" \
   "- tapOn:" \
   "    text: \"Account\"")
 run_stub "$ACC_YAML"
-dump_state "13-account-tab"
+dump_state "12-account-tab"
 
-echo "=== Step 14: tap My signature ==="
+echo "=== Step 12: tap My signature ==="
 SIG_YAML=$(write_stub "tap-mysignature" \
   "- tapOn:" \
   "    text: \"My signature\"")
 run_stub "$SIG_YAML"
-dump_state "14-my-signature"
+dump_state "13-my-signature"
 
-# Back to Account
-adb shell input keyevent 4
-sleep 1
+echo "=== Step 13: in-app back from My signature ==="
+BACK2_YAML=$(write_stub "back-2" "- back")
+run_stub "$BACK2_YAML"
+dump_state "14-back-at-account-after-sig"
 
-echo "=== Step 15: tap Change Password ==="
+echo "=== Step 14: tap Change Password ==="
 CP_YAML=$(write_stub "tap-change-password" \
   "- tapOn:" \
   "    text: \"Change Password\"")
 run_stub "$CP_YAML"
 dump_state "15-change-password"
 
-# Back to Account
-adb shell input keyevent 4
-sleep 1
+echo "=== Step 15: in-app back from Change Password ==="
+BACK3_YAML=$(write_stub "back-3" "- back")
+run_stub "$BACK3_YAML"
+dump_state "16-back-at-account-after-cp"
 
-echo "=== Step 16: tap Logout -> dialog ==="
+echo "=== Step 16: tap Logout (dialog 1) ==="
 LO_YAML=$(write_stub "tap-logout" \
   "- tapOn:" \
   "    text: \"Logout\"")
 run_stub "$LO_YAML"
-dump_state "16-logout-dialog"
+dump_state "17-logout-dialog-1"
 
-echo "=== Step 17: tap Cancel on dialog (stay logged in) ==="
+echo "=== Step 17: tap Cancel on dialog ==="
 CANCEL_YAML=$(write_stub "tap-cancel" \
   "- tapOn: \"Cancel\"")
 run_stub "$CANCEL_YAML"
-dump_state "17-after-cancel-logout"
+dump_state "18-after-cancel-logout"
 
-echo "=== Step 18: tap Logout -> Confirm (full logout) ==="
+echo "=== Step 18: tap Logout (dialog 2) + Confirm ==="
 LO2_YAML=$(write_stub "tap-logout-2" \
   "- tapOn:" \
   "    text: \"Logout\"")
 run_stub "$LO2_YAML"
-sleep 1
+dump_state "19-logout-dialog-2"
+
 CONF_YAML=$(write_stub "tap-confirm" \
-  "- tapOn: \"Confirm\"")
+  "- tapOn: \"Confirm\"" \
+  "- extendedWaitUntil:" \
+  "    visible: \"Email\"" \
+  "    timeout: 20000")
 run_stub "$CONF_YAML"
-dump_state "18-back-to-login"
+dump_state "20-post-logout-login-screen"
 
 # ------------------------------------------------------------------
 # Done
@@ -218,17 +220,12 @@ echo "=== Discovery complete ==="
 ls -la "$HIER_DIR"
 ls -la "$SHOT_DIR"
 
-# Write a tiny summary.json so the workflow summary step can read it
 TOTAL=$(ls -1 "$HIER_DIR" 2>/dev/null | wc -l)
-PASS=$TOTAL
-FAIL=0
-SKIP=0
-mkdir -p "$ARTIFACTS/../discovery"
 cat > "$ARTIFACTS/summary.json" <<EOF
 {
   "mode": "discovery",
   "generatedAt": "$(date -Iseconds)",
-  "totals": { "total": ${TOTAL}, "pass": ${PASS}, "fail": ${FAIL}, "skip": ${SKIP} }
+  "totals": { "total": ${TOTAL}, "pass": ${TOTAL}, "fail": 0, "skip": 0 }
 }
 EOF
 echo "Wrote summary.json (total=${TOTAL})"
