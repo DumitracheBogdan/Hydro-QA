@@ -8,34 +8,43 @@ tags:
 # Shared login macro. Use from another flow via:
 #   - runFlow: _shared/login.yaml
 #
-# Clears app state, lands on the login screen, types creds via
-# Maestro params, and waits for the post-login Visits Home screen
-# using the "Here's an overview of your visits." subtitle — this
-# text is a single Compose Text node (verified by uiautomator dump)
-# and is unique to the logged-in home.
+# Clears state, waits for the FULL login screen to render by
+# waiting for the Login button (the last element to paint in the
+# Compose tree), then logs in. Lands on Visits Home verified by
+# the "Here's an overview of your visits." subtitle.
 
 - launchApp:
     clearState: true
 
+# Wait for the login screen to appear
 - extendedWaitUntil:
     visible: "Welcome back.*"
     timeout: 30000
-- assertVisible: "Welcome back.*"
-- assertVisible: "Email"
-- assertVisible: "Password"
-- assertVisible: "Login"
 
+# Wait until the Login button is rendered. Compose paints
+# elements incrementally; Login is the last one. Once it is
+# visible the rest of the form (Email, Password, Forgot) is
+# guaranteed to also be in the accessibility tree.
+- extendedWaitUntil:
+    visible: "Login"
+    timeout: 15000
+
+# Tap Email and type credentials
 - tapOn: "Email"
 - inputText: ${MAESTRO_APP_EMAIL}
 - hideKeyboard
 
+# Tap Password (use the field label as selector)
 - tapOn:
     text: "Password"
 - inputText: ${MAESTRO_APP_PASSWORD}
 - hideKeyboard
 
+# Submit
 - tapOn: "Login"
 
+# Wait for Visits Home - the "Here's an overview..." subtitle is
+# unique to the logged-in home screen
 - extendedWaitUntil:
     visible: ".*overview of your visits.*"
     timeout: 90000
