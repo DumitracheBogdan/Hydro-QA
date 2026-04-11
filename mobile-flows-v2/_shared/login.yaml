@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Fresh Login"
+tags:
+  - shared
+  - login
+---
+
+# Shared login macro. Use from another flow via:
+#   - runFlow: _shared/login.yaml
+
+- launchApp:
+    clearState: true
+
+# Wait for the login screen to appear. We use "Forgot" (the link
+# text in the middle of the screen) instead of Welcome back or
+# Login because it tends to be the most reliable signal that the
+# Compose tree has finished its initial paint pass on CI.
+- extendedWaitUntil:
+    visible:
+      text: "Forgot.*"
+    timeout: 45000
+
+# Tap Email and type credentials (tapOn has internal retry)
+- tapOn:
+    text: "^Email$"
+- inputText: ${MAESTRO_APP_EMAIL}
+- hideKeyboard
+
+# Tap Password field and type
+- tapOn:
+    text: "^Password$"
+- inputText: ${MAESTRO_APP_PASSWORD}
+- hideKeyboard
+
+# Submit
+- tapOn:
+    text: "^Login$"
+
+# Wait for Visits Home - the "Here's an overview..." subtitle is
+# unique to the logged-in home screen
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 90000

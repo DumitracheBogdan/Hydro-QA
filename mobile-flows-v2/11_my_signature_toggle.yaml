@@ -1,0 +1,49 @@
+appId: com.hydrocert.app
+name: "MOB11 V2 - My signature expandable row"
+tags:
+  - account
+  - signature
+  - smoke
+---
+
+# My signature on the Account screen is NOT a separate screen.
+# It is an expand/collapse row. When expanded, the signature
+# drawing area is shown IN PLACE; Change Password and Logout get
+# pushed below the viewport. Source: discovery/hierarchies/
+# 12-account-tab.xml (collapsed) + 13-my-signature.xml (expanded).
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to Account ---
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 15000
+
+# --- Collapsed state: Change Password and Logout are visible ---
+- assertVisible: "My signature"
+- assertVisible: "Change Password"
+- assertVisible: "Logout"
+
+# --- Tap My signature to expand ---
+- tapOn:
+    text: "My signature"
+
+# Expanded: signature visible; Change Password and Logout no
+# longer in viewport. Give the layout a moment to settle.
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 10000
+- assertVisible: "My signature"
+- assertVisible: "Bogdan Dumitrache"
+
+# --- Tap My signature again to collapse ---
+- tapOn:
+    text: "My signature"
+- extendedWaitUntil:
+    visible: "Change Password"
+    timeout: 10000
+- assertVisible: "My signature"
+- assertVisible: "Change Password"
+- assertVisible: "Logout"

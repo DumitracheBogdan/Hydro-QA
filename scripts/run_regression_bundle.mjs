@@ -84,19 +84,15 @@ const SUITES = {
     script: path.join('scripts', 'qa-maestro-web-smoke.mjs'),
     tests: 10,
   },
-  mobile: {
-    key: 'mobile',
-    id: 'MOBILE15',
-    label: 'Maestro Mobile Smoke (15 flows)',
-    script: path.join('scripts', 'qa-maestro-mobile-smoke.mjs'),
-    tests: 15,
-  },
+  // Mobile V2 is NOT run inside the regression bundle any more.
+  // It runs in its own emulator step in nightly-regression.yml,
+  // producing qa-artifacts/mobile-v2/test/summary.json directly.
 };
 
 function selectedSuiteKeys(environment, mode) {
   if (mode === 'full') return environment === 'dev'
-    ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced', 'maestro', 'mobile']
-    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced', 'maestro', 'mobile'];
+    ? ['deep', 'api', 'roleaccess', 'ui', 'essential', 'soak', 'advanced', 'maestro']
+    : ['deep', 'api', 'roleaccessreadonly', 'ui', 'essential', 'soak', 'advanced', 'maestro'];
   if (environment === 'prod') return ['deep', 'roleaccessreadonly', 'postdeployhardening', 'maestro'];
   return ['deep', 'api', 'roleaccess', 'ui', 'maestro'];
 }
