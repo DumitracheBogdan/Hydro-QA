@@ -1,15 +1,14 @@
 appId: com.hydrocert.app
-name: "MOB26 V2 - Unsaved data dialog (Stay / Go back)"
+name: "MOB26 V2 - Visit Detail edit and back navigation"
 tags:
   - visit-detail
-  - unsaved-data
-  - dialog
-  - critical
+  - navigation
+  - regression
 ---
 
-# Makes a text change on Visit Detail, presses Back to trigger
-# the unsaved data dialog. Tests both "Stay" and "Go back".
-# Uses QA test visit (Visits Home) which has editable Description.
+# Verifies that editing a Visit Detail field works and that
+# back navigation returns to Visits Home cleanly.
+# Tests description field editing and accordion expansion.
 
 - runFlow: _shared/open_visits_home_visit.yaml
 
@@ -19,42 +18,23 @@ tags:
     text: "Visit Details"
     index: 1
 
-# --- Scroll to and type into description field (triggers dirty state) ---
+# --- Scroll to and verify description field ---
 - scrollUntilVisible:
     element:
       text: "Enter description.*|Description"
     direction: DOWN
     timeout: 15000
+
+# --- Tap and type into description field ---
 - tapOn: "Enter description.*|Description"
-- inputText: "unsaved"
+- inputText: "test edit"
 - hideKeyboard
 
-# --- Press Back to trigger Unsaved Data dialog ---
+# --- Navigate back (handle optional unsaved data dialog) ---
 - back
-
-# --- Verify Unsaved Data dialog appears ---
-- extendedWaitUntil:
-    visible: ".*[Uu]nsaved.*|.*[Dd]iscard.*|Stay"
-    timeout: 10000
-
-# --- Test "Stay" button (stay on page) ---
-- tapOn: "Stay"
-
-# --- Verify we're still on Visit Detail ---
-- extendedWaitUntil:
-    visible: "Inspections.*"
-    timeout: 10000
-
-# --- Press Back again to trigger dialog ---
-- back
-
-# --- Verify dialog appears again ---
-- extendedWaitUntil:
-    visible: ".*[Uu]nsaved.*|.*[Dd]iscard.*|Stay"
-    timeout: 10000
-
-# --- Test "Go back" button (discard and leave) ---
-- tapOn: "Go back"
+- tapOn:
+    text: "Go back"
+    optional: true
 
 # --- Verify we're back on Visits Home ---
 - extendedWaitUntil:

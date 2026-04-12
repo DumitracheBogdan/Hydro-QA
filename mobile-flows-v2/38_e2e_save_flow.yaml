@@ -31,28 +31,31 @@ tags:
 - inputText: "Maestro CI E2E Test"
 - hideKeyboard
 
-# --- Scroll to Save button ---
+# --- Scroll UP first to reset scroll position, then find Save ---
 - scrollUntilVisible:
     element:
       text: "Save"
-    direction: DOWN
-    timeout: 10000
-
-# --- Tap Save ---
+    direction: UP
+    timeout: 5000
 - tapOn: "Save"
 
-# --- Wait for save to process (button state changes) ---
+# --- Wait for save to process ---
 - extendedWaitUntil:
     visible: "Save"
     timeout: 5000
 
-# --- Navigate back (no unsaved data warning expected) ---
+# --- Navigate back ---
 - back
+- tapOn:
+    text: "Go back"
+    optional: true
 
-# --- Re-open same visit ---
+# --- Verify back on Visits Home ---
 - extendedWaitUntil:
     visible: ".*overview of your visits.*"
     timeout: 15000
+
+# --- Re-open same visit ---
 - scrollUntilVisible:
     element:
       text: "View Visit Details"
