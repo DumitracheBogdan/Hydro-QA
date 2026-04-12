@@ -7,21 +7,28 @@ tags:
 ---
 
 # Opens a visit, switches to Inspections tab, verifies inspection
-# cards with "Start Inspection" buttons, starts the first
-# inspection, verifies the form loads, then navigates back.
+# cards exist, starts the first inspection, verifies the form
+# loads, then navigates back.
 # Source: exploration docs/05_INSPECTIONS_TAB.md
+# UI dump: ui-dumps/14_inspections_tab.xml
+#
+# The "testing visit" from History may have different inspection
+# count than the explored "QA test" visit. We use scrollUntilVisible
+# to handle cards that might be below the fold.
 
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:
     text: "Inspections.*"
-- extendedWaitUntil:
-    visible: "Start Inspection"
-    timeout: 10000
 
-# --- Verify at least one inspection card ---
-- assertVisible: "Start Inspection"
+# --- Wait for tab content to load ---
+# Scroll to find "Start Inspection" button (may be below fold)
+- scrollUntilVisible:
+    element:
+      text: "Start Inspection"
+    direction: DOWN
+    timeout: 15000
 
 # --- Start first inspection ---
 - tapOn:
@@ -29,16 +36,16 @@ tags:
     index: 0
 
 # --- Verify inspection form loaded ---
-# The form has expandable sections like "Visit Info" and
-# possibly "Risk Assessment". Use permissive match.
+# The form has expandable sections. Match any section header
+# or the inspection title itself.
 - extendedWaitUntil:
-    visible: "(Visit Info|Risk Assessment|Inspection.*)"
+    visible: "(Visit Info|Risk Assessment|Health.*|Cooling.*|Calorifier.*|Chlorine.*)"
     timeout: 15000
 
 # --- Go back to inspections list ---
 - back
 - extendedWaitUntil:
-    visible: "Start Inspection"
+    visible: "Inspections.*"
     timeout: 10000
 
 # --- Navigate back ---
