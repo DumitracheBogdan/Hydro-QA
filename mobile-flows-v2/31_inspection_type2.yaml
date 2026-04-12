@@ -24,13 +24,11 @@ tags:
     direction: DOWN
     timeout: 10000
 
-# --- Tap Start Inspection button (now visible for this card) ---
-- scrollUntilVisible:
-    element:
-      text: "Start Inspection"
-    direction: DOWN
-    timeout: 5000
-- tapOn: "Start Inspection"
+# --- Tap Start Inspection for this specific card ---
+- tapOn:
+    text: "Start Inspection"
+    below:
+      text: ".*Cooling Tower.*"
 
 # --- Verify form opened (Save or any form element) ---
 - extendedWaitUntil:

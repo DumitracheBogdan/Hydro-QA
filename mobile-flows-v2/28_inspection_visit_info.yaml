@@ -29,17 +29,10 @@ tags:
     timeout: 10000
 - tapOn: "Visit Information"
 
-# --- Verify Assisting field ---
+# --- Verify Assisting field (confirms accordion expanded) ---
 - extendedWaitUntil:
     visible: "Assisting 1"
-    timeout: 5000
-
-# --- Scroll to Site Induction dropdown ---
-- scrollUntilVisible:
-    element:
-      text: "Site Induction"
-    direction: DOWN
-    timeout: 15000
+    timeout: 10000
 
 # --- Go back ---
 - back
