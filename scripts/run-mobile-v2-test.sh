@@ -26,7 +26,23 @@ maestro --version && echo "Maestro installed" || { echo "ERROR: Maestro install 
 cd "$GITHUB_WORKSPACE"
 
 # Collect flow files (exclude _discovery/)
-mapfile -t FLOWS < <(find mobile-flows-v2 -maxdepth 1 -name "*.yaml" -type f | sort)
+if [[ -n "${FLOWS_FILTER:-}" ]]; then
+  # Run only specific flows by number (e.g. FLOWS_FILTER="26,38")
+  echo "=== Filtered mode: running flows ${FLOWS_FILTER} ==="
+  FLOWS=()
+  IFS=',' read -ra NUMS <<< "$FLOWS_FILTER"
+  for num in "${NUMS[@]}"; do
+    num=$(echo "$num" | tr -d '[:space:]')
+    match=$(find mobile-flows-v2 -maxdepth 1 -name "${num}_*.yaml" -type f 2>/dev/null | head -1)
+    if [[ -n "$match" ]]; then
+      FLOWS+=("$match")
+    else
+      echo "::warning::Flow ${num} not found"
+    fi
+  done
+else
+  mapfile -t FLOWS < <(find mobile-flows-v2 -maxdepth 1 -name "*.yaml" -type f | sort)
+fi
 
 if [[ ${#FLOWS[@]} -eq 0 ]]; then
   echo "::warning::No flows found under mobile-flows-v2/ — skipping"
