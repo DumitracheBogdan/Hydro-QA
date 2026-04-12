@@ -11,6 +11,10 @@ tags:
 # be navigated. Also verifies accordion sections on the default
 # Visit Details tab.
 # Source: exploration docs/04_VISIT_DETAIL.md
+#
+# IMPORTANT: Tab navigation MUST happen before any scrolling,
+# because scrollUntilVisible can push the tab row off-screen
+# in Compose ScrollView layouts.
 
 - runFlow: _shared/open_visit_detail.yaml
 
@@ -19,26 +23,21 @@ tags:
 - assertVisible: "Inspections.*"
 - assertVisible: "Attachments.*"
 
-# --- Default tab: Visit Details has accordion sections ---
+# --- Default tab: Visit Details has Client Signature accordion ---
 - assertVisible: "Client Signature"
-- scrollUntilVisible:
-    element:
-      text: "Actions"
-    direction: DOWN
-- assertVisible: "Actions"
 
-# --- Switch to Inspections tab ---
+# --- Switch to Inspections tab (do this BEFORE scrolling) ---
 - tapOn:
     text: "Inspections.*"
 - extendedWaitUntil:
-    visible: "Start Inspection"
+    visible: "Inspections.*"
     timeout: 10000
 
 # --- Switch to Attachments tab ---
 - tapOn:
     text: "Attachments.*"
 - extendedWaitUntil:
-    visible: "(No attachments.*|Attachments.*)"
+    visible: "No attachments.*"
     timeout: 10000
 
 # --- Switch back to Visit Details tab ---
@@ -47,6 +46,13 @@ tags:
 - extendedWaitUntil:
     visible: "Client Signature"
     timeout: 10000
+
+# --- NOW scroll to verify Actions accordion exists ---
+- scrollUntilVisible:
+    element:
+      text: "Actions"
+    direction: DOWN
+- assertVisible: "Actions"
 
 # --- Navigate back ---
 - back
