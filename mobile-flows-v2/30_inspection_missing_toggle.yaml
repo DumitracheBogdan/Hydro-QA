@@ -31,8 +31,12 @@ tags:
     direction: DOWN
     timeout: 10000
 
-# --- Verify Save button ---
-- assertVisible: "Save"
+# --- Verify Save button (may need scroll) ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 10000
 
 # --- Toggle Missing inspection ON ---
 - tapOn: "Missing inspection"

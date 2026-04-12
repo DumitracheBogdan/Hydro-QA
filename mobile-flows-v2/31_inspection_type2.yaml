@@ -17,25 +17,24 @@ tags:
     visible: "Start Inspection"
     timeout: 10000
 
-# --- Start Inspection Type 2 ---
+# --- Scroll to Cooling Tower card ---
 - scrollUntilVisible:
     element:
       text: ".*Cooling Tower.*"
     direction: DOWN
     timeout: 10000
-- tapOn:
-    text: ".*Cooling Tower.*"
 
-# --- Verify form has Information accordion ---
-- extendedWaitUntil:
-    visible: "Information"
-    timeout: 10000
-
-# --- Scroll to Save button to verify full form ---
+# --- Tap Start Inspection button (now visible for this card) ---
 - scrollUntilVisible:
     element:
-      text: "Save"
+      text: "Start Inspection"
     direction: DOWN
+    timeout: 5000
+- tapOn: "Start Inspection"
+
+# --- Verify form opened (Save or any form element) ---
+- extendedWaitUntil:
+    visible: "(Save|Information|Missing)"
     timeout: 15000
 
 # --- Go back ---

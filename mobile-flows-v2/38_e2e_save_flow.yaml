@@ -16,17 +16,15 @@ tags:
 # --- Tap Visit Details tab (ensure on correct tab) ---
 - tapOn: "Visit Details"
 
-# --- Expand Visit Details accordion ---
-# Tap the second "Visit Details" (the accordion, not the tab)
-- tapOn:
-    text: "Visit Details"
-    index: 1
+# --- Scroll to Description field (accordion may be auto-expanded) ---
+- scrollUntilVisible:
+    element:
+      text: "Enter description.*|Description & Reference"
+    direction: DOWN
+    timeout: 15000
 
 # --- Edit Description & Reference field ---
-- extendedWaitUntil:
-    visible: "Enter description.*"
-    timeout: 10000
-- tapOn: "Enter description.*"
+- tapOn: "Enter description.*|Description & Reference"
 - inputText: "Maestro CI E2E Test"
 - hideKeyboard
 
@@ -62,13 +60,12 @@ tags:
     visible: "Inspections.*"
     timeout: 15000
 
-# --- Expand Visit Details accordion ---
+# --- Tap Visit Details tab again ---
 - tapOn: "Visit Details"
-- tapOn:
-    text: "Visit Details"
-    index: 1
 
-# --- Verify data persisted ---
-- extendedWaitUntil:
-    visible: "Maestro CI E2E Test"
-    timeout: 10000
+# --- Verify data persisted (scroll to description area) ---
+- scrollUntilVisible:
+    element:
+      text: "Maestro CI E2E Test"
+    direction: DOWN
+    timeout: 15000

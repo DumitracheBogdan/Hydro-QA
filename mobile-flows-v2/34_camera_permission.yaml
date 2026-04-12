@@ -19,16 +19,13 @@ tags:
 # --- Tap Camera ---
 - tapOn: "Camera"
 
-# --- Verify permission dialog (first-time only) ---
-- assertVisible:
-    text: "While using the app"
-    optional: true
-    timeout: 5000
-
-# --- Dismiss permission dialog if present ---
+# --- Dismiss permission dialog if present (first-time only) ---
 - tapOn:
     text: "While using the app"
     optional: true
 
 # --- Go back (camera may crash on emulator) ---
+- tapOn:
+    text: "Cancel"
+    optional: true
 - back

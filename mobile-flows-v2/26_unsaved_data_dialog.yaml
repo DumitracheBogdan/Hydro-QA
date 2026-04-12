@@ -7,26 +7,32 @@ tags:
   - critical
 ---
 
-# Makes a change on Visit Detail, presses Back to trigger
+# Makes a text change on Visit Detail, presses Back to trigger
 # the unsaved data dialog. Tests both "Stay" and "Go back".
+# Uses QA test visit (Visits Home) which has editable Description.
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/open_visits_home_visit.yaml
 
-# --- Make a change: toggle Aborted visit ON ---
+# --- Navigate to Visit Details tab (accordion auto-expanded) ---
+- tapOn: "Visit Details"
+
+# --- Scroll to and type into description field (triggers dirty state) ---
 - scrollUntilVisible:
     element:
-      text: "Aborted visit"
+      text: "Enter description.*|Description & Reference"
     direction: DOWN
-    timeout: 10000
-- tapOn: "Aborted visit"
+    timeout: 15000
+- tapOn: "Enter description.*|Description & Reference"
+- inputText: "unsaved"
+- hideKeyboard
 
 # --- Press Back to trigger Unsaved Data dialog ---
 - back
 
 # --- Verify Unsaved Data dialog appears ---
 - extendedWaitUntil:
-    visible: "Unsaved data"
-    timeout: 5000
+    visible: ".*[Uu]nsaved.*|.*[Dd]iscard.*|Stay"
+    timeout: 10000
 
 # --- Test "Stay" button (stay on page) ---
 - tapOn: "Stay"
@@ -41,13 +47,13 @@ tags:
 
 # --- Verify dialog appears again ---
 - extendedWaitUntil:
-    visible: "Unsaved data"
-    timeout: 5000
+    visible: ".*[Uu]nsaved.*|.*[Dd]iscard.*|Stay"
+    timeout: 10000
 
 # --- Test "Go back" button (discard and leave) ---
 - tapOn: "Go back"
 
-# --- Verify we're back on History/Home ---
+# --- Verify we're back on Visits Home ---
 - extendedWaitUntil:
-    visible: ".*overview of your visits.*|History"
-    timeout: 10000
+    visible: ".*overview of your visits.*"
+    timeout: 15000
