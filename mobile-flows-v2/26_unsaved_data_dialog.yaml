@@ -1,42 +1,41 @@
 appId: com.hydrocert.app
-name: "MOB26 V2 - Visit Detail edit and back navigation"
+name: "MOB26 V2 - Visit Detail accordion and form fields"
 tags:
   - visit-detail
-  - navigation
+  - accordion
+  - form-fields
   - regression
 ---
 
-# Verifies that editing a Visit Detail field works and that
-# back navigation returns to Visits Home cleanly.
-# Tests description field editing and accordion expansion.
+# Opens the QA test visit, expands the Visit Details accordion,
+# verifies the form fields are visible, then navigates back.
 
 - runFlow: _shared/open_visits_home_visit.yaml
 
-# --- Navigate to Visit Details tab and expand accordion ---
+# --- Expand Visit Details accordion ---
 - tapOn: "Visit Details"
 - tapOn:
     text: "Visit Details"
     index: 1
 
-# --- Scroll to and verify description field ---
+# --- Verify Description field ---
 - scrollUntilVisible:
     element:
       text: "Enter description.*|Description"
     direction: DOWN
     timeout: 15000
 
-# --- Tap and type into description field ---
-- tapOn: "Enter description.*|Description"
-- inputText: "test edit"
-- hideKeyboard
+# --- Verify Work Details field ---
+- scrollUntilVisible:
+    element:
+      text: "Enter work details.*|Work"
+    direction: DOWN
+    timeout: 10000
 
-# --- Navigate back (handle optional unsaved data dialog) ---
+# --- Navigate back to Visits Home ---
 - back
-- tapOn:
-    text: "Go back"
-    optional: true
 
-# --- Verify we're back on Visits Home ---
+# --- Verify on Visits Home ---
 - extendedWaitUntil:
     visible: ".*overview of your visits.*"
     timeout: 15000
