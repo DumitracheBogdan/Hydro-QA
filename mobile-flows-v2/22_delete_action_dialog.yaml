@@ -32,19 +32,13 @@ tags:
     timeout: 10000
 - tapOn: "Add Custom Action"
 
-# Add Custom Action opens a sub-form. Type a name, dismiss
-# keyboard, and save the form. Then save the sheet.
+# Add Custom Action adds a text field. Type a name, dismiss
+# keyboard, Save to commit, then Cancel to close the sheet.
+# (Save commits the action but the sheet stays open.)
 - inputText: "CI Delete Test"
 - hideKeyboard
 - tapOn: "Save"
-# Form Save returns to the Add Actions sheet. Tap Save again
-# to commit all actions and close the sheet.
-- extendedWaitUntil:
-    visible: "(Save|Quick actions)"
-    timeout: 10000
-- tapOn:
-    text: "Save"
-    optional: true
+- tapOn: "Cancel"
 - extendedWaitUntil:
     visible: "Quick actions"
     timeout: 15000
