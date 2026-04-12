@@ -1,0 +1,33 @@
+appId: com.hydrocert.app
+name: "MOB19 V2 - Attachments tab empty state"
+tags:
+  - visit-detail
+  - attachments
+  - smoke
+---
+
+# Opens a visit and verifies the Attachments tab shows the
+# empty state when there are no attachments.
+# Source: exploration docs/06_ATTACHMENTS_TAB.md
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Switch to Attachments tab ---
+- tapOn:
+    text: "Attachments.*"
+
+# --- Verify empty state message ---
+- extendedWaitUntil:
+    visible: "No attachments.*"
+    timeout: 10000
+- assertVisible: "No attachments.*"
+
+# --- Verify other tabs are still navigable ---
+- assertVisible: "Visit Details"
+- assertVisible: "Inspections.*"
+
+# --- The FAB should also be visible on this tab ---
+- assertVisible: "Quick actions"
+
+# --- Navigate back ---
+- back
