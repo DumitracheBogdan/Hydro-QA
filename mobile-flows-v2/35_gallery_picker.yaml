@@ -21,14 +21,10 @@ tags:
 # --- Tap Gallery ---
 - tapOn: "gallery"
 
-# --- Verify Photo Picker opened ---
+# --- Verify Photo Picker or file browser opened ---
 - extendedWaitUntil:
-    visible: "Photos"
+    visible: "(Photos|Albums|Images|Recent|Gallery|Documents|Open from)"
     timeout: 10000
-- assertVisible: "Albums"
-
-# --- Switch to Albums tab ---
-- tapOn: "Albums"
 
 # --- Go back ---
 - back

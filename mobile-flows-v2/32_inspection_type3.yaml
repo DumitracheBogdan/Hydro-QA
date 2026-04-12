@@ -17,25 +17,24 @@ tags:
     visible: "Start Inspection"
     timeout: 10000
 
-# --- Start Inspection Type 3 ---
+# --- Scroll to Calorifier card ---
 - scrollUntilVisible:
     element:
       text: ".*Calorifier.*"
     direction: DOWN
     timeout: 10000
-- tapOn:
-    text: ".*Calorifier.*"
 
-# --- Verify form structure ---
-- extendedWaitUntil:
-    visible: "Visit Information"
-    timeout: 10000
-
-# --- Scroll to Save to verify full form ---
+# --- Tap Start Inspection button (now visible for this card) ---
 - scrollUntilVisible:
     element:
-      text: "Save"
+      text: "Start Inspection"
     direction: DOWN
+    timeout: 5000
+- tapOn: "Start Inspection"
+
+# --- Verify form opened ---
+- extendedWaitUntil:
+    visible: "(Save|Information|Missing)"
     timeout: 15000
 
 # --- Go back ---

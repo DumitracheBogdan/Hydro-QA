@@ -31,17 +31,19 @@ tags:
     timeout: 5000
 - tapOn: "Risk Assessment"
 
-# --- Verify risk categories are visible ---
-- extendedWaitUntil:
-    visible: "(Accessing Area|Asbestos)"
-    timeout: 5000
+# --- Verify risk categories are visible (may need scroll) ---
+- scrollUntilVisible:
+    element:
+      text: "(Accessing Area|Asbestos|Working at Height)"
+    direction: DOWN
+    timeout: 15000
 
 # --- Scroll to later categories ---
 - scrollUntilVisible:
     element:
-      text: "(Working Around Machinery|Hot Water Scalding)"
+      text: "(Working Around Machinery|Hot Water Scalding|Manual Handling)"
     direction: DOWN
-    timeout: 10000
+    timeout: 15000
 
 # --- Go back ---
 - back
