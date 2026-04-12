@@ -10,6 +10,10 @@ on:
           - discovery
           - test
         default: test
+      flows:
+        description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows"
+        type: string
+        required: false
   push:
     branches:
       - fix/maestro-v2
@@ -84,6 +88,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+          FLOWS_FILTER: ${{ inputs.flows }}
 
       - name: Upload mobile V2 artifacts
         if: always()
