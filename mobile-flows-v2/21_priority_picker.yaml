@@ -12,16 +12,10 @@ tags:
 # picker dropdown, verifies all options, dismisses.
 # Source: exploration test 12_visit_detail_priority_picker.yaml
 #
-# NOTE: Uses Visits Home "View Visit Details" (first card = QA test)
-# instead of History because only QA test visit has action items.
+# Navigates via History tab search because Visits Home cards
+# are not clickable (no "View Visit Details" CTA there).
 
-- runFlow: _shared/login.yaml
-
-# --- Open first visit from Visits Home (QA test - has actions) ---
-- tapOn: "View Visit Details"
-- extendedWaitUntil:
-    visible: "Visit Details"
-    timeout: 15000
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll down to find a priority badge in Actions area ---
 - scrollUntilVisible:
