@@ -29,14 +29,18 @@ tags:
 # --- Edit Description & Reference field ---
 - tapOn: "Enter description.*|Description"
 - inputText: "Maestro CI E2E Test"
-- hideKeyboard
 
-# --- Scroll UP first to reset scroll position, then find Save ---
+# --- Use back to dismiss keyboard AND unfocus text field ---
+- back
+
+# --- Scroll to Save button (now unfocused, scroll should work) ---
 - scrollUntilVisible:
     element:
       text: "Save"
-    direction: UP
-    timeout: 5000
+    direction: DOWN
+    timeout: 20000
+
+# --- Tap Save ---
 - tapOn: "Save"
 
 # --- Wait for save to process ---
@@ -44,7 +48,7 @@ tags:
     visible: "Save"
     timeout: 5000
 
-# --- Navigate back ---
+# --- Navigate back to Visits Home ---
 - back
 - tapOn:
     text: "Go back"
