@@ -1,0 +1,74 @@
+appId: com.hydrocert.app
+name: "MOB38 V2 - E2E save and data persistence"
+tags:
+  - e2e
+  - save
+  - critical
+---
+
+# Opens a visit, edits a text field, saves, navigates back,
+# re-opens the visit, and verifies the data persisted.
+#
+# Uses Visits Home visit (QA test) for persistence check.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Tap Visit Details tab (ensure on correct tab) ---
+- tapOn: "Visit Details"
+
+# --- Expand Visit Details accordion ---
+# Tap the second "Visit Details" (the accordion, not the tab)
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Edit Description & Reference field ---
+- extendedWaitUntil:
+    visible: "Enter description.*"
+    timeout: 10000
+- tapOn: "Enter description.*"
+- inputText: "Maestro CI E2E Test"
+- hideKeyboard
+
+# --- Scroll to Save button ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 10000
+
+# --- Tap Save ---
+- tapOn: "Save"
+
+# --- Wait for save to process (button state changes) ---
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 5000
+
+# --- Navigate back (no unsaved data warning expected) ---
+- back
+
+# --- Re-open same visit ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+
+# --- Expand Visit Details accordion ---
+- tapOn: "Visit Details"
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Verify data persisted ---
+- extendedWaitUntil:
+    visible: "Maestro CI E2E Test"
+    timeout: 10000

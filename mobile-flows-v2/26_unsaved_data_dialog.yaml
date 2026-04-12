@@ -1,0 +1,53 @@
+appId: com.hydrocert.app
+name: "MOB26 V2 - Unsaved data dialog (Stay / Go back)"
+tags:
+  - visit-detail
+  - unsaved-data
+  - dialog
+  - critical
+---
+
+# Makes a change on Visit Detail, presses Back to trigger
+# the unsaved data dialog. Tests both "Stay" and "Go back".
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Make a change: toggle Aborted visit ON ---
+- scrollUntilVisible:
+    element:
+      text: "Aborted visit"
+    direction: DOWN
+    timeout: 10000
+- tapOn: "Aborted visit"
+
+# --- Press Back to trigger Unsaved Data dialog ---
+- back
+
+# --- Verify Unsaved Data dialog appears ---
+- extendedWaitUntil:
+    visible: "Unsaved data"
+    timeout: 5000
+
+# --- Test "Stay" button (stay on page) ---
+- tapOn: "Stay"
+
+# --- Verify we're still on Visit Detail ---
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 10000
+
+# --- Press Back again to trigger dialog ---
+- back
+
+# --- Verify dialog appears again ---
+- extendedWaitUntil:
+    visible: "Unsaved data"
+    timeout: 5000
+
+# --- Test "Go back" button (discard and leave) ---
+- tapOn: "Go back"
+
+# --- Verify we're back on History/Home ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*|History"
+    timeout: 10000

@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB31 V2 - Inspection Type 2 Cooling Tower form"
+tags:
+  - inspections
+  - regression
+---
+
+# Opens the Cooling Tower Disinfection form (Type 2) and
+# verifies the form structure with accordions.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Start Inspection Type 2 ---
+- scrollUntilVisible:
+    element:
+      text: ".*Cooling Tower.*"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: ".*Cooling Tower.*"
+
+# --- Verify form has Information accordion ---
+- extendedWaitUntil:
+    visible: "Information"
+    timeout: 10000
+
+# --- Scroll to Save button to verify full form ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 15000
+
+# --- Go back ---
+- back
+- back

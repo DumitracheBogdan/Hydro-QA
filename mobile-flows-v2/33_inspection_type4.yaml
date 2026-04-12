@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB33 V2 - Inspection Type 4 Chlorine Dioxide form"
+tags:
+  - inspections
+  - regression
+---
+
+# Opens the Chlorine Dioxide Outlet Testing form (Type 4)
+# and verifies the form structure.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Start Inspection Type 4 ---
+- scrollUntilVisible:
+    element:
+      text: ".*Chlorine Dioxide.*"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: ".*Chlorine Dioxide.*"
+
+# --- Verify form structure ---
+- extendedWaitUntil:
+    visible: "Visit Information"
+    timeout: 10000
+
+# --- Scroll to Save to verify full form ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 15000
+
+# --- Go back ---
+- back
+- back

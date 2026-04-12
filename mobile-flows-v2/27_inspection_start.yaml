@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB27 V2 - Start inspection form navigation"
+tags:
+  - inspections
+  - forms
+  - smoke
+---
+
+# Opens the QA test visit (has 4 inspections), switches to
+# Inspections tab, taps "Start Inspection" on the first card,
+# verifies the form opened, then navigates back.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+
+# --- Wait for inspection list ---
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Start first inspection ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+
+# --- Verify inspection form opened ---
+- extendedWaitUntil:
+    visible: "(Visit Information|Save)"
+    timeout: 10000
+
+# --- Go back to inspections list ---
+- back
+
+# --- Verify back on inspections ---
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 10000
+
+# --- Go back to home ---
+- back
