@@ -54,9 +54,13 @@ tags:
 # --- Close dialog without submitting (system back) ---
 - back
 
-# --- Verify we're back on visit detail ---
-- extendedWaitUntil:
-    visible: "Inspections.*"
+# --- Verify dialog was closed and we're back on visit detail ---
+# The view is scrolled far down from earlier scrollUntilVisible,
+# so scroll UP to find the accordion header as confirmation
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: UP
     timeout: 10000
 
 # --- Navigate back ---
