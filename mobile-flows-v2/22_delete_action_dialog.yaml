@@ -12,24 +12,18 @@ tags:
 # Cancel/Delete buttons, then cancels without deleting.
 # Source: exploration test 13_visit_detail_delete_action.yaml
 #
-# NOTE: Uses Visits Home navigation (tapOn: "QA test") instead
-# of History because only QA test visit has action items.
+# NOTE: Uses Visits Home "View Visit Details" (first card = QA test)
+# instead of History because only QA test visit has action items.
 
 - runFlow: _shared/login.yaml
 
-# --- Open QA test visit from Visits Home (has action items) ---
-- tapOn: "QA test"
+# --- Open first visit from Visits Home (QA test - has actions) ---
+- tapOn: "View Visit Details"
 - extendedWaitUntil:
-    visible: "Inspections.*"
+    visible: "Visit Details"
     timeout: 15000
 
-# --- Scroll down to Actions area ---
-- scrollUntilVisible:
-    element:
-      text: "Actions"
-    direction: DOWN
-
-# --- Scroll to find delete action icon ---
+# --- Scroll down to find delete action icon ---
 # The delete icon has content-desc "Delete action" in the
 # exploration UI dump (trash icon next to action items)
 - scrollUntilVisible:
@@ -55,7 +49,7 @@ tags:
 
 # --- Verify we're back on visit detail ---
 - extendedWaitUntil:
-    visible: "Actions"
+    visible: "Visit Details"
     timeout: 10000
 
 # --- Navigate back ---
