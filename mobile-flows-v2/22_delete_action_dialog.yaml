@@ -32,11 +32,19 @@ tags:
     timeout: 10000
 - tapOn: "Add Custom Action"
 
-# After tapping Add Custom Action, type a name and save.
+# Add Custom Action opens a sub-form. Type a name, dismiss
+# keyboard, and save the form. Then save the sheet.
 - inputText: "CI Delete Test"
+- hideKeyboard
 - tapOn: "Save"
-# After save, the view may auto-scroll to the action area, pushing
-# the tab row off-screen. Use FAB as marker (always floating/visible).
+# Form Save returns to the Add Actions sheet. Tap Save again
+# to commit all actions and close the sheet.
+- extendedWaitUntil:
+    visible: "(Save|Quick actions)"
+    timeout: 10000
+- tapOn:
+    text: "Save"
+    optional: true
 - extendedWaitUntil:
     visible: "Quick actions"
     timeout: 15000
