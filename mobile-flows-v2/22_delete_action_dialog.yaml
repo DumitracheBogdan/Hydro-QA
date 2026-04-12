@@ -1,0 +1,58 @@
+appId: com.hydrocert.app
+name: "MOB22 V2 - Delete action confirmation dialog"
+tags:
+  - visit-detail
+  - actions
+  - delete
+  - smoke
+---
+
+# Opens a visit, expands Actions accordion, finds a delete
+# action icon, taps it to open confirmation dialog, verifies
+# Cancel/Delete buttons, then cancels without deleting.
+# Source: exploration test 13_visit_detail_delete_action.yaml
+#
+# NOTE: This test requires the visit to have at least one
+# action item with a delete icon.
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Expand Actions accordion ---
+- scrollUntilVisible:
+    element:
+      text: "Actions"
+    direction: DOWN
+- tapOn:
+    text: "Actions"
+
+# --- Scroll to find delete action icon ---
+# The delete icon has content-desc "Delete action" in the
+# exploration UI dump (trash icon next to action items)
+- scrollUntilVisible:
+    element:
+      text: "Delete action"
+    direction: DOWN
+    timeout: 15000
+
+# --- Tap delete icon to open confirmation ---
+- tapOn:
+    text: "Delete action"
+
+# --- Verify confirmation dialog ---
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+- assertVisible: "Cancel"
+- assertVisible: "(Delete|Close|Confirm)"
+
+# --- Cancel without deleting ---
+- tapOn:
+    text: "Cancel"
+
+# --- Verify we're back on visit detail ---
+- extendedWaitUntil:
+    visible: "Actions"
+    timeout: 10000
+
+# --- Navigate back ---
+- back

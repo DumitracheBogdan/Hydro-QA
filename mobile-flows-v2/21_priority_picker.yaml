@@ -1,0 +1,51 @@
+appId: com.hydrocert.app
+name: "MOB21 V2 - Priority picker dropdown"
+tags:
+  - visit-detail
+  - priority
+  - actions
+  - smoke
+---
+
+# Opens a visit, expands the Actions accordion, finds a
+# priority badge (Low/Medium/High), taps it to open the
+# priority picker dropdown, verifies all options, dismisses.
+# Source: exploration test 12_visit_detail_priority_picker.yaml
+#
+# NOTE: This test requires the visit to have at least one
+# action item with a priority badge assigned.
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Expand Actions accordion ---
+- scrollUntilVisible:
+    element:
+      text: "Actions"
+    direction: DOWN
+- tapOn:
+    text: "Actions"
+
+# --- Scroll to find a priority badge ---
+- scrollUntilVisible:
+    element:
+      text: "(Low|Medium|High)"
+    direction: DOWN
+    timeout: 15000
+
+# --- Tap the priority badge to open dropdown ---
+- tapOn:
+    text: "(Low|Medium|High)"
+
+# --- Verify all three priority options visible ---
+- extendedWaitUntil:
+    visible: "Medium"
+    timeout: 10000
+- assertVisible: "Low"
+- assertVisible: "Medium"
+- assertVisible: "High"
+
+# --- Dismiss picker without changing ---
+- back
+
+# --- Navigate back ---
+- back
