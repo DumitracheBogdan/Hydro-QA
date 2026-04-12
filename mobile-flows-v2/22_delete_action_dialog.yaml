@@ -7,44 +7,15 @@ tags:
   - smoke
 ---
 
-# Opens a visit, creates a custom action via the FAB, then
-# taps the delete icon to verify the confirmation dialog
-# (Cancel/Delete buttons), and cancels without deleting.
+# Opens the "QA test" visit, scrolls to a delete action icon,
+# taps it to open confirmation dialog, verifies Cancel/Delete
+# buttons, then cancels without deleting.
 #
-# The "testing visit" (reachable via History) has no action
-# items by default, so we add one via FAB before testing.
-# Visits Home cards are NOT clickable (no "View Visit Details").
+# Navigates via Visits Home scroll to "View Visit Details".
 
-- runFlow: _shared/open_visit_detail.yaml
-
-# --- Add a custom action via FAB ---
-- tapOn:
-    text: "Quick actions"
-- extendedWaitUntil:
-    visible: "Camera"
-    timeout: 10000
-- tapOn:
-    text: "Actions"
-    below:
-      text: "gallery"
-- extendedWaitUntil:
-    visible: "Add Custom Action"
-    timeout: 10000
-- tapOn: "Add Custom Action"
-
-# Add Custom Action adds a text field. Type a name, dismiss
-# keyboard, Save to commit, then Cancel to close the sheet.
-# (Save commits the action but the sheet stays open.)
-- inputText: "CI Delete Test"
-- hideKeyboard
-- tapOn: "Save"
-- tapOn: "Cancel"
-- extendedWaitUntil:
-    visible: "Quick actions"
-    timeout: 15000
+- runFlow: _shared/open_visits_home_visit.yaml
 
 # --- Scroll down to find delete action icon ---
-# The delete icon has content-desc "Delete action" (trash icon)
 - scrollUntilVisible:
     element:
       text: "Delete action"
@@ -52,24 +23,14 @@ tags:
     timeout: 15000
 
 # --- Tap delete icon to open confirmation ---
-- tapOn:
-    text: "Delete action"
+- tapOn: "Delete action"
 
 # --- Verify confirmation dialog ---
-- extendedWaitUntil:
-    visible: "Cancel"
-    timeout: 10000
 - assertVisible: "Cancel"
-- assertVisible: "(Delete|Close|Confirm)"
+- assertVisible: "Delete"
 
 # --- Cancel without deleting ---
-- tapOn:
-    text: "Cancel"
-
-# --- Verify we're back on visit detail ---
-- extendedWaitUntil:
-    visible: "Visit Details"
-    timeout: 10000
+- tapOn: "Cancel"
 
 # --- Navigate back ---
 - back

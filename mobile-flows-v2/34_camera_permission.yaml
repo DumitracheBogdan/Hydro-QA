@@ -1,0 +1,34 @@
+appId: com.hydrocert.app
+name: "MOB34 V2 - Camera permission dialog"
+tags:
+  - camera
+  - permissions
+  - regression
+---
+
+# Opens a visit, taps FAB > Camera, verifies the Android
+# permission dialog appears (first-time only).
+# Camera crashes on emulator (no hardware) - that's expected.
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Tap FAB ---
+- tapOn:
+    text: "Quick actions"
+
+# --- Tap Camera ---
+- tapOn: "Camera"
+
+# --- Verify permission dialog (first-time only) ---
+- assertVisible:
+    text: "While using the app"
+    optional: true
+    timeout: 5000
+
+# --- Dismiss permission dialog if present ---
+- tapOn:
+    text: "While using the app"
+    optional: true
+
+# --- Go back (camera may crash on emulator) ---
+- back

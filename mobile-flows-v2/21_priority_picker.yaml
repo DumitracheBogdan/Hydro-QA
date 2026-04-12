@@ -7,56 +7,25 @@ tags:
   - smoke
 ---
 
-# Opens a visit, creates a custom action via the FAB, then
-# verifies the priority picker dropdown (Low/Medium/High).
+# Opens the "QA test" visit (which has action items with
+# priorities), finds a priority badge, taps it to open the
+# picker dropdown, verifies all options, dismisses.
 #
-# The "testing visit" (reachable via History) has no action
-# items by default, so we add one via FAB before testing.
-# Visits Home cards are NOT clickable (no "View Visit Details").
+# Navigates via Visits Home scroll to "View Visit Details".
 
-- runFlow: _shared/open_visit_detail.yaml
-
-# --- Add a custom action via FAB ---
-- tapOn:
-    text: "Quick actions"
-- extendedWaitUntil:
-    visible: "Camera"
-    timeout: 10000
-- tapOn:
-    text: "Actions"
-    below:
-      text: "gallery"
-- extendedWaitUntil:
-    visible: "Add Custom Action"
-    timeout: 10000
-- tapOn: "Add Custom Action"
-
-# Add Custom Action adds a text field. Type a name, dismiss
-# keyboard, Save to commit, then Cancel to close the sheet.
-# (Save commits the action but the sheet stays open.)
-- inputText: "CI Priority Test"
-- hideKeyboard
-- tapOn: "Save"
-- tapOn: "Cancel"
-- extendedWaitUntil:
-    visible: "Quick actions"
-    timeout: 15000
+- runFlow: _shared/open_visits_home_visit.yaml
 
 # --- Scroll down to find a priority badge in Actions area ---
 - scrollUntilVisible:
     element:
-      text: "(Low|Medium|High)"
+      text: "Low"
     direction: DOWN
     timeout: 15000
 
 # --- Tap the priority badge to open dropdown ---
-- tapOn:
-    text: "(Low|Medium|High)"
+- tapOn: "Low"
 
 # --- Verify all three priority options visible ---
-- extendedWaitUntil:
-    visible: "Medium"
-    timeout: 10000
 - assertVisible: "Low"
 - assertVisible: "Medium"
 - assertVisible: "High"

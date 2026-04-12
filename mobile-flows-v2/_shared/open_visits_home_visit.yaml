@@ -1,0 +1,35 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Navigate to Visit Detail from Visits Home"
+tags:
+  - shared
+  - navigation
+---
+
+# Shared flow: Login, scroll Visits Home to find "View Visit
+# Details" button (may be below fold on smaller screens), and
+# tap it to open the first visit's detail screen.
+#
+# This opens the "QA test" visit which has action items and
+# inspections. Use this when the test requires that data.
+# For tests that only need any visit, prefer open_visit_detail.yaml
+# (History tab) as it's more reliable.
+#
+# Usage:
+#   - runFlow: _shared/open_visits_home_visit.yaml
+
+- runFlow: login.yaml
+
+# Scroll down to find "View Visit Details" on the first card.
+# On CI's smaller emulator screen, this button is below the fold.
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+
+- tapOn: "View Visit Details"
+
+# Wait for Visit Detail to load
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000

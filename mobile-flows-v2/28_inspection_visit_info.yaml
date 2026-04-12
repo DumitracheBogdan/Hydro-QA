@@ -1,0 +1,46 @@
+appId: com.hydrocert.app
+name: "MOB28 V2 - Inspection Visit Information fields"
+tags:
+  - inspections
+  - visit-information
+  - form-fields
+---
+
+# Opens the first inspection form and verifies the Visit
+# Information accordion expands with fields visible.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Start first inspection ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+
+# --- Expand Visit Information accordion ---
+- extendedWaitUntil:
+    visible: "Visit Information"
+    timeout: 10000
+- tapOn: "Visit Information"
+
+# --- Verify Assisting field ---
+- extendedWaitUntil:
+    visible: "Assisting 1"
+    timeout: 5000
+
+# --- Scroll to Site Induction dropdown ---
+- scrollUntilVisible:
+    element:
+      text: "Site Induction"
+    direction: DOWN
+    timeout: 5000
+
+# --- Go back ---
+- back
+- back
