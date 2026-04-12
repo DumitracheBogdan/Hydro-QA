@@ -7,25 +7,23 @@ tags:
   - smoke
 ---
 
-# Opens a visit, expands the Actions accordion, finds a
-# priority badge (Low/Medium/High), taps it to open the
-# priority picker dropdown, verifies all options, dismisses.
+# Opens the "QA test" visit (which has action items with
+# priorities), finds a priority badge, taps it to open the
+# picker dropdown, verifies all options, dismisses.
 # Source: exploration test 12_visit_detail_priority_picker.yaml
 #
-# NOTE: This test requires the visit to have at least one
-# action item with a priority badge assigned.
+# NOTE: Uses Visits Home navigation (tapOn: "QA test") instead
+# of History because only QA test visit has action items.
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/login.yaml
 
-# --- Expand Actions accordion ---
-- scrollUntilVisible:
-    element:
-      text: "Actions"
-    direction: DOWN
-- tapOn:
-    text: "Actions"
+# --- Open QA test visit from Visits Home ---
+- tapOn: "QA test"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
 
-# --- Scroll to find a priority badge ---
+# --- Scroll down to find a priority badge in Actions area ---
 - scrollUntilVisible:
     element:
       text: "(Low|Medium|High)"
