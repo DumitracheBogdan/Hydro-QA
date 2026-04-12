@@ -7,15 +7,37 @@ tags:
   - smoke
 ---
 
-# Opens the "QA test" visit (which has action items with
-# priorities), finds a priority badge, taps it to open the
-# picker dropdown, verifies all options, dismisses.
-# Source: exploration test 12_visit_detail_priority_picker.yaml
+# Opens a visit, creates a custom action via the FAB, then
+# verifies the priority picker dropdown (Low/Medium/High).
 #
-# Navigates via History tab search because Visits Home cards
-# are not clickable (no "View Visit Details" CTA there).
+# The "testing visit" (reachable via History) has no action
+# items by default, so we add one via FAB before testing.
+# Visits Home cards are NOT clickable (no "View Visit Details").
 
-- runFlow: _shared/open_qa_test_visit.yaml
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Add a custom action via FAB ---
+- tapOn:
+    text: "Quick actions"
+- extendedWaitUntil:
+    visible: "Camera"
+    timeout: 10000
+- tapOn:
+    text: "Actions"
+    below:
+      text: "gallery"
+- extendedWaitUntil:
+    visible: "Add Custom Action"
+    timeout: 10000
+- tapOn: "Add Custom Action"
+
+# After tapping Add Custom Action, type a name and save.
+# The sheet should return us to visit detail with the new action.
+- inputText: "CI Priority Test"
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "Visit Details"
+    timeout: 15000
 
 # --- Scroll down to find a priority badge in Actions area ---
 - scrollUntilVisible:
