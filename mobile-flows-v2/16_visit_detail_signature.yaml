@@ -1,0 +1,49 @@
+appId: com.hydrocert.app
+name: "MOB16 V2 - Client Signature dialog"
+tags:
+  - visit-detail
+  - signature
+  - smoke
+---
+
+# Opens a visit, expands Client Signature accordion, taps to
+# open the signature dialog, verifies Clear/Submit buttons,
+# then closes without submitting.
+# Source: exploration docs/04_VISIT_DETAIL.md (Signature Dialog)
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Scroll to and expand Client Signature accordion ---
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+- tapOn:
+    text: "Client Signature"
+
+# --- Wait for accordion to expand showing signature area ---
+- extendedWaitUntil:
+    visible: "(Tap to sign|Client name|signature)"
+    timeout: 10000
+
+# --- Tap the signature area to open signature dialog ---
+- tapOn:
+    text: "Tap to sign.*"
+
+# --- Verify signature dialog has correct buttons ---
+- extendedWaitUntil:
+    visible: "Clear"
+    timeout: 10000
+- assertVisible: "Clear"
+- assertVisible: "Submit"
+
+# --- Close dialog without submitting (system back) ---
+- back
+
+# --- Verify we're back on visit detail, not navigated away ---
+- extendedWaitUntil:
+    visible: "Client Signature"
+    timeout: 10000
+
+# --- Navigate back ---
+- back

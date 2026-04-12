@@ -1,0 +1,57 @@
+appId: com.hydrocert.app
+name: "MOB17 V2 - FAB quick actions and Add Actions sheet"
+tags:
+  - visit-detail
+  - fab
+  - actions
+  - smoke
+---
+
+# Opens a visit and tests the Floating Action Button (FAB):
+# 1. Tap FAB to expand sub-actions (Camera, gallery, Actions)
+# 2. Tap "Actions" to open Add Actions bottom sheet
+# 3. Verify sheet elements (search, Add Custom Action, Cancel, Save)
+# 4. Cancel to close
+# Source: exploration docs/07_QUICK_ACTIONS_FAB.md
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Tap the FAB button (content-desc "Quick actions") ---
+- tapOn:
+    text: "Quick actions"
+
+# --- Verify all three sub-action buttons appeared ---
+- extendedWaitUntil:
+    visible: "Camera"
+    timeout: 10000
+- assertVisible: "Camera"
+- assertVisible: "gallery"
+
+# --- Tap "Actions" sub-button to open Add Actions sheet ---
+# Use below: filter to distinguish from the "Actions" accordion
+# header that may also be visible on screen
+- tapOn:
+    text: "Actions"
+    below:
+      text: "gallery"
+
+# --- Verify Add Actions bottom sheet loaded ---
+- extendedWaitUntil:
+    visible: "Add Custom Action"
+    timeout: 10000
+- assertVisible: "Type to search.*"
+- assertVisible: "Add Custom Action"
+- assertVisible: "Cancel"
+- assertVisible: "Save"
+
+# --- Cancel to close the sheet without saving ---
+- tapOn:
+    text: "Cancel"
+
+# --- Verify back on Visit Detail ---
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 10000
+
+# --- Navigate back ---
+- back

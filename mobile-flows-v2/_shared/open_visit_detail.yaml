@@ -1,0 +1,33 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Navigate to Visit Detail"
+tags:
+  - shared
+  - navigation
+---
+
+# Shared flow: Login, go to History tab, tap "View Visit Details"
+# to open a visit detail screen. History tab is the ONLY place
+# where visit cards have the "View Visit Details" CTA button.
+# (Visits Home cards are NOT clickable.)
+#
+# Usage from a test flow:
+#   - runFlow: _shared/open_visit_detail.yaml
+
+- runFlow: login.yaml
+
+# Navigate to History tab (has clickable visit cards)
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 15000
+
+# Open first visit detail
+- tapOn:
+    text: "View Visit Details"
+
+# Wait for Visit Detail to load — the Inspections tab label
+# is unique to this screen and confirms all tabs rendered
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
