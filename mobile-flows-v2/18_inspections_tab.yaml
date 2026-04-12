@@ -1,0 +1,45 @@
+appId: com.hydrocert.app
+name: "MOB18 V2 - Inspections tab and start inspection"
+tags:
+  - visit-detail
+  - inspections
+  - smoke
+---
+
+# Opens a visit, switches to Inspections tab, verifies inspection
+# cards with "Start Inspection" buttons, starts the first
+# inspection, verifies the form loads, then navigates back.
+# Source: exploration docs/05_INSPECTIONS_TAB.md
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Verify at least one inspection card ---
+- assertVisible: "Start Inspection"
+
+# --- Start first inspection ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+
+# --- Verify inspection form loaded ---
+# The form has expandable sections like "Visit Info" and
+# possibly "Risk Assessment". Use permissive match.
+- extendedWaitUntil:
+    visible: "(Visit Info|Risk Assessment|Inspection.*)"
+    timeout: 15000
+
+# --- Go back to inspections list ---
+- back
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Navigate back ---
+- back

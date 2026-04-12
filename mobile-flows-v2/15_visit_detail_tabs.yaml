@@ -1,0 +1,52 @@
+appId: com.hydrocert.app
+name: "MOB15 V2 - Visit Detail tab navigation"
+tags:
+  - visit-detail
+  - tabs
+  - smoke
+---
+
+# Opens a visit via History > View Visit Details and verifies
+# all three tabs (Visit Details, Inspections, Attachments) can
+# be navigated. Also verifies accordion sections on the default
+# Visit Details tab.
+# Source: exploration docs/04_VISIT_DETAIL.md
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- All three tabs are visible ---
+- assertVisible: "Visit Details"
+- assertVisible: "Inspections.*"
+- assertVisible: "Attachments.*"
+
+# --- Default tab: Visit Details has accordion sections ---
+- assertVisible: "Client Signature"
+- scrollUntilVisible:
+    element:
+      text: "Actions"
+    direction: DOWN
+- assertVisible: "Actions"
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Switch to Attachments tab ---
+- tapOn:
+    text: "Attachments.*"
+- extendedWaitUntil:
+    visible: "(No attachments.*|Attachments.*)"
+    timeout: 10000
+
+# --- Switch back to Visit Details tab ---
+- tapOn:
+    text: "Visit Details"
+- extendedWaitUntil:
+    visible: "Client Signature"
+    timeout: 10000
+
+# --- Navigate back ---
+- back
