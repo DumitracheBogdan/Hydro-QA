@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB18 V2 - Inspections tab content"
+tags:
+  - visit-detail
+  - inspections
+  - smoke
+---
+
+# Opens a visit and switches to the Inspections tab.
+# The "testing visit" from History may have 0 inspections,
+# so this flow does NOT require "Start Inspection" buttons.
+# It verifies:
+# 1. The Inspections tab can be switched to
+# 2. The tab content differs from Visit Details content
+# 3. The FAB is still accessible on the Inspections tab
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Verify on Visit Details tab (default) ---
+- assertVisible: "Client Signature"
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+
+# --- Give tab content time to render ---
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 10000
+
+# --- Verify Visit Details tab content is no longer shown ---
+# "Client Signature" accordion is specific to Visit Details tab
+- assertNotVisible: "Client Signature"
+
+# --- FAB should still be accessible on Inspections tab ---
+- assertVisible: "Quick actions"
+
+# --- Verify the tab row is still navigable ---
+- assertVisible: "Visit Details"
+- assertVisible: "Attachments.*"
+
+# --- Navigate back ---
+- back
