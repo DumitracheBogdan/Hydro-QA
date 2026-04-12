@@ -35,8 +35,10 @@ tags:
 # After tapping Add Custom Action, type a name and save.
 - inputText: "CI Delete Test"
 - tapOn: "Save"
+# After save, the view may auto-scroll to the action area, pushing
+# the tab row off-screen. Use FAB as marker (always floating/visible).
 - extendedWaitUntil:
-    visible: "Visit Details"
+    visible: "Quick actions"
     timeout: 15000
 
 # --- Scroll down to find delete action icon ---

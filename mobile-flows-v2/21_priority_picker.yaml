@@ -35,8 +35,10 @@ tags:
 # The sheet should return us to visit detail with the new action.
 - inputText: "CI Priority Test"
 - tapOn: "Save"
+# After save, the view may auto-scroll to the action area, pushing
+# the tab row off-screen. Use FAB as marker (always floating/visible).
 - extendedWaitUntil:
-    visible: "Visit Details"
+    visible: "Quick actions"
     timeout: 15000
 
 # --- Scroll down to find a priority badge in Actions area ---
