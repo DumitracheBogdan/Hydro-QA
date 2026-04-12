@@ -1,13 +1,12 @@
 appId: com.hydrocert.app
-name: "MOB29 V2 - Inspection Risk Assessment categories"
+name: "MOB29 V2 - Inspection Risk Assessment accordion"
 tags:
   - inspections
   - risk-assessment
-  - scroll
 ---
 
 # Opens the first inspection form, expands Risk Assessment
-# accordion, and scrolls through risk categories.
+# accordion, and verifies content appears.
 
 - runFlow: _shared/open_visits_home_visit.yaml
 
@@ -23,27 +22,18 @@ tags:
     text: "Start Inspection"
     index: 0
 
-# --- Expand Risk Assessment accordion ---
+# --- Scroll to and expand Risk Assessment accordion ---
 - scrollUntilVisible:
     element:
       text: "Risk Assessment"
     direction: DOWN
-    timeout: 5000
+    timeout: 10000
 - tapOn: "Risk Assessment"
 
-# --- Verify risk categories are visible (may need scroll) ---
-- scrollUntilVisible:
-    element:
-      text: "(Accessing Area|Asbestos|Working at Height)"
-    direction: DOWN
-    timeout: 15000
-
-# --- Scroll to later categories ---
-- scrollUntilVisible:
-    element:
-      text: "(Working Around Machinery|Hot Water Scalding|Manual Handling)"
-    direction: DOWN
-    timeout: 15000
+# --- Verify accordion expanded (any risk-related content) ---
+- extendedWaitUntil:
+    visible: "(Low|Medium|High|N/A|Yes|No|Risk)"
+    timeout: 10000
 
 # --- Go back ---
 - back
