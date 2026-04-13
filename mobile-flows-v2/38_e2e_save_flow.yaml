@@ -31,19 +31,26 @@ tags:
 - inputText: "Maestro CI E2E Test"
 
 # --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
-# On CI emulator inputText injects directly (no keyboard shown), so `back`
-# navigates instead of dismissing. hideKeyboard is safe: no dialog, no nav.
 - hideKeyboard
 
-# --- Scroll to Aborted visit toggle (Save is visible just below it — per flow 25) ---
-# Skip tapOn/unfocus: scroll events go to parent ScrollView even with field focused.
-# Target "Aborted visit" not "Save": stops before page bottom, avoids scroll
-# gestures overshooting into the bottom navigation bar.
+# --- Collapse accordion to unfocus EditText and shorten the form ---
+# Focused EditText consumes Maestro's swipe gestures as cursor movement,
+# blocking the parent ScrollView. Tapping the accordion header (index 1)
+# unfocuses the field and collapses the content, making Save reachable
+# with a tiny scroll. The tab (index 0) is off-screen after keyboard
+# interaction on 320x640; index 1 (accordion header in scrollable area)
+# is reliably visible at the top of the content. Typed text is preserved
+# in the ViewModel regardless of accordion expanded/collapsed state.
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Scroll to Save button (short distance with accordion collapsed) ---
 - scrollUntilVisible:
     element:
-      text: "Aborted visit"
+      text: "Save"
     direction: DOWN
-    timeout: 30000
+    timeout: 15000
     speed: 40
 
 # --- Tap Save ---
