@@ -30,12 +30,15 @@ tags:
 - tapOn: "Enter description.*|Description"
 - inputText: "Maestro CI E2E Test"
 
-# --- Dismiss keyboard and unfocus (back confirmed working on CI emulator) ---
-- back
+# --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
+# On CI emulator inputText injects directly (no keyboard shown), so `back`
+# navigates instead of dismissing. hideKeyboard is safe: no dialog, no nav.
+- hideKeyboard
 
 # --- Scroll to Aborted visit toggle (Save is visible just below it — per flow 25) ---
-# Target "Aborted visit" not "Save": stops one row before page bottom, avoids
-# the speed-80 overshoot that caused swipe gestures to hit the bottom nav bar.
+# Skip tapOn/unfocus: scroll events go to parent ScrollView even with field focused.
+# Target "Aborted visit" not "Save": stops before page bottom, avoids scroll
+# gestures overshooting into the bottom navigation bar.
 - scrollUntilVisible:
     element:
       text: "Aborted visit"
