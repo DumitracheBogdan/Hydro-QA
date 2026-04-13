@@ -40,6 +40,14 @@ tags:
 # --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
 - hideKeyboard
 
+# --- Wait for UI to settle after keyboard dismissal ---
+# In the full 38-flow suite the emulator is under more load; without a brief
+# settle wait, the tapOn below fires before the layout reflows and fails to
+# find "Visit Details" index:1 (the accordion header).
+- extendedWaitUntil:
+    visible: "Visit Details"
+    timeout: 5000
+
 # --- Collapse accordion to unfocus EditText and shorten the form ---
 # Focused EditText consumes Maestro's swipe gestures as cursor movement,
 # blocking the parent ScrollView. Tapping the accordion header (index 1)
