@@ -19,20 +19,22 @@ tags:
     text: "Visit Details"
     index: 1
 
-# --- Scroll to Description field ---
-# NOTE: "Enter description.*" only — do NOT use "|Description" fallback.
-# The visit info header contains a read-only "Description" label (showing
-# e.g. "test1") that appears FIRST in the view hierarchy. The |Description
-# fallback causes tapOn to hit that non-interactive label, never focusing
-# the EditText, so no keyboard appears and all subsequent steps fail.
+# --- Scroll to Description & Reference field ---
+# NOTE: Use the concrete field label "Description & Reference" (android.widget.TextView),
+# NOT the hint text "Enter description.*". On API 30 CI emulator, Compose TextField
+# hints are not exposed as findable text nodes (EditText has text="" and the hint
+# child node is not searchable). The field label IS a findable node and is unique.
+# Also do NOT use "Description" alone — the read-only visit info header shows a
+# "Description" label first in the hierarchy, which is non-interactive.
+# In Compose OutlinedTextField layouts, tapping the label activates the adjacent EditText.
 - scrollUntilVisible:
     element:
-      text: "Enter description.*"
+      text: "Description & Reference"
     direction: DOWN
     timeout: 15000
 
 # --- Edit Description & Reference field ---
-- tapOn: "Enter description.*"
+- tapOn: "Description & Reference"
 - inputText: "Maestro CI E2E Test"
 
 # --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
