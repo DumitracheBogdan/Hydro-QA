@@ -34,11 +34,13 @@ tags:
 - back
 
 # --- Scroll to Save button (now unfocused, scroll should work) ---
+# Speed 80 + 30s covers the full form depth past text fields, signature, actions, and aborted toggle
 - scrollUntilVisible:
     element:
       text: "Save"
     direction: DOWN
-    timeout: 20000
+    timeout: 30000
+    speed: 80
 
 # --- Tap Save ---
 - tapOn: "Save"
