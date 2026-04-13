@@ -1,0 +1,31 @@
+appId: com.hydrocert.app
+name: "MOB23 V2 - Location icon on Visit Detail"
+tags:
+  - visit-detail
+  - location
+  - smoke
+---
+
+# Verifies the Location icon exists on the Visit Detail screen.
+# The icon has content-desc "Location" per the UI hierarchy dump.
+# We do NOT tap it to open Google Maps because the CI emulator
+# may not have Google Maps installed, which would cause the test
+# to fail due to an external app dependency.
+#
+# Source: exploration test 15_visit_detail_location.yaml
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Verify Location icon exists in the toolbar area ---
+- assertVisible: "Location"
+
+# --- Verify the visit address is shown ---
+- assertVisible: ".*Woodford.*|.*Eaton.*|.*Court.*"
+
+# --- Verify tabs are still present (we're on Visit Detail) ---
+- assertVisible: "Visit Details"
+- assertVisible: "Inspections.*"
+- assertVisible: "Attachments.*"
+
+# --- Navigate back ---
+- back

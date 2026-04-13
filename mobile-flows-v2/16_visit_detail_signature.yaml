@@ -1,0 +1,67 @@
+appId: com.hydrocert.app
+name: "MOB16 V2 - Client Signature dialog"
+tags:
+  - visit-detail
+  - signature
+  - smoke
+---
+
+# Opens a visit, expands Client Signature accordion, taps to
+# open the signature dialog, verifies Clear/Submit buttons,
+# then closes without submitting.
+# Source: exploration docs/04_VISIT_DETAIL.md (Signature Dialog)
+# UI dump: ui-dumps/12_client_signature_expanded.xml
+#
+# After expansion, the hierarchy shows:
+#   text="Client name"        (label)
+#   text="Enter"              (EditText placeholder)
+#   content-desc="Tap to sign" + text="Tap to sign!" (canvas area)
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Client Signature accordion is visible on default tab ---
+- tapOn:
+    text: "Client Signature"
+
+# --- Scroll down to find expanded content ---
+# The expansion pushes content below the viewport. "Client name"
+# label appears just below the accordion header.
+- scrollUntilVisible:
+    element:
+      text: "Client name"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: "Client name"
+
+# --- Scroll further to find the signature canvas ---
+- scrollUntilVisible:
+    element:
+      text: "Tap to sign.*"
+    direction: DOWN
+    timeout: 15000
+
+# --- Tap to open signature dialog ---
+- tapOn:
+    text: "Tap to sign.*"
+
+# --- Verify signature dialog has correct buttons ---
+- extendedWaitUntil:
+    visible: "Clear"
+    timeout: 10000
+- assertVisible: "Clear"
+- assertVisible: "Submit"
+
+# --- Close dialog without submitting (system back) ---
+- back
+
+# --- Verify dialog was closed and we're back on visit detail ---
+# The view is scrolled far down from earlier scrollUntilVisible,
+# so scroll UP to find the accordion header as confirmation
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: UP
+    timeout: 10000
+
+# --- Navigate back ---
+- back

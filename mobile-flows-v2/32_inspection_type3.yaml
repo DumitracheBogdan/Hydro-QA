@@ -1,0 +1,40 @@
+appId: com.hydrocert.app
+name: "MOB32 V2 - Inspection Type 3 Calorifier form"
+tags:
+  - inspections
+  - regression
+---
+
+# Opens the Calorifier/Water Heater form (Type 3) and
+# verifies the form structure.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Switch to Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Scroll to Calorifier card ---
+- scrollUntilVisible:
+    element:
+      text: ".*Calorifier.*"
+    direction: DOWN
+    timeout: 10000
+
+# --- Tap Start Inspection for this specific card ---
+- tapOn:
+    text: "Start Inspection"
+    below:
+      text: ".*Calorifier.*"
+
+# --- Verify form opened ---
+- extendedWaitUntil:
+    visible: "(Save|Information|Missing)"
+    timeout: 15000
+
+# --- Go back ---
+- back
+- back

@@ -1,0 +1,30 @@
+appId: com.hydrocert.app
+name: "MOB35 V2 - Gallery photo picker"
+tags:
+  - gallery
+  - attachments
+  - regression
+---
+
+# Opens a visit, taps FAB > Gallery, verifies the Android
+# Photo Picker opens with Photos and Albums tabs.
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Tap FAB ---
+- tapOn:
+    text: "Quick actions"
+- extendedWaitUntil:
+    visible: "Camera"
+    timeout: 10000
+
+# --- Tap Gallery ---
+- tapOn: "gallery"
+
+# --- Verify Photo Picker or file browser opened ---
+- extendedWaitUntil:
+    visible: "(Photos|Albums|Images|Recent|Gallery|Documents|Open from)"
+    timeout: 10000
+
+# --- Go back ---
+- back
