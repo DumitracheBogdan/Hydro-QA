@@ -1,0 +1,37 @@
+appId: com.hydrocert.app
+name: "MOB21 V2 - Priority picker dropdown"
+tags:
+  - visit-detail
+  - priority
+  - actions
+  - smoke
+---
+
+# Opens the "QA test" visit (which has action items with
+# priorities), finds a priority badge, taps it to open the
+# picker dropdown, verifies all options, dismisses.
+#
+# Navigates via Visits Home scroll to "View Visit Details".
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Scroll down to find a priority badge in Actions area ---
+- scrollUntilVisible:
+    element:
+      text: "Low"
+    direction: DOWN
+    timeout: 15000
+
+# --- Tap the priority badge to open dropdown ---
+- tapOn: "Low"
+
+# --- Verify all three priority options visible ---
+- assertVisible: "Low"
+- assertVisible: "Medium"
+- assertVisible: "High"
+
+# --- Dismiss picker without changing ---
+- back
+
+# --- Navigate back ---
+- back

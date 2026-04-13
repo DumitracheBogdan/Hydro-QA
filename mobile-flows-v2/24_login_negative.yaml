@@ -1,0 +1,45 @@
+appId: com.hydrocert.app
+name: "MOB24 V2 - Login negative (wrong credentials)"
+tags:
+  - login
+  - negative
+  - regression
+---
+
+# Tests wrong credentials show error message and
+# verifies show/hide password toggle.
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible:
+      text: "Forgot.*"
+    timeout: 45000
+
+# --- Test: Wrong credentials ---
+- tapOn:
+    text: "^Email$"
+- inputText: "wrong@email.com"
+- hideKeyboard
+
+- tapOn:
+    text: "^Password$"
+- inputText: "WrongPassword1!"
+- hideKeyboard
+
+- tapOn:
+    text: "^Login$"
+
+# --- Verify error message ---
+- extendedWaitUntil:
+    visible: "Invalid Credentials"
+    timeout: 10000
+
+# --- Test: Show/Hide password toggle ---
+- tapOn:
+    id: "Show password"
+    optional: true
+- tapOn:
+    id: "Hide password"
+    optional: true

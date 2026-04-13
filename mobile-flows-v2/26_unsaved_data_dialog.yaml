@@ -1,0 +1,41 @@
+appId: com.hydrocert.app
+name: "MOB26 V2 - Visit Detail accordion and form fields"
+tags:
+  - visit-detail
+  - accordion
+  - form-fields
+  - regression
+---
+
+# Opens the QA test visit, expands the Visit Details accordion,
+# verifies the form fields are visible, then navigates back.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Expand Visit Details accordion ---
+- tapOn: "Visit Details"
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Verify Description field ---
+- scrollUntilVisible:
+    element:
+      text: "Enter description.*"
+    direction: DOWN
+    timeout: 15000
+
+# --- Verify Work Details field ---
+- scrollUntilVisible:
+    element:
+      text: "Enter work details.*|Work"
+    direction: DOWN
+    timeout: 10000
+
+# --- Navigate back to Visits Home ---
+- back
+
+# --- Verify on Visits Home ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 15000

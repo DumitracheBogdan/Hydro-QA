@@ -1,0 +1,19 @@
+appId: com.hydrocert.app
+name: "MOB02 V2 - Successful login"
+tags:
+  - login
+  - smoke
+  - critical
+---
+
+# Runs the full login with QA mobile credentials and asserts we
+# reach the post-login Visits Home screen.
+
+- runFlow: _shared/login.yaml
+
+- assertVisible: ".*overview of your visits.*"
+- assertVisible: ".*Welcome, Bogdan.*"
+- assertVisible: "Visits"
+- assertVisible: "History"
+- assertVisible: "Activity"
+- assertVisible: "Account"

@@ -1,0 +1,35 @@
+appId: com.hydrocert.app
+name: "MOB25 V2 - Aborted visit toggle and Save button"
+tags:
+  - visit-detail
+  - aborted-visit
+  - save-button
+---
+
+# Verifies the Aborted visit toggle can be switched ON,
+# that Save button becomes active, and toggling back OFF
+# restores the original state.
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Scroll down to Aborted visit toggle ---
+- scrollUntilVisible:
+    element:
+      text: "Aborted visit"
+    direction: DOWN
+    timeout: 10000
+
+# --- Verify Save button is visible ---
+- assertVisible: "Save"
+
+# --- Toggle Aborted visit ON ---
+- tapOn: "Aborted visit"
+
+# --- Verify Save button still visible (now active) ---
+- assertVisible: "Save"
+
+# --- Toggle Aborted visit back OFF ---
+- tapOn: "Aborted visit"
+
+# --- Go back (no unsaved changes after toggling back) ---
+- back

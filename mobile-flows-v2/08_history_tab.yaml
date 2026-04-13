@@ -1,0 +1,42 @@
+appId: com.hydrocert.app
+name: "MOB08 V2 - History tab elements"
+tags:
+  - history
+  - smoke
+---
+
+# Source of truth: discovery/hierarchies/10-history-tab.xml
+# The History tab shows a visit card with a proper "View Visit
+# Details" CTA button at bounds [32,516][288,556] that is the
+# only clickable card target in the whole app (Visits Home cards
+# are not clickable).
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to History ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 15000
+
+# --- Header / search ---
+- assertVisible: "History"
+- assertVisible:
+    text: "Type to search.*"
+
+# --- Visit card for the fixture visit ---
+- assertVisible: ".*testing visit.*"
+- assertVisible: "Upcoming"
+- assertVisible:
+    text: ".*Eaton Socon.*"
+- assertVisible: "Bogdan Dumitrache"
+- assertVisible: "Booking Person"
+- assertVisible:
+    text: "INSPECTIONS.*"
+- assertVisible: "View Visit Details"
+
+# --- Bottom navigation still visible ---
+- assertVisible: "Visits"
+- assertVisible: "Activity"
+- assertVisible: "Account"

@@ -1,0 +1,26 @@
+appId: com.hydrocert.app
+name: "MOB37 V2 - History cards open Visit Detail (edit mode)"
+tags:
+  - history
+  - navigation
+  - regression
+---
+
+# Opens a visit from History tab and verifies it opens in
+# full edit mode (all tabs, FAB, fields accessible).
+
+- runFlow: _shared/open_visit_detail.yaml
+
+# --- Verify Visit Detail opened with all tabs ---
+- assertVisible: "Visit Details"
+- assertVisible: "Inspections.*"
+- assertVisible: "Attachments.*"
+
+# --- Verify FAB is accessible (edit mode) ---
+- assertVisible: "Quick actions"
+
+# --- Verify Client Signature accordion (Visit Details tab) ---
+- assertVisible: "Client Signature"
+
+# --- Navigate back ---
+- back

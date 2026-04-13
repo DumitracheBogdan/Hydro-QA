@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB13 V2 - Logout dialog -> Cancel"
+tags:
+  - account
+  - logout
+  - smoke
+---
+
+# Taps Logout on Account, expects a confirmation dialog, taps
+# Cancel and asserts we are back on Account (still logged in).
+# Exact dialog text not yet known from discovery - we keep the
+# assertion permissive and let the first test run refine it.
+
+- runFlow: _shared/login.yaml
+
+# --- Navigate to Account ---
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "Logout"
+    timeout: 15000
+
+# --- Open logout confirmation dialog ---
+- tapOn:
+    text: "Logout"
+
+# Dialog should contain a Cancel and a Confirm button at minimum
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+- assertVisible: "Cancel"
+- assertVisible:
+    text: "(Confirm|OK|Yes|Logout)"
+
+# --- Tap Cancel: dialog dismisses, we stay on Account ---
+- tapOn:
+    text: "Cancel"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 10000
+- assertVisible: "My signature"
+- assertVisible: "Change Password"
+- assertVisible: "Logout"

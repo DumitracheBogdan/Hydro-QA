@@ -1,0 +1,36 @@
+appId: com.hydrocert.app
+name: "MOB22 V2 - Delete action confirmation dialog"
+tags:
+  - visit-detail
+  - actions
+  - delete
+  - smoke
+---
+
+# Opens the "QA test" visit, scrolls to a delete action icon,
+# taps it to open confirmation dialog, verifies Cancel/Delete
+# buttons, then cancels without deleting.
+#
+# Navigates via Visits Home scroll to "View Visit Details".
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Scroll down to find delete action icon ---
+- scrollUntilVisible:
+    element:
+      text: "Delete action"
+    direction: DOWN
+    timeout: 15000
+
+# --- Tap delete icon to open confirmation ---
+- tapOn: "Delete action"
+
+# --- Verify confirmation dialog ---
+- assertVisible: "Cancel"
+- assertVisible: "Delete"
+
+# --- Cancel without deleting ---
+- tapOn: "Cancel"
+
+# --- Navigate back ---
+- back

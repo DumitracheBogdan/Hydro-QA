@@ -1,0 +1,104 @@
+appId: com.hydrocert.app
+name: "MOB38 V2 - E2E save and data persistence"
+tags:
+  - e2e
+  - save
+  - critical
+---
+
+# Opens a visit, edits a text field, saves, navigates back,
+# re-opens the visit, and verifies the data persisted.
+#
+# Uses Visits Home visit (QA test) for persistence check.
+
+- runFlow: _shared/open_visits_home_visit.yaml
+
+# --- Tap Visit Details tab and expand accordion ---
+- tapOn: "Visit Details"
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Scroll to Description & Reference field ---
+# NOTE: Use the concrete field label "Description & Reference" (android.widget.TextView),
+# NOT the hint text "Enter description.*". On API 30 CI emulator, Compose TextField
+# hints are not exposed as findable text nodes (EditText has text="" and the hint
+# child node is not searchable). The field label IS a findable node and is unique.
+# Also do NOT use "Description" alone — the read-only visit info header shows a
+# "Description" label first in the hierarchy, which is non-interactive.
+# In Compose OutlinedTextField layouts, tapping the label activates the adjacent EditText.
+- scrollUntilVisible:
+    element:
+      text: "Description & Reference"
+    direction: DOWN
+    timeout: 15000
+
+# --- Edit Description & Reference field ---
+- tapOn: "Description & Reference"
+- inputText: "Maestro CI E2E Test"
+
+# --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
+- hideKeyboard
+
+# --- Collapse accordion to unfocus EditText and shorten the form ---
+# Focused EditText consumes Maestro's swipe gestures as cursor movement,
+# blocking the parent ScrollView. Tapping the accordion header (index 1)
+# unfocuses the field and collapses the content, making Save reachable
+# with a tiny scroll. The tab (index 0) is off-screen after keyboard
+# interaction on 320x640; index 1 (accordion header in scrollable area)
+# is reliably visible at the top of the content. Typed text is preserved
+# in the ViewModel regardless of accordion expanded/collapsed state.
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Scroll to Save button (short distance with accordion collapsed) ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 15000
+    speed: 40
+
+# --- Tap Save ---
+- tapOn: "Save"
+
+# --- Wait for save to process ---
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 5000
+
+# --- Navigate back to Visits Home ---
+- back
+- tapOn:
+    text: "Go back"
+    optional: true
+
+# --- Verify back on Visits Home ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 15000
+
+# --- Re-open same visit ---
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+
+# --- Tap Visit Details tab and expand accordion again ---
+- tapOn: "Visit Details"
+- tapOn:
+    text: "Visit Details"
+    index: 1
+
+# --- Verify data persisted (scroll to description area) ---
+- scrollUntilVisible:
+    element:
+      text: "Maestro CI E2E Test"
+    direction: DOWN
+    timeout: 15000
