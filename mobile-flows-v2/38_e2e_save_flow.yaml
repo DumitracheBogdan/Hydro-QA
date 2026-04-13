@@ -20,14 +20,19 @@ tags:
     index: 1
 
 # --- Scroll to Description field ---
+# NOTE: "Enter description.*" only — do NOT use "|Description" fallback.
+# The visit info header contains a read-only "Description" label (showing
+# e.g. "test1") that appears FIRST in the view hierarchy. The |Description
+# fallback causes tapOn to hit that non-interactive label, never focusing
+# the EditText, so no keyboard appears and all subsequent steps fail.
 - scrollUntilVisible:
     element:
-      text: "Enter description.*|Description"
+      text: "Enter description.*"
     direction: DOWN
     timeout: 15000
 
 # --- Edit Description & Reference field ---
-- tapOn: "Enter description.*|Description"
+- tapOn: "Enter description.*"
 - inputText: "Maestro CI E2E Test"
 
 # --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
