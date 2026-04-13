@@ -85,28 +85,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            MODE="${{ steps.mode.outputs.value }}"
-
-            # ----- Install APK (needed for all modes) -----
-            echo "=== Downloading and installing APK ==="
-            gh release download mobile-apk-v1 -p "app-debug.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber || true
-            adb install -r /tmp/app-debug.apk && echo "APK installed" || echo "APK install failed"
-
-            if [[ "$MODE" == "qa-check" ]]; then
-              # ----- QA-Check mode: ONLY run the UI Change Detector (no Maestro tests) -----
-              echo ""
-              echo "========================================="
-              echo "  QA-Check Mode — UI Change Detector"
-              echo "========================================="
-              echo ""
-              mkdir -p $GITHUB_WORKSPACE/qa-artifacts/change-detector
-              cd $GITHUB_WORKSPACE/exploration-2026-04-12/change-detector
-              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1
-            else
-              # ----- Normal mode: run Maestro test/discovery flows -----
-              bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${MODE}.sh
-            fi
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ steps.mode.outputs.value }}.sh
         env:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
