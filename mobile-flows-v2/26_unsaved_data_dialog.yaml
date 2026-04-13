@@ -21,7 +21,7 @@ tags:
 # --- Verify Description field ---
 - scrollUntilVisible:
     element:
-      text: "Enter description.*|Description"
+      text: "Enter description.*"
     direction: DOWN
     timeout: 15000
 
