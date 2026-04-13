@@ -7,17 +7,14 @@ on:
         description: "Which V2 script to run"
         type: choice
         options:
-          - discovery
           - test
+          - discovery
+          - qa-check
         default: test
       flows:
-        description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows"
+        description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows. Ignored in qa-check mode."
         type: string
         required: false
-      qa_check:
-        description: "QA-Check new-feature: Run UI change detector scan after tests"
-        type: boolean
-        default: false
   push:
     branches:
       - fix/maestro-v2
@@ -53,6 +50,7 @@ jobs:
           case "$RAW_MODE" in
             discovery) ;;
             test) ;;
+            qa-check) ;;
             *) RAW_MODE="discovery" ;;
           esac
           echo "value=$RAW_MODE" >> "$GITHUB_OUTPUT"
@@ -88,26 +86,34 @@ jobs:
           disable-animations: true
           emulator-boot-timeout: 600
           script: |
-            bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ steps.mode.outputs.value }}.sh
+            MODE="${{ steps.mode.outputs.value }}"
 
-            # QA Change Detector (optional — runs after Maestro tests on the same emulator)
-            if [[ "$QA_CHECK_ENABLED" == "true" ]]; then
+            # ----- Install APK (needed for all modes) -----
+            echo "=== Downloading and installing APK ==="
+            gh release download mobile-apk-v1 -p "app-debug.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber || true
+            adb install -r /tmp/app-debug.apk && echo "APK installed" || echo "APK install failed"
+
+            if [[ "$MODE" == "qa-check" ]]; then
+              # ----- QA-Check mode: ONLY run the UI Change Detector (no Maestro tests) -----
               echo ""
-              echo "=== Running QA Change Detector ==="
+              echo "========================================="
+              echo "  QA-Check Mode — UI Change Detector"
+              echo "========================================="
               echo ""
               mkdir -p $GITHUB_WORKSPACE/qa-artifacts/change-detector
               cd $GITHUB_WORKSPACE/exploration-2026-04-12/change-detector
-              # run_detector.py internally imports scanner and runs the full scan + generates HTML report
-              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1 || echo "::warning::QA Change Detector failed (non-blocking)"
+              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1
+            else
+              # ----- Normal mode: run Maestro test/discovery flows -----
+              bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${MODE}.sh
             fi
         env:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
           FLOWS_FILTER: ${{ inputs.flows }}
-          QA_CHECK_ENABLED: ${{ inputs.qa_check }}
 
-      - name: Upload mobile V2 artifacts
+      - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -124,41 +130,45 @@ jobs:
         run: |
           MODE="${{ steps.mode.outputs.value }}"
           {
-            echo "## Mobile V2 ($MODE)"
-            echo ""
-            SUMMARY_FILE="qa-artifacts/mobile-v2/$MODE/summary.json"
-            if [[ -f "$SUMMARY_FILE" ]]; then
-              node -e "const s=require('./$SUMMARY_FILE'); console.log('- Mode: ' + (s.mode || '$MODE')); console.log('- Total: ' + s.totals.total); console.log('- Passed: ' + s.totals.pass); console.log('- Failed: ' + s.totals.fail); console.log('- Skipped: ' + s.totals.skip);" || echo "Summary parse failed"
+            if [[ "$MODE" == "qa-check" ]]; then
+              # ----- QA-Check summary -----
+              echo "## QA Change Detector (standalone)"
+              echo ""
+              DETECTOR_RESULT=$(ls -1t qa-artifacts/change-detector/scan_results_*.json 2>/dev/null | head -1)
+              if [[ -n "$DETECTOR_RESULT" ]]; then
+                node -e "
+                  const s = require('./$DETECTOR_RESULT');
+                  const sum = s.summary || {};
+                  console.log('- Screens scanned: ' + (sum.screens_scanned || 0));
+                  console.log('- New elements found: ' + (sum.total_new_elements || 0));
+                  if (sum.total_new_elements > 0) {
+                    console.log('');
+                    console.log('**New UI elements detected — review recommended!**');
+                    for (const [name, info] of Object.entries(s.screens || {})) {
+                      const els = info.new_elements || [];
+                      if (els.length > 0) {
+                        console.log('  - ' + name + ': ' + els.length + ' new element(s)');
+                      }
+                    }
+                  } else {
+                    console.log('');
+                    console.log('All screens match baseline. No new elements detected.');
+                  }
+                " 2>/dev/null || echo "QA Change Detector summary parse failed"
+              else
+                echo "No scan results found — scanner may have failed. Check logs."
+              fi
             else
-              echo "No summary file at $SUMMARY_FILE"
+              # ----- Normal test/discovery summary -----
+              echo "## Mobile V2 ($MODE)"
+              echo ""
+              SUMMARY_FILE="qa-artifacts/mobile-v2/$MODE/summary.json"
+              if [[ -f "$SUMMARY_FILE" ]]; then
+                node -e "const s=require('./$SUMMARY_FILE'); console.log('- Mode: ' + (s.mode || '$MODE')); console.log('- Total: ' + s.totals.total); console.log('- Passed: ' + s.totals.pass); console.log('- Failed: ' + s.totals.fail); console.log('- Skipped: ' + s.totals.skip);" || echo "Summary parse failed"
+              else
+                echo "No summary file at $SUMMARY_FILE"
+              fi
             fi
             echo ""
             echo "Artifact: mobile-v2-$MODE-${{ github.run_id }}"
-            echo ""
-
-            # QA Change Detector results (if ran)
-            DETECTOR_RESULT=$(ls -1t qa-artifacts/change-detector/scan_results_*.json 2>/dev/null | head -1)
-            if [[ -n "$DETECTOR_RESULT" ]]; then
-              echo "## QA Change Detector"
-              echo ""
-              node -e "
-                const s = require('./$DETECTOR_RESULT');
-                const sum = s.summary || {};
-                console.log('- Screens scanned: ' + (sum.screens_scanned || 0));
-                console.log('- New elements found: ' + (sum.total_new_elements || 0));
-                if (sum.total_new_elements > 0) {
-                  console.log('');
-                  console.log('**New UI elements detected — review recommended!**');
-                  for (const [name, info] of Object.entries(s.screens || {})) {
-                    const els = info.new_elements || [];
-                    if (els.length > 0) {
-                      console.log('  - ' + name + ': ' + els.length + ' new element(s)');
-                    }
-                  }
-                } else {
-                  console.log('');
-                  console.log('All screens match baseline. No new elements detected.');
-                }
-              " 2>/dev/null || echo "QA Change Detector summary parse failed"
-            fi
           } >> "$GITHUB_STEP_SUMMARY"
