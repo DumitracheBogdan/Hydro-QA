@@ -34,7 +34,12 @@ tags:
     timeout: 15000
 
 # --- Edit Description & Reference field ---
-- tapOn: "Description & Reference"
+# Do NOT tap the label text "Description & Reference" — on API 30 CI emulator,
+# tapping a Compose OutlinedTextField label does NOT transfer focus to the EditText.
+# Use below: to tap the EditText that sits directly below the label instead.
+- tapOn:
+    below:
+      text: "Description & Reference"
 - inputText: "Maestro CI E2E Test"
 
 # --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
