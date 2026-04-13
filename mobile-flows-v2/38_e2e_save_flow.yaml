@@ -30,17 +30,19 @@ tags:
 - tapOn: "Enter description.*|Description"
 - inputText: "Maestro CI E2E Test"
 
-# --- Use back to dismiss keyboard AND unfocus text field ---
-- back
+# --- Dismiss keyboard safely (hideKeyboard avoids navigation risk on CI emulator) ---
+- hideKeyboard
+# Tap active tab to unfocus text field (safe - already on Visit Details tab, no dialog/navigation)
+- tapOn: "Visit Details"
 
-# --- Scroll to Save button (now unfocused, scroll should work) ---
-# Speed 80 + 30s covers the full form depth past text fields, signature, actions, and aborted toggle
+# --- Scroll to Aborted visit toggle (Save button is visible just below it per flow 25) ---
+# Using "Aborted visit" as target avoids overshooting the Save button at bottom of form
 - scrollUntilVisible:
     element:
-      text: "Save"
+      text: "Aborted visit"
     direction: DOWN
     timeout: 30000
-    speed: 80
+    speed: 40
 
 # --- Tap Save ---
 - tapOn: "Save"
