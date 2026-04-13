@@ -13,22 +13,26 @@ tags:
 - runFlow: _shared/login.yaml
 
 # --- Today ---
+# Use extendedWaitUntil (not assertVisible) — the list needs time to filter.
 - tapOn:
     text: "Today"
-- assertVisible:
-    text: "(No visits found.*|QA test)"
+- extendedWaitUntil:
+    visible: "(No visits found.*|QA test)"
+    timeout: 8000
 
 # --- Tomorrow ---
 - tapOn:
     text: "Tomorrow"
-- assertVisible:
-    text: "(No visits found.*|QA test)"
+- extendedWaitUntil:
+    visible: "(No visits found.*|QA test)"
+    timeout: 8000
 
 # --- Next week ---
 - tapOn:
     text: "Next week"
-- assertVisible:
-    text: "(No visits found.*|QA test)"
+- extendedWaitUntil:
+    visible: "(No visits found.*|QA test)"
+    timeout: 8000
 
 # --- All chips still present ---
 - assertVisible: "Today"
