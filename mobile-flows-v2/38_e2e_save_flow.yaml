@@ -109,12 +109,25 @@ tags:
     text: "Visit Details"
     index: 1
 
-# --- Verify data persisted ---
-# After re-expanding the accordion the Compose ScrollView restores its
-# previous scroll position (near Water Sampling / bottom of the accordion).
-# Description & Reference is ABOVE the current viewport, so scroll UP.
+# --- Establish known scroll position before searching ---
+# After re-expanding the accordion the Compose ScrollView restores an
+# unpredictable prior scroll position (Description at bottom, or Water
+# Sampling at top, depending on the run). Scroll UP to the "Visit Details"
+# tab text (always near the top of the content area) to get a consistent
+# starting point, then scroll DOWN to find the typed text.
 - scrollUntilVisible:
     element:
-      text: "Maestro CI E2E Test"
+      text: "Visit Details"
     direction: UP
+    timeout: 10000
+
+# --- Verify data persisted ---
+# This is a REAL backend visit — the Description field accumulates text
+# across CI runs (clearState only clears local cache, not server data).
+# Use ".*Maestro CI E2E Test.*" so the regex matches even if earlier runs'
+# text appears as a prefix (Maestro uses full-string regex match).
+- scrollUntilVisible:
+    element:
+      text: ".*Maestro CI E2E Test.*"
+    direction: DOWN
     timeout: 15000
