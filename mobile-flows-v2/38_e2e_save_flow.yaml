@@ -42,44 +42,44 @@ tags:
       text: "Description & Reference"
 - inputText: "Maestro CI E2E Test"
 
-# --- Dismiss keyboard without triggering navigation or unsaved-data dialog ---
+# --- Dismiss keyboard ---
 - hideKeyboard
 
-# --- Wait for UI to settle after keyboard dismissal ---
-# In the full 38-flow suite the emulator is under more load; without a brief
-# settle wait, the tapOn below fires before the layout reflows and fails to
-# find "Visit Details" index:1 (the accordion header).
-- extendedWaitUntil:
-    visible: "Visit Details"
-    timeout: 5000
+# --- Tap the non-interactive label to defocus the EditText ---
+# After hideKeyboard the EditText retains UI focus. A focused EditText
+# without the IME still consumes Maestro swipe gestures as cursor
+# movement, blocking the parent ScrollView. Tapping the non-clickable
+# label (android.widget.TextView, clickable=false) delivers the touch
+# to the parent container, which clears EditText focus without affecting
+# form state or triggering navigation. We do NOT collapse the accordion
+# here — collapsing with tapOn "Visit Details" index:1 after typing was
+# found to trigger the "unsaved data" dialog on back (possibly because
+# accordion recomposition marks form state as dirty again).
+- tapOn: "Description & Reference"
 
-# --- Collapse accordion to unfocus EditText and shorten the form ---
-# Focused EditText consumes Maestro's swipe gestures as cursor movement,
-# blocking the parent ScrollView. Tapping the accordion header (index 1)
-# unfocuses the field and collapses the content, making Save reachable
-# with a tiny scroll. The tab (index 0) is off-screen after keyboard
-# interaction on 320x640; index 1 (accordion header in scrollable area)
-# is reliably visible at the top of the content. Typed text is preserved
-# in the ViewModel regardless of accordion expanded/collapsed state.
-- tapOn:
-    text: "Visit Details"
-    index: 1
-
-# --- Scroll to Save button (short distance with accordion collapsed) ---
+# --- Scroll to Save (accordion still expanded; generous timeout) ---
 - scrollUntilVisible:
     element:
       text: "Save"
     direction: DOWN
-    timeout: 15000
+    timeout: 25000
     speed: 40
 
 # --- Tap Save ---
 - tapOn: "Save"
 
-# --- Wait for save to process ---
-- extendedWaitUntil:
-    visible: "Save"
-    timeout: 5000
+# --- Scroll back UP to accordion header to allow async save to complete ---
+# The app's save is async. extendedWaitUntil: visible: "Save" passes
+# instantly (button is always visible), so pressing back 1.5s after Save
+# interrupts the in-flight API call → unsaved-data dialog appears → data
+# lost. Scrolling UP to "Visit Details" buys 3-5 seconds for the save to
+# commit and also confirms we are still on the visit detail form.
+- scrollUntilVisible:
+    element:
+      text: "Visit Details"
+    direction: UP
+    timeout: 10000
+    speed: 40
 
 # --- Navigate back to Visits Home ---
 - back
