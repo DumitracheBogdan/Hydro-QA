@@ -19,16 +19,19 @@ tags:
     index: 1
 
 # --- Verify Description field ---
+# Use the concrete field label (not the EditText hint — hint child nodes are
+# not findable text nodes on the API 30 CI emulator).
 - scrollUntilVisible:
     element:
-      text: "Enter description.*"
+      text: "Description & Reference"
     direction: DOWN
     timeout: 15000
 
 # --- Verify Work Details field ---
+# Same reasoning — use the concrete "Work Details" label, not the hint text.
 - scrollUntilVisible:
     element:
-      text: "Enter work details.*|Work"
+      text: "Work Details"
     direction: DOWN
     timeout: 10000
 
