@@ -3,8 +3,9 @@ HydroCert Android App Change Detector
 Scans com.hydrocert.app on emulator-5554, dumps UI hierarchy per screen,
 extracts interactive elements, and diffs against baseline.json.
 
-Covers 24 screens including dialogs, sub-screens, FAB, inspection forms,
-signature dialog, camera/gallery pickers, and all main tabs.
+Covers 27 screens including dialogs, sub-screens, FAB, inspection forms,
+signature dialog, camera/gallery pickers, login error state, logout dialog,
+bottom nav, and all main tabs.
 """
 
 import argparse
@@ -73,6 +74,7 @@ ALL_SCREENS = [
     # Phase 1: Pre-login (app not yet authenticated)
     "login",
     "forgot_password",
+    "login_error_state",
 
     # Phase 2: Login + Visit Detail cluster
     "visits_home",
@@ -103,6 +105,8 @@ ALL_SCREENS = [
     "activity_tab",
     "account_tab",
     "change_password",
+    "logout_dialog",
+    "bottom_nav",
 ]
 
 QUICK_SCREENS = [
@@ -271,6 +275,10 @@ def _element_key(el: dict) -> str | None:
         return f"desc:{d}|class:{c}"
     if r:
         return f"id:{r}"
+    # Use bounds as weak key for unlabelled elements
+    b = el.get("bounds", "").strip()
+    if b:
+        return f"bounds:{b}|class:{c}"
     return None
 
 
@@ -310,10 +318,18 @@ def extract_elements(xml_tree: ET.Element) -> list[dict]:
     elements: list[dict] = []
 
     for node in xml_tree.iter("node"):
+        # Filter out system UI elements (status bar, nav bar, etc.)
+        pkg = node.attrib.get("package", "")
+        if pkg and pkg != "com.hydrocert.app" and not pkg.startswith("com.hydrocert"):
+            continue
+
         cls = node.attrib.get("class", "")
         clickable = node.attrib.get("clickable", "false") == "true"
 
-        if not clickable and cls not in INTERACTIVE_CLASSES:
+        # Capture interactive elements AND non-interactive with visible text/desc
+        text_val = node.attrib.get("text", "").strip()
+        desc_val = node.attrib.get("content-desc", "").strip()
+        if not clickable and cls not in INTERACTIVE_CLASSES and not text_val and not desc_val:
             continue
 
         bounds_raw = node.attrib.get("bounds", "")
@@ -654,8 +670,94 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
             tap(*COORDS["change_password"], device)
         wait(2)
 
+    elif screen_id == "bottom_nav":
+        # Bottom nav is visible on any main screen — go to visits_home
+        tap(*COORDS["bottom_visits"], device)
+        wait(1.5)
+
+    elif screen_id == "logout_dialog":
+        # Navigate to Account tab, then tap Logout
+        tap(*COORDS["bottom_account"], device)
+        wait(1.5)
+        if not find_and_tap("Logout", device):
+            find_and_tap("Log out", device)
+        wait(2)
+
+    elif screen_id == "login_error_state":
+        # Force-stop, relaunch, enter wrong credentials
+        adb(f"shell am force-stop {PACKAGE}", device)
+        wait(1)
+        adb(f"shell am start -n {MAIN_ACTIVITY}", device)
+        wait(3)
+        if not find_and_tap("Email", device):
+            tap(540, 900, device)
+        wait(0.5)
+        input_text(os.environ.get("MAESTRO_APP_EMAIL", LOGIN_EMAIL), device)
+        if not find_and_tap("Password", device):
+            tap(540, 1050, device)
+        wait(0.5)
+        input_text("WrongPassword123!", device)
+        hide_keyboard(device)
+        wait(0.5)
+        if not find_and_tap("Login", device):
+            if not find_and_tap("LOG IN", device):
+                tap(540, 1300, device)
+        wait(3)
+
     else:
         log.warning("Unknown screen_id: %s", screen_id)
+
+
+# ===================================================================
+# Screen verification
+# ===================================================================
+
+SCREEN_ANCHORS = {
+    "login": ["Email", "Password", "Login"],
+    "forgot_password": ["Back to Login"],
+    "visits_home": ["Visits"],
+    "visit_detail": ["Visit Details"],
+    "inspections_tab": ["Inspections"],
+    "account_tab": ["Account"],
+    "change_password": ["Change Password"],
+    "signature_dialog": ["sign"],
+    "delete_dialog": ["Delete", "Cancel"],
+    "unsaved_data_dialog": ["Stay"],
+    "fab_expanded": ["Camera", "Gallery"],
+    "logout_dialog": ["Logout", "Cancel"],
+    "login_error_state": ["Invalid", "Login"],
+}
+
+
+def verify_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> bool:
+    """
+    After navigation, verify we reached the expected screen by checking
+    for known anchor elements. Returns True if verified or if no anchors
+    are defined for this screen.
+    """
+    anchors = SCREEN_ANCHORS.get(screen_id)
+    if not anchors:
+        return True
+
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+    if not raw_xml.strip():
+        log.warning("verify_screen: empty UI dump for %s", screen_id)
+        return False
+
+    xml_lower = raw_xml.lower()
+    for anchor in anchors:
+        if anchor.lower() in xml_lower:
+            log.info("verify_screen: confirmed '%s' (found '%s')", screen_id, anchor)
+            return True
+
+    log.warning(
+        "verify_screen: FAILED for '%s' — none of %s found in UI",
+        screen_id,
+        anchors,
+    )
+    return False
 
 
 # ===================================================================
@@ -748,6 +850,19 @@ def cleanup_after_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         press_back(device)
         wait(1)
 
+    elif screen_id == "logout_dialog":
+        # Cancel the logout — don't actually log out
+        if not find_and_tap("Cancel", device):
+            press_back(device)
+        wait(1)
+
+    elif screen_id == "login_error_state":
+        # Clear the error state — force-stop and relaunch for clean login
+        adb(f"shell am force-stop {PACKAGE}", device)
+        wait(1)
+        adb(f"shell am start -n {MAIN_ACTIVITY}", device)
+        wait(3)
+
     # Most screens (visits_home, visit_detail, tabs) need no cleanup
 
 
@@ -829,6 +944,56 @@ def compare_with_baseline(
     return new_elements
 
 
+def detect_removed_elements(
+    screen_id: str,
+    current_elements: list[dict],
+    baseline: dict,
+) -> list[dict]:
+    """
+    Detect baseline elements that are NO LONGER present in the current scan.
+    """
+    screen_data = baseline.get(screen_id, {})
+    known = (
+        screen_data.get("elements", screen_data)
+        if isinstance(screen_data, dict)
+        else screen_data
+    )
+
+    current_texts = set()
+    current_descs = set()
+    current_ids = set()
+    for el in current_elements:
+        t = el.get("text", "").strip()
+        d = el.get("content_desc", "").strip()
+        r = el.get("resource_id", "").strip()
+        if t:
+            current_texts.add(t)
+        if d:
+            current_descs.add(d)
+        if r:
+            current_ids.add(r)
+
+    removed: list[dict] = []
+    for el in known:
+        t = el.get("text", "").strip()
+        d = el.get("content_desc", "").strip()
+        r = el.get("resource_id", "").strip()
+
+        if t and t in current_texts:
+            continue
+        if d and d in current_descs:
+            continue
+        if r and r in current_ids:
+            continue
+
+        if not t and not d and not r:
+            continue
+
+        removed.append(el)
+
+    return removed
+
+
 # ===================================================================
 # Screenshots
 # ===================================================================
@@ -904,6 +1069,9 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
 
 DEEP_SCROLL_SCREENS = {
     "inspection_type1",   # 18 risk categories — very long
+    "inspection_type2",   # Cooling Tower form — scrollable
+    "inspection_type3",   # Calorifier/Water Heater — scrollable
+    "inspection_type4",   # Chlorine Dioxide — scrollable
     "add_actions_sheet",  # 11+ predefined action checkboxes
     "visit_detail_accordion",  # 4 fields may be below fold
 }
@@ -957,6 +1125,10 @@ def scan_all_screens(
 
         wait(2)
 
+        # ------ Verify we reached the right screen ------
+        if not verify_screen(screen_id, device):
+            log.warning("Screen verification failed for %s — snapshot may be inaccurate", screen_id)
+
         # ------ Snapshot (scroll-aware for long screens) ------
         try:
             if screen_id in DEEP_SCROLL_SCREENS:
@@ -976,6 +1148,23 @@ def scan_all_screens(
         # ------ Baseline comparison ------
         new_elements = compare_with_baseline(screen_id, elements, baseline)
         results[screen_id] = new_elements
+
+        # ------ Check for removed elements ------
+        removed_elements = detect_removed_elements(screen_id, elements, baseline)
+        if removed_elements:
+            log.warning(
+                "  >>> %d REMOVED element(s) on '%s'!",
+                len(removed_elements),
+                screen_id,
+            )
+            for el in removed_elements:
+                log.warning(
+                    "      REMOVED: text=%r  desc=%r  id=%r  class=%s",
+                    el.get("text"),
+                    el.get("content_desc"),
+                    el.get("resource_id"),
+                    el.get("class"),
+                )
 
         if new_elements:
             log.warning(

@@ -1497,6 +1497,66 @@
         }
       ]
     },
+    "logout_dialog": {
+      "name": "Logout Confirmation Dialog",
+      "route": "Account tab > Logout",
+      "elements": [
+        {
+          "text": "Logout",
+          "class": "android.widget.TextView",
+          "type": "title",
+          "clickable": false
+        },
+        {
+          "text": "Are you sure you want to logout?",
+          "class": "android.widget.TextView",
+          "type": "message",
+          "clickable": false
+        },
+        {
+          "text": "Cancel",
+          "class": "android.widget.Button",
+          "type": "button",
+          "clickable": true
+        },
+        {
+          "text": "Confirm",
+          "class": "android.widget.Button",
+          "type": "button",
+          "clickable": true
+        }
+      ]
+    },
+    "login_error_state": {
+      "name": "Login Error State",
+      "route": "Login > Enter wrong credentials > Tap Login",
+      "elements": [
+        {
+          "text": "Invalid Credentials",
+          "class": "android.widget.TextView",
+          "type": "error",
+          "clickable": false
+        },
+        {
+          "text": "Email",
+          "class": "android.widget.EditText",
+          "type": "edittext",
+          "clickable": true
+        },
+        {
+          "text": "Password",
+          "class": "android.widget.EditText",
+          "type": "edittext",
+          "clickable": true
+        },
+        {
+          "text": "Login",
+          "class": "android.widget.Button",
+          "type": "button",
+          "clickable": true
+        }
+      ]
+    },
     "bottom_nav": {
       "name": "Bottom Navigation Bar",
       "route": "Persistent on all main screens (Visits, History, Activity, Account)",
