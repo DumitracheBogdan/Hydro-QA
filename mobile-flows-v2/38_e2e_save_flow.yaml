@@ -30,13 +30,12 @@ tags:
 - tapOn: "Enter description.*|Description"
 - inputText: "Maestro CI E2E Test"
 
-# --- Dismiss keyboard safely (hideKeyboard avoids navigation risk on CI emulator) ---
-- hideKeyboard
-# Tap active tab to unfocus text field (safe - already on Visit Details tab, no dialog/navigation)
-- tapOn: "Visit Details"
+# --- Dismiss keyboard and unfocus (back confirmed working on CI emulator) ---
+- back
 
-# --- Scroll to Aborted visit toggle (Save button is visible just below it per flow 25) ---
-# Using "Aborted visit" as target avoids overshooting the Save button at bottom of form
+# --- Scroll to Aborted visit toggle (Save is visible just below it — per flow 25) ---
+# Target "Aborted visit" not "Save": stops one row before page bottom, avoids
+# the speed-80 overshoot that caused swipe gestures to hit the bottom nav bar.
 - scrollUntilVisible:
     element:
       text: "Aborted visit"
