@@ -30,9 +30,11 @@ tags:
     timeout: 10000
 - tapOn: "Risk Assessment"
 
-# --- Verify accordion expanded (any risk-related content) ---
-- extendedWaitUntil:
-    visible: "(Low|Medium|High|N/A|Yes|No|Risk)"
+# --- Scroll to verify accordion expanded (first category visible) ---
+- scrollUntilVisible:
+    element:
+      text: "Accessing Area.*"
+    direction: DOWN
     timeout: 10000
 
 # --- Go back ---

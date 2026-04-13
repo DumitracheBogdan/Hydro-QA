@@ -52,6 +52,7 @@ tags:
     element:
       text: "Actions"
     direction: DOWN
+    timeout: 10000
 - assertVisible: "Actions"
 
 # --- Navigate back ---
