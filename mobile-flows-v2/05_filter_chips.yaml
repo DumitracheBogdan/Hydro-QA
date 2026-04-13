@@ -28,14 +28,16 @@ tags:
     timeout: 8000
 
 # --- Next week ---
-# Longer timeout — "Next week" filter may need more time to load results
-# than Today/Tomorrow. The QA test visit (April 15) may or may not fall
-# into "next week" depending on the CI emulator's calendar week definition.
+# The QA test visit (April 15) falls in the current calendar week, so
+# "Next week" (April 20+) shows a DIFFERENT visit on the CI emulator
+# (not the QA test visit). The visit card shows an "Upcoming" badge and
+# a "View Visit Details" button — NOT the text "QA test" (which is the
+# visit name, only visible inside the detail screen, not on the card).
 - tapOn:
     text: "Next week"
 - extendedWaitUntil:
-    visible: "(No visits found.*|QA test)"
-    timeout: 20000
+    visible: "(No visits found.*|Upcoming|View Visit Details)"
+    timeout: 10000
 
 # --- All chips still present ---
 - assertVisible: "Today"

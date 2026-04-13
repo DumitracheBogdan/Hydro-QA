@@ -109,9 +109,12 @@ tags:
     text: "Visit Details"
     index: 1
 
-# --- Verify data persisted (scroll to description area) ---
+# --- Verify data persisted ---
+# After re-expanding the accordion the Compose ScrollView restores its
+# previous scroll position (near Water Sampling / bottom of the accordion).
+# Description & Reference is ABOVE the current viewport, so scroll UP.
 - scrollUntilVisible:
     element:
       text: "Maestro CI E2E Test"
-    direction: DOWN
+    direction: UP
     timeout: 15000
