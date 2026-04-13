@@ -14,10 +14,6 @@ on:
         description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows"
         type: string
         required: false
-      qa_check:
-        description: "QA-Check new-feature: Run UI change detector scan after tests"
-        type: boolean
-        default: false
   push:
     branches:
       - fix/maestro-v2
@@ -87,34 +83,19 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           emulator-boot-timeout: 600
-          script: |
-            bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ steps.mode.outputs.value }}.sh
-
-            # QA Change Detector (optional — runs after Maestro tests on the same emulator)
-            if [[ "$QA_CHECK_ENABLED" == "true" ]]; then
-              echo ""
-              echo "=== Running QA Change Detector ==="
-              echo ""
-              mkdir -p $GITHUB_WORKSPACE/qa-artifacts/change-detector
-              cd $GITHUB_WORKSPACE/exploration-2026-04-12/change-detector
-              python3 scanner.py --ci --output-dir $GITHUB_WORKSPACE/qa-artifacts/change-detector --verbose 2>&1 || echo "::warning::QA Change Detector scan failed (non-blocking)"
-              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1 || echo "::warning::QA Change Detector report generation failed (non-blocking)"
-            fi
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-${{ steps.mode.outputs.value }}.sh
         env:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
           FLOWS_FILTER: ${{ inputs.flows }}
-          QA_CHECK_ENABLED: ${{ inputs.qa_check }}
 
       - name: Upload mobile V2 artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mobile-v2-${{ steps.mode.outputs.value }}-${{ github.run_id }}
-          path: |
-            qa-artifacts/mobile-v2/
-            qa-artifacts/change-detector/
+          path: qa-artifacts/mobile-v2/
           if-no-files-found: ignore
           retention-days: 14
 
@@ -134,31 +115,4 @@ jobs:
             fi
             echo ""
             echo "Artifact: mobile-v2-$MODE-${{ github.run_id }}"
-            echo ""
-
-            # QA Change Detector results (if ran)
-            DETECTOR_RESULT=$(ls -1t qa-artifacts/change-detector/scan_results_*.json 2>/dev/null | head -1)
-            if [[ -n "$DETECTOR_RESULT" ]]; then
-              echo "## QA Change Detector"
-              echo ""
-              node -e "
-                const s = require('./$DETECTOR_RESULT');
-                const sum = s.summary || {};
-                console.log('- Screens scanned: ' + (sum.screens_scanned || 0));
-                console.log('- New elements found: ' + (sum.total_new_elements || 0));
-                if (sum.total_new_elements > 0) {
-                  console.log('');
-                  console.log('**New UI elements detected — review recommended!**');
-                  for (const [name, info] of Object.entries(s.screens || {})) {
-                    const els = info.new_elements || [];
-                    if (els.length > 0) {
-                      console.log('  - ' + name + ': ' + els.length + ' new element(s)');
-                    }
-                  }
-                } else {
-                  console.log('');
-                  console.log('All screens match baseline. No new elements detected.');
-                }
-              " 2>/dev/null || echo "QA Change Detector summary parse failed"
-            fi
           } >> "$GITHUB_STEP_SUMMARY"
