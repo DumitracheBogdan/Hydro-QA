@@ -634,8 +634,8 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         # Press back from visit_detail context, land on visits_home, then go to History
         press_back(device)
         wait(1)
-        # Dismiss unsaved-data dialog if it pops (shouldn't, but be safe)
-        find_and_tap("Go back", device)
+        # Dismiss unsaved-data dialog if it pops (shouldn't, but be safe — single retry)
+        find_and_tap("Go back", device, retries=1)
         wait(0.5)
         tap(*COORDS["bottom_history"], device)
         wait(2)
@@ -649,8 +649,7 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(2)
 
     elif screen_id == "change_password":
-        tap(*COORDS["bottom_account"], device)
-        wait(2)
+        # Assumes we just scanned account_tab (no cleanup needed), so we're already there
         if not find_and_tap("Change Password", device):
             tap(*COORDS["change_password"], device)
         wait(2)
@@ -738,9 +737,12 @@ def cleanup_after_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     ):
         press_back(device)
         wait(1)
-        # Dismiss unsaved-data dialog if the form was modified (unlikely, but safe)
-        find_and_tap("Go back", device)
+        # Dismiss unsaved-data dialog if it pops (unlikely — single retry to avoid wasting time)
+        find_and_tap("Go back", device, retries=1)
         wait(0.5)
+        # Ensure we land back on the inspections tab for the next form
+        tap(*COORDS["tab_inspections"], device)
+        wait(1)
 
     elif screen_id == "change_password":
         press_back(device)

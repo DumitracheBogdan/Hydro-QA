@@ -97,8 +97,8 @@ jobs:
               echo ""
               mkdir -p $GITHUB_WORKSPACE/qa-artifacts/change-detector
               cd $GITHUB_WORKSPACE/exploration-2026-04-12/change-detector
-              python3 scanner.py --ci --output-dir $GITHUB_WORKSPACE/qa-artifacts/change-detector --verbose 2>&1 || echo "::warning::QA Change Detector scan failed (non-blocking)"
-              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1 || echo "::warning::QA Change Detector report generation failed (non-blocking)"
+              # run_detector.py internally imports scanner and runs the full scan + generates HTML report
+              python3 run_detector.py --ci --no-alert --output $GITHUB_WORKSPACE/qa-artifacts/change-detector 2>&1 || echo "::warning::QA Change Detector failed (non-blocking)"
             fi
         env:
           GH_TOKEN: ${{ github.token }}
