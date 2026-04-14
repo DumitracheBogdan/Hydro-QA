@@ -528,26 +528,53 @@ def _current_screen_marker(device: str) -> str:
     return "unknown"
 
 
-def _ensure_visit_detail(device: str) -> None:
+def _ensure_visit_detail(device: str, prefer: str = "history") -> None:
     """
-    Idempotent: if we are not on visit_detail, navigate there by way of
-    the History tab (the only place with a clickable 'View Visit Details').
-    Safe to call before any screen that depends on visit_detail context.
+    Idempotent: navigate to visit_detail via the chosen entry.
+    prefer="history" -> opens [qa]testing visit (no action items, safe for
+                        signature_dialog / visit_detail / accordion).
+    prefer="visits_home" -> opens QA test visit (has action items — required
+                            for priority_picker and delete_dialog).
+    Always force-enters by first backing out to bottom-nav root, so we
+    never inherit an expanded accordion from a previous screen.
     """
+    # Force a clean reset: press back until we are on a bottom-nav root,
+    # then re-enter through the chosen tab. This avoids inheriting
+    # an expanded Visit Details / Client Signature accordion from the
+    # previous screen.
+    for _ in range(3):
+        marker = _current_screen_marker(device)
+        if marker in ("visits_home", "history_tab", "login"):
+            break
+        press_back(device)
+        wait(0.6)
+        # If an unsaved-data dialog pops, confirm "Go back" to leave the visit
+        find_and_tap("Go back", device, retries=1)
+        wait(0.3)
     marker = _current_screen_marker(device)
-    if marker == "visit_detail":
-        return
-    log.info("_ensure_visit_detail: not on visit_detail (marker=%s), re-opening", marker)
     if marker == "login":
         perform_login(device)
         wait(2)
-        marker = _current_screen_marker(device)
-    # From visits_home / history_tab / unknown — go to History, tap CTA.
-    tap(*COORDS["bottom_history"], device)
-    wait(2)
-    if not find_and_tap("View Visit Details", device):
-        find_and_tap("View Visit", device)
-    wait(2.5)
+
+    if prefer == "visits_home":
+        # QA test visit on Visits Home. Scroll to find "View Visit Details".
+        tap(*COORDS["bottom_visits"], device)
+        wait(2)
+        if not find_and_tap("View Visit Details", device):
+            # Scroll the card into view then retry.
+            for _ in range(3):
+                scroll_down(device)
+                if find_and_tap("View Visit Details", device):
+                    break
+        wait(2.5)
+    else:
+        # [qa]testing visit on History tab.
+        tap(*COORDS["bottom_history"], device)
+        wait(2)
+        if not find_and_tap("View Visit Details", device):
+            scroll_down(device)
+            find_and_tap("View Visit Details", device)
+        wait(2.5)
 
 
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
@@ -584,29 +611,12 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         perform_login(device)
 
     elif screen_id == "visit_detail":
-        # Assumes we are on visits_home.
-        # IMPORTANT: Visits Home cards are NOT clickable (Compose card has no
-        # exposed Button node). The "View Visit Details" CTA only exists on
-        # History tab cards — that's the only place we can tap into a visit.
-        # Matches Maestro's working open_visit_detail.yaml flow.
+        # Visits Home cards expose no clickable Compose node (no 'View Visit
+        # Details' Button in the uiautomator dump on the tomorrow card).
+        # The History tab card DOES expose a 'View Visit Details' CTA.
+        # Matches Maestro's working _shared/open_visit_detail.yaml.
         _dump_login_state("pre_nav_visit_detail", device)
-        tap(*COORDS["bottom_history"], device)
-        wait(2)
-        if not find_and_tap("View Visit Details", device):
-            if not find_and_tap("View Visit", device):
-                # Final fallback: tap the History tab's card CTA area
-                w, h = get_screen_size(device)
-                tap(w // 2, int(h * 0.62), device)
-        wait(2.5)
-        # Verify — if still not on visit_detail, one more try via center tap
-        raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
-        raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
-        if "Welcome, Bogdan" in raw or "overview of your visits" in raw:
-            log.warning("visit_detail: still on history/home, retrying History + CTA tap")
-            tap(*COORDS["bottom_history"], device)
-            wait(1.5)
-            find_and_tap("View Visit Details", device)
-            wait(2)
+        _ensure_visit_detail(device, prefer="history")
         _dump_login_state("post_nav_visit_detail", device)
 
     elif screen_id == "visit_detail_accordion":
@@ -621,36 +631,40 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         _dump_login_state("post_nav_visit_detail_accordion", device)
 
     elif screen_id == "signature_dialog":
-        # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
-        # Expand the Client Signature accordion, scroll to bring "Tap to sign"
-        # into view, then tap the signature canvas.
-        _ensure_visit_detail(device)
+        # Open visit_detail cleanly, scroll to bring Client Signature
+        # into view, expand it, scroll again to reveal signature canvas,
+        # then tap it.
+        _ensure_visit_detail(device, prefer="history")
         _dump_login_state("pre_nav_signature_dialog", device)
+        # Client Signature accordion sits near the bottom of visit_detail.
+        # Scroll first so its header is visible and tap-friendly.
+        scroll_down(device)
+        wait(0.5)
         if not find_and_tap("Client Signature", device):
             tap(*COORDS["client_signature_accordion"], device)
         wait(1.5)
-        # Client Signature accordion sits near the bottom of the visit_detail
-        # screen; scroll up so the signature canvas (appears below) is visible.
         scroll_down(device)
-        wait(1)
+        wait(0.8)
         if not find_and_tap("Tap to sign", device):
             if not find_and_tap("sign here", device):
-                if not find_and_tap("Signature", device):
+                if not find_and_tap("Drawing canvas", device):
                     tap(*COORDS["tap_to_sign"], device)
         wait(2)
         _dump_login_state("post_nav_signature_dialog", device)
 
     elif screen_id == "priority_picker":
-        # Assumes we are on visit_detail.
-        # Tap a priority badge — "Low" is the default for the seeded action item.
-        # Previous cleanup may have left us on History/visits_home — re-enter.
-        _ensure_visit_detail(device)
+        # Priority badges live in the Actions accordion; the seeded QA test
+        # visit on Visits Home has action items ("testing visit" from History
+        # does not — its Actions accordion reads "No actions available.").
+        _ensure_visit_detail(device, prefer="visits_home")
         _dump_login_state("pre_nav_priority_picker", device)
-        # Priority badge lives in Actions accordion — expand it first.
-        if not find_and_tap("Actions", device):
+        # Expand the Actions accordion first (may be below fold — scroll).
+        for _ in range(2):
+            if find_and_tap("Actions", device):
+                break
             scroll_down(device)
-            find_and_tap("Actions", device)
         wait(1.5)
+        scroll_down(device)
         if not find_and_tap("Low", device):
             if not find_and_tap("Medium", device):
                 if not find_and_tap("High", device):
@@ -659,14 +673,16 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         _dump_login_state("post_nav_priority_picker", device)
 
     elif screen_id == "delete_dialog":
-        # Assumes we are on visit_detail.
-        # Expand the Actions accordion, then tap the Delete action icon.
-        _ensure_visit_detail(device)
+        # Delete action icon lives in the Actions accordion of the QA test
+        # visit (only that visit has action items).
+        _ensure_visit_detail(device, prefer="visits_home")
         _dump_login_state("pre_nav_delete_dialog", device)
-        if not find_and_tap("Actions", device):
+        for _ in range(2):
+            if find_and_tap("Actions", device):
+                break
             scroll_down(device)
-            find_and_tap("Actions", device)
         wait(1.5)
+        scroll_down(device)
         if not find_and_tap("Delete action", device):
             if not find_and_tap("Delete", device):
                 tap(*COORDS["delete_action_icon"], device)
