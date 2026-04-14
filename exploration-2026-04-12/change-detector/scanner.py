@@ -539,6 +539,33 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _navigate_to_accordion_v2(device: str = DEFAULT_DEVICE) -> None:
+    """
+    Standalone navigation to the visit_detail_accordion state.
+
+    Upstream visit_detail nav is flaky, which causes the accordion scan to
+    fire on visits_home and produce 20+ false positives. This function does
+    the full path itself: History tab -> "View Visit Details" -> expand the
+    "Visit Details" accordion (the 2nd occurrence of that label on the
+    visit_detail page).
+    """
+    # 1. Go to History tab (shows completed visits with a visible card).
+    tap(*COORDS["bottom_history"], device)
+    wait(2)
+
+    # 2. Open the visit detail from the History list.
+    if not find_and_tap("View Visit Details", device):
+        if not find_and_tap("View Visit", device):
+            tap(*COORDS["view_visit_details"], device)
+    wait(2.5)
+
+    # 3. Expand the "Visit Details" accordion (index 1 == 2nd occurrence,
+    #    since index 0 is the tab label).
+    if not find_and_tap_nth("Visit Details", n=1, device=device):
+        tap(*COORDS["visit_details_accordion"], device)
+    wait(2)
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -594,12 +621,10 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
             wait(2)
 
     elif screen_id == "visit_detail_accordion":
-        # Assumes we are on visit_detail.
-        # "Visit Details" appears as both a tab (index 0) and an accordion (index 1).
-        # Tap the second occurrence to expand the accordion.
-        if not find_and_tap_nth("Visit Details", n=1, device=device):
-            tap(*COORDS["visit_details_accordion"], device)
-        wait(2)
+        # Standalone nav (upstream visit_detail is flaky — scanning landed
+        # on visits_home and produced 20+ false positives).
+        _navigate_to_accordion_v2(device)
+        return
 
     elif screen_id == "signature_dialog":
         # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
