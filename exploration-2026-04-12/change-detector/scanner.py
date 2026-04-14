@@ -699,9 +699,9 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         input_text("WrongPassword123!", device)
         hide_keyboard(device)
         wait(0.5)
-        if not find_and_tap("Login", device):
-            if not find_and_tap("LOG IN", device):
-                tap(540, 1300, device)
+        # Tap the actual submit button, not the screen title.
+        if not _tap_login_button(device):
+            tap(540, 1300, device)
         wait(4)
 
     else:
@@ -725,7 +725,9 @@ SCREEN_ANCHORS = {
     "unsaved_data_dialog": ["Stay"],
     "fab_expanded": ["Camera", "Gallery"],
     "logout_dialog": ["Logout", "Cancel"],
-    "login_error_state": ["Invalid", "Login"],
+    # "Invalid" alone would match the fake email substring (qa.invalid.detector...).
+    # We want anchors that prove an *error message* rendered after the login attempt.
+    "login_error_state": ["Invalid Credentials", "incorrect", "wrong", "failed"],
 }
 
 
@@ -1024,6 +1026,63 @@ def take_screenshot(name: str, device: str = DEFAULT_DEVICE) -> Path | None:
 # Login sequence
 # ===================================================================
 
+def _tap_login_button(device: str) -> bool:
+    """
+    Tap the Login *submit* button — not the screen title.
+
+    The login screen has TWO nodes containing "Login":
+      - "Login" screen title at the top (y~200) — NOT clickable as submit
+      - "Login" submit button below the password field (y~600+)
+
+    find_and_tap returns DOM-order first match (the title). This helper
+    enumerates all matches, filters to clickable ones, and taps the one
+    with the largest Y coordinate (always the button).
+    """
+    for attempt in range(3):
+        adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+        time.sleep(0.3)
+        raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+        if not raw_xml.strip():
+            wait(1)
+            continue
+        try:
+            root = ET.fromstring(raw_xml.strip())
+        except ET.ParseError:
+            wait(1)
+            continue
+
+        candidates = []  # (y_center, x_center, clickable_bool)
+        for node in root.iter("node"):
+            txt = (node.attrib.get("text", "") or "").strip().lower()
+            desc = (node.attrib.get("content-desc", "") or "").strip().lower()
+            if txt in ("login", "log in", "sign in") or desc in ("login", "log in", "sign in"):
+                bounds = _parse_bounds(node.attrib.get("bounds", ""))
+                if not bounds:
+                    continue
+                cx, cy = _center(bounds)
+                clickable = node.attrib.get("clickable", "false") == "true"
+                candidates.append((cy, cx, clickable))
+
+        if not candidates:
+            log.debug("_tap_login_button: no candidates on attempt %d", attempt + 1)
+            wait(1)
+            continue
+
+        # Prefer clickable candidates; otherwise take the lowest one (largest y).
+        clickable = [c for c in candidates if c[2]]
+        chosen = max(clickable, key=lambda c: c[0]) if clickable else max(candidates, key=lambda c: c[0])
+        cy, cx, was_clickable = chosen
+        log.info(
+            "_tap_login_button: %d candidate(s), tapping (%d,%d) clickable=%s",
+            len(candidates), cx, cy, was_clickable,
+        )
+        tap(cx, cy, device)
+        return True
+
+    log.warning("_tap_login_button: no Login element found after 3 attempts")
+    return False
+
+
 def _login_diag(label: str, device: str) -> None:
     """Dump UI and log a one-line summary to diagnose perform_login failures."""
     adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
@@ -1075,11 +1134,11 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     hide_keyboard(device)
     wait(0.5)
 
-    if not find_and_tap("Login", device):
-        if not find_and_tap("LOG IN", device):
-            if not find_and_tap("Sign in", device):
-                log.warning("Could not find login button — tapping fallback.")
-                tap(540, 1300, device)
+    # Use targeted helper that picks the clickable Login *button*
+    # (largest Y), not the "Login" screen title at y~204.
+    if not _tap_login_button(device):
+        log.warning("Could not find login button — tapping fallback coords.")
+        tap(540, 1300, device)
 
     # Poll for the home screen anchor up to 25s instead of a fixed wait.
     # This handles slow CI emulator cold-starts and gives us diagnostic data.
