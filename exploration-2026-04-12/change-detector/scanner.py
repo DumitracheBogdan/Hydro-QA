@@ -541,50 +541,59 @@ def find_and_tap_nth(
 
 def _navigate_to_priority_picker_v2(device: str = DEFAULT_DEVICE) -> None:
     """
-    Navigate to the priority picker sheet. Starting state is
+    Navigate to the priority picker sheet. The expected prior state is
     visit_detail of '[qa]testing visit' (left there by signature_dialog
     cleanup) — that visit has no action items so we must go back to
     visits_home and open the 'QA test' card which has seeded actions.
+    However, upstream navigation is fragile (visit_detail itself can
+    land on visits_home, and cleanup press_back can bounce the app back
+    to login), so this function is defensive about the starting state.
 
     Strategy:
-      1. Tap bottom_visits tab -> visits_home.
+      0. If we're on the login screen, re-authenticate.
+      1. Tap bottom_visits tab to force visits_home.
       2. Open the QA test card via find_and_tap("QA test"); fall back to
          approximate card-area coordinates if the text isn't tappable at
          the emulator's 320x640 resolution.
       3. Expand the Actions accordion.
       4. Tap a priority badge (Low / Medium / High).
     """
+    w, h = get_screen_size(device)
+
+    # Step 0: if we bounced back to login (signature_dialog cleanup can do
+    # this when press_back has no dialog to dismiss), log in again.
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+    if "Welcome back!" in raw or "Enter your email and password" in raw:
+        log.info("priority_picker: detected login screen; re-authenticating")
+        perform_login(device)
+        wait(2)
+
     # Step 1: go to visits_home
     tap(*COORDS["bottom_visits"], device)
     wait(2)
 
-    # Verify we're on visits_home; a short swipe can also force cards to render
-    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=5) or ""
+    # Verify we're on visits_home; retry the tab tap once if not.
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
     if "Tomorrow's visits" not in raw and "Welcome, Bogdan" not in raw:
-        # One more tap on bottom_visits in case the first one missed
         tap(*COORDS["bottom_visits"], device)
         wait(1.5)
 
-    # Small scroll nudge to ensure the QA test card is rendered (some Compose
-    # lists lazy-render until first interaction on 320x640).
-    w, h = get_screen_size(device)
+    # Small scroll nudge so the QA test card is rendered on 320x640.
     adb(f"shell input swipe {w // 2} {int(h * 0.6)} {w // 2} {int(h * 0.55)} 300", device)
     wait(1)
 
     # Step 2: open the QA test visit. Prefer the textual match; if that fails,
     # tap the approximate first-card area.
     if not find_and_tap("QA test", device):
-        # Card-area fallback: first visit card sits roughly in the upper-
-        # middle of visits_home below the header. Use a point inside the
-        # card body rather than the edge.
         tap(w // 2, int(h * 0.45), device)
     wait(2.5)
 
-    # Confirm we landed on visit_detail of QA test (VN011710 from baseline).
-    raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    # Confirm we left visits_home (landed on a visit_detail).
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
     raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
     if "Tomorrow's visits" in raw or "Welcome, Bogdan" in raw:
-        # Still on visits_home — try a coord-based card tap.
         log.warning("priority_picker: still on visits_home after QA test tap; retrying")
         tap(w // 2, int(h * 0.42), device)
         wait(2.5)
