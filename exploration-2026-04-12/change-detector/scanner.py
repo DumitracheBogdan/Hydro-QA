@@ -229,8 +229,12 @@ def press_back(device: str = DEFAULT_DEVICE) -> None:
 
 
 def scroll_down(device: str = DEFAULT_DEVICE) -> None:
-    """Swipe upward (scroll content down) by ~600px."""
-    adb("shell input swipe 540 1800 540 600 400", device)
+    """Swipe upward (scroll content down) by ~60% of screen height."""
+    w, h = get_screen_size(device)
+    x = w // 2
+    y_from = int(h * 0.75)
+    y_to = int(h * 0.25)
+    adb(f"shell input swipe {x} {y_from} {x} {y_to} 400", device)
     time.sleep(0.6)
 
 
@@ -506,6 +510,46 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _current_screen_marker(device: str) -> str:
+    """Cheap UI probe — returns a short marker for the current screen."""
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.2)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+    lo = raw.lower()
+    # Order matters — visit_detail's "Visit Details" tab is the strongest signal
+    if "inspections (" in lo or "attachments (" in lo:
+        return "visit_detail"
+    if "welcome, bogdan" in lo or "overview of your visits" in lo:
+        return "visits_home"
+    if "view visit details" in lo:
+        return "history_tab"
+    if "email" in lo and "password" in lo and "login" in lo:
+        return "login"
+    return "unknown"
+
+
+def _ensure_visit_detail(device: str) -> None:
+    """
+    Idempotent: if we are not on visit_detail, navigate there by way of
+    the History tab (the only place with a clickable 'View Visit Details').
+    Safe to call before any screen that depends on visit_detail context.
+    """
+    marker = _current_screen_marker(device)
+    if marker == "visit_detail":
+        return
+    log.info("_ensure_visit_detail: not on visit_detail (marker=%s), re-opening", marker)
+    if marker == "login":
+        perform_login(device)
+        wait(2)
+        marker = _current_screen_marker(device)
+    # From visits_home / history_tab / unknown — go to History, tap CTA.
+    tap(*COORDS["bottom_history"], device)
+    wait(2)
+    if not find_and_tap("View Visit Details", device):
+        find_and_tap("View Visit", device)
+    wait(2.5)
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -569,6 +613,7 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         # Assumes we are on visit_detail.
         # "Visit Details" appears as both a tab (index 0) and an accordion (index 1).
         # Tap the second occurrence to expand the accordion.
+        _ensure_visit_detail(device)
         _dump_login_state("pre_nav_visit_detail_accordion", device)
         if not find_and_tap_nth("Visit Details", n=1, device=device):
             tap(*COORDS["visit_details_accordion"], device)
@@ -577,35 +622,54 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
 
     elif screen_id == "signature_dialog":
         # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
-        # Expand the Client Signature accordion, then tap the signature canvas.
+        # Expand the Client Signature accordion, scroll to bring "Tap to sign"
+        # into view, then tap the signature canvas.
+        _ensure_visit_detail(device)
         _dump_login_state("pre_nav_signature_dialog", device)
         if not find_and_tap("Client Signature", device):
             tap(*COORDS["client_signature_accordion"], device)
         wait(1.5)
+        # Client Signature accordion sits near the bottom of the visit_detail
+        # screen; scroll up so the signature canvas (appears below) is visible.
+        scroll_down(device)
+        wait(1)
         if not find_and_tap("Tap to sign", device):
-            if not find_and_tap("sign", device):
-                tap(*COORDS["tap_to_sign"], device)
+            if not find_and_tap("sign here", device):
+                if not find_and_tap("Signature", device):
+                    tap(*COORDS["tap_to_sign"], device)
         wait(2)
         _dump_login_state("post_nav_signature_dialog", device)
 
     elif screen_id == "priority_picker":
         # Assumes we are on visit_detail.
         # Tap a priority badge — "Low" is the default for the seeded action item.
+        # Previous cleanup may have left us on History/visits_home — re-enter.
+        _ensure_visit_detail(device)
         _dump_login_state("pre_nav_priority_picker", device)
+        # Priority badge lives in Actions accordion — expand it first.
+        if not find_and_tap("Actions", device):
+            scroll_down(device)
+            find_and_tap("Actions", device)
+        wait(1.5)
         if not find_and_tap("Low", device):
-            tap(*COORDS["priority_badge"], device)
+            if not find_and_tap("Medium", device):
+                if not find_and_tap("High", device):
+                    tap(*COORDS["priority_badge"], device)
         wait(1.5)
         _dump_login_state("post_nav_priority_picker", device)
 
     elif screen_id == "delete_dialog":
         # Assumes we are on visit_detail.
         # Expand the Actions accordion, then tap the Delete action icon.
+        _ensure_visit_detail(device)
         _dump_login_state("pre_nav_delete_dialog", device)
         if not find_and_tap("Actions", device):
-            tap(*COORDS["actions_accordion"], device)
+            scroll_down(device)
+            find_and_tap("Actions", device)
         wait(1.5)
         if not find_and_tap("Delete action", device):
-            tap(*COORDS["delete_action_icon"], device)
+            if not find_and_tap("Delete", device):
+                tap(*COORDS["delete_action_icon"], device)
         wait(1.5)
         _dump_login_state("post_nav_delete_dialog", device)
 
