@@ -181,9 +181,14 @@ def input_text(text: str, device: str = DEFAULT_DEVICE) -> None:
 
 
 def hide_keyboard(device: str = DEFAULT_DEVICE) -> None:
-    """Press Back to dismiss the soft keyboard."""
-    adb("shell input keyevent 111", device)
-    time.sleep(0.3)
+    """
+    Dismiss the soft keyboard. KEYCODE_BACK (4) is the standard mechanism
+    on Android — on the login screen, BACK can't navigate anywhere so it
+    just hides the keyboard. KEYCODE_ESCAPE (111) is unreliable on Compose
+    apps and was leaving the keyboard up, hiding the Login button.
+    """
+    adb("shell input keyevent 4", device)
+    time.sleep(0.5)
 
 
 def press_back(device: str = DEFAULT_DEVICE) -> None:
@@ -1201,11 +1206,17 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     _login_diag("after_password", device)  # should show dots=Y (masked password)
 
     # Hide keyboard FIRST so the Login button (positioned below the form)
-    # is no longer obscured. The previous IME-ENTER attempt didn't trigger
-    # a submit because the password field's imeAction isn't wired to submit
-    # in this Compose app.
+    # is no longer obscured. KEYCODE_BACK (now used by hide_keyboard) is
+    # the standard Android mechanism for dismissing the soft keyboard.
+    # Send it twice to be safe.
+    hide_keyboard(device)
+    wait(0.5)
     hide_keyboard(device)
     wait(1)
+
+    # Log screen size for debugging coordinate strategy
+    size_out = adb("shell wm size", device)
+    log.info("Screen size: %s", size_out.strip() if size_out else "unknown")
 
     # CRITICAL DEBUG: dump every clickable element + screenshot at the
     # exact moment we look for the Login button. This will reveal whether
