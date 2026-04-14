@@ -697,12 +697,11 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         adb("shell input keyevent 61", device)  # TAB to password field
         wait(0.5)
         input_text("WrongPassword123!", device)
+        # Submit via IME ENTER — same as perform_login.
+        adb("shell input keyevent 66", device)
+        wait(4)
         hide_keyboard(device)
         wait(0.5)
-        # Tap the actual submit button, not the screen title.
-        if not _tap_login_button(device):
-            tap(540, 1300, device)
-        wait(4)
 
     else:
         log.warning("Unknown screen_id: %s", screen_id)
@@ -1131,14 +1130,26 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     input_text(password, device)
     _login_diag("after_password", device)  # should show dots=Y (masked password)
 
+    # Submit via IME action (ENTER) while password field still has focus.
+    # The Login button itself is hidden behind the soft keyboard at this
+    # screen size, so a tap-based submission can't reach it. Most apps wire
+    # the password field's IME action to submit the form.
+    log.info("Submitting login via IME ENTER (keycode 66)...")
+    adb("shell input keyevent 66", device)
+    wait(2)
+
+    # Fallback: if the keyboard is now down and we're still on the login
+    # screen, try the Login button tap (it should now be visible).
     hide_keyboard(device)
     wait(0.5)
-
-    # Use targeted helper that picks the clickable Login *button*
-    # (largest Y), not the "Login" screen title at y~204.
-    if not _tap_login_button(device):
-        log.warning("Could not find login button — tapping fallback coords.")
-        tap(540, 1300, device)
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+    if raw and "visits" not in raw.lower() and ("welcome back" in raw.lower() or "forgot your password" in raw.lower()):
+        log.info("Still on login screen after IME ENTER — trying button tap fallback.")
+        if not _tap_login_button(device):
+            log.warning("Could not find login button — tapping fallback coords.")
+            tap(540, 1300, device)
 
     # Poll for the home screen anchor up to 25s instead of a fixed wait.
     # This handles slow CI emulator cold-starts and gives us diagnostic data.
