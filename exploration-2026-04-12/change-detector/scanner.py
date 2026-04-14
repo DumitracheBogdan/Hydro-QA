@@ -1206,13 +1206,11 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     _login_diag("after_password", device)  # should show dots=Y (masked password)
 
     # Hide keyboard FIRST so the Login button (positioned below the form)
-    # is no longer obscured. KEYCODE_BACK (now used by hide_keyboard) is
-    # the standard Android mechanism for dismissing the soft keyboard.
-    # Send it twice to be safe.
+    # is no longer obscured. KEYCODE_BACK (4) dismisses the soft keyboard.
+    # ONE back only — on the login screen there is no back-stack, so a
+    # second BACK exits the app entirely to the launcher.
     hide_keyboard(device)
-    wait(0.5)
-    hide_keyboard(device)
-    wait(1)
+    wait(1.5)
 
     # Log screen size for debugging coordinate strategy
     size_out = adb("shell wm size", device)
