@@ -541,6 +541,7 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
 
     elif screen_id == "visit_detail":
         # Assumes we are on visits_home
+        _dump_login_state("pre_nav_visit_detail", device)
         tap(*COORDS["bottom_visits"], device)
         wait(2)
         # Try multiple strategies to open a visit card
@@ -559,18 +560,22 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
             w, h = get_screen_size(device)
             tap(w // 2, int(h * 0.55), device)
             wait(2)
+        _dump_login_state("post_nav_visit_detail", device)
 
     elif screen_id == "visit_detail_accordion":
         # Assumes we are on visit_detail.
         # "Visit Details" appears as both a tab (index 0) and an accordion (index 1).
         # Tap the second occurrence to expand the accordion.
+        _dump_login_state("pre_nav_visit_detail_accordion", device)
         if not find_and_tap_nth("Visit Details", n=1, device=device):
             tap(*COORDS["visit_details_accordion"], device)
         wait(2)
+        _dump_login_state("post_nav_visit_detail_accordion", device)
 
     elif screen_id == "signature_dialog":
         # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
         # Expand the Client Signature accordion, then tap the signature canvas.
+        _dump_login_state("pre_nav_signature_dialog", device)
         if not find_and_tap("Client Signature", device):
             tap(*COORDS["client_signature_accordion"], device)
         wait(1.5)
@@ -578,23 +583,28 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
             if not find_and_tap("sign", device):
                 tap(*COORDS["tap_to_sign"], device)
         wait(2)
+        _dump_login_state("post_nav_signature_dialog", device)
 
     elif screen_id == "priority_picker":
         # Assumes we are on visit_detail.
         # Tap a priority badge — "Low" is the default for the seeded action item.
+        _dump_login_state("pre_nav_priority_picker", device)
         if not find_and_tap("Low", device):
             tap(*COORDS["priority_badge"], device)
         wait(1.5)
+        _dump_login_state("post_nav_priority_picker", device)
 
     elif screen_id == "delete_dialog":
         # Assumes we are on visit_detail.
         # Expand the Actions accordion, then tap the Delete action icon.
+        _dump_login_state("pre_nav_delete_dialog", device)
         if not find_and_tap("Actions", device):
             tap(*COORDS["actions_accordion"], device)
         wait(1.5)
         if not find_and_tap("Delete action", device):
             tap(*COORDS["delete_action_icon"], device)
         wait(1.5)
+        _dump_login_state("post_nav_delete_dialog", device)
 
     elif screen_id == "unsaved_data_dialog":
         # Assumes we are on visit_detail (after delete_dialog cleanup / Cancel).
