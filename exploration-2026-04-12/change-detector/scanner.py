@@ -340,8 +340,15 @@ def extract_elements(xml_tree: ET.Element) -> list[dict]:
         bounds_raw = node.attrib.get("bounds", "")
         bounds = _parse_bounds(bounds_raw)
 
+        # EditText values reflect what the USER typed, not the UI structure.
+        # Using typed content as an identifier produces false positives every
+        # run (e.g. "qa.invalid@x.com", "••••••••"). Strip text for EditText;
+        # identity falls back to content_desc / resource_id / class+bounds.
+        raw_text = node.attrib.get("text", "")
+        stored_text = "" if cls == "android.widget.EditText" else raw_text
+
         elements.append({
-            "text": node.attrib.get("text", ""),
+            "text": stored_text,
             "content_desc": node.attrib.get("content-desc", ""),
             "class": cls,
             "clickable": clickable,

@@ -8,6 +8,24 @@
       "route": "Launch app (unauthenticated)",
       "elements": [
         {
+          "content_desc": "Hydrocert Logo",
+          "class": "android.widget.ImageView",
+          "type": "icon",
+          "clickable": false
+        },
+        {
+          "text": "Welcome back!",
+          "class": "android.widget.TextView",
+          "type": "heading",
+          "clickable": false
+        },
+        {
+          "text": "Enter your email and password to login",
+          "class": "android.widget.TextView",
+          "type": "subtitle",
+          "clickable": false
+        },
+        {
           "text": "Email",
           "class": "android.widget.EditText",
           "type": "edittext",
@@ -18,6 +36,18 @@
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
+        },
+        {
+          "text": "Placeholder",
+          "class": "android.widget.TextView",
+          "type": "placeholder",
+          "clickable": false
+        },
+        {
+          "content_desc": "Show password",
+          "class": "android.view.View",
+          "type": "toggle",
+          "clickable": false
         },
         {
           "text": "Show password",
@@ -43,6 +73,30 @@
       "name": "Forgot Password",
       "route": "Login > Tap 'Forgot your password?'",
       "elements": [
+        {
+          "content_desc": "Back",
+          "class": "android.view.View",
+          "type": "icon",
+          "clickable": false
+        },
+        {
+          "content_desc": "Hydrocert Logo",
+          "class": "android.widget.ImageView",
+          "type": "icon",
+          "clickable": false
+        },
+        {
+          "text": "Forgot your password?",
+          "class": "android.widget.TextView",
+          "type": "heading",
+          "clickable": false
+        },
+        {
+          "text": "Enter the email associated with your account and we'll email you the next steps to reset your password.",
+          "class": "android.widget.TextView",
+          "type": "subtitle",
+          "clickable": false
+        },
         {
           "text": "Back to Login",
           "class": "android.widget.TextView",
@@ -1532,6 +1586,24 @@
       "route": "Login > Enter wrong credentials > Tap Login",
       "elements": [
         {
+          "content_desc": "Hydrocert Logo",
+          "class": "android.widget.ImageView",
+          "type": "icon",
+          "clickable": false
+        },
+        {
+          "text": "Welcome back!",
+          "class": "android.widget.TextView",
+          "type": "heading",
+          "clickable": false
+        },
+        {
+          "text": "Enter your email and password to login",
+          "class": "android.widget.TextView",
+          "type": "subtitle",
+          "clickable": false
+        },
+        {
           "text": "Invalid Credentials",
           "class": "android.widget.TextView",
           "type": "error",
@@ -1547,6 +1619,18 @@
           "text": "Password",
           "class": "android.widget.EditText",
           "type": "edittext",
+          "clickable": true
+        },
+        {
+          "content_desc": "Show password",
+          "class": "android.view.View",
+          "type": "toggle",
+          "clickable": false
+        },
+        {
+          "text": "Forgot your password?",
+          "class": "android.widget.TextView",
+          "type": "link",
           "clickable": true
         },
         {
