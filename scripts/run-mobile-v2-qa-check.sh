@@ -43,3 +43,11 @@ if [[ -d "debug_dumps" ]]; then
 fi
 
 echo "=== QA-Check Done ==="
+
+# Feature-flagged CI gate (OFF by default). Only propagate the detector's
+# exit code when FAIL_ON_NEW_ELEMENTS=1 is set; otherwise keep the existing
+# warning-only behavior so in-progress navigation work isn't blocked.
+if [[ "$FAIL_ON_NEW_ELEMENTS" == "1" ]]; then
+  exit "$EXIT_CODE"
+fi
+exit 0
