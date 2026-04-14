@@ -159,6 +159,32 @@ INTERACTIVE_CLASSES = {
 }
 
 # ---------------------------------------------------------------------------
+# Dynamic-text regex filters
+# ---------------------------------------------------------------------------
+# Seed data regenerates timestamps, dates, visit IDs and counters on every
+# scan, which creates false positives in the diff. We strip the text field
+# (not the whole element) when it FULLY matches one of these patterns, so
+# identity falls back to resource_id / class+bounds — mirroring the
+# EditText-strip approach already in place.
+#
+# These are whole-string matches only (re.fullmatch). Partial hits like
+# "Updated 07:00 ago" are left untouched so real label text is preserved.
+DYNAMIC_TEXT_PATTERNS = [
+    re.compile(r"\d{2}\.\d{2}\.\d{4}"),              # 15.04.2026
+    re.compile(r"\d{2}:\d{2}\s*->\s*\d{2}:\d{2}"),   # 07:00 -> 09:30
+    re.compile(r"\d{1,2}:\d{2}"),                    # 07:00
+    re.compile(r"#[A-Z]+\d+"),                       # #VN011710
+    re.compile(r"[A-Z ]+\s*\(\d+\)"),                # INSPECTIONS (4)
+]
+
+
+def _is_dynamic_text(text: str) -> bool:
+    """Return True if *text* fully matches any dynamic-content pattern."""
+    if not text:
+        return False
+    return any(p.fullmatch(text) for p in DYNAMIC_TEXT_PATTERNS)
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 logging.basicConfig(
@@ -377,6 +403,13 @@ def extract_elements(xml_tree: ET.Element) -> list[dict]:
         # identity falls back to content_desc / resource_id / class+bounds.
         raw_text = node.attrib.get("text", "")
         stored_text = "" if cls == "android.widget.EditText" else raw_text
+
+        # Dynamic-content strip (dates, times, visit IDs, counters). Same
+        # rationale as EditText: strip the text so seed-data regeneration
+        # doesn't trigger "new element" alerts on every scan. Whole-string
+        # match only — partial matches like "Updated 07:00 ago" are kept.
+        if stored_text and _is_dynamic_text(stored_text.strip()):
+            stored_text = ""
 
         elements.append({
             "text": stored_text,
