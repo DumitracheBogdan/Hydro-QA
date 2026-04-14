@@ -540,25 +540,28 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         perform_login(device)
 
     elif screen_id == "visit_detail":
-        # Assumes we are on visits_home
+        # Assumes we are on visits_home.
+        # IMPORTANT: Visits Home cards are NOT clickable (Compose card has no
+        # exposed Button node). The "View Visit Details" CTA only exists on
+        # History tab cards — that's the only place we can tap into a visit.
+        # Matches Maestro's working open_visit_detail.yaml flow.
         _dump_login_state("pre_nav_visit_detail", device)
-        tap(*COORDS["bottom_visits"], device)
+        tap(*COORDS["bottom_history"], device)
         wait(2)
-        # Try multiple strategies to open a visit card
         if not find_and_tap("View Visit Details", device):
             if not find_and_tap("View Visit", device):
-                if not find_and_tap("#VN", device):
-                    if not find_and_tap("QA test", device):
-                        tap(*COORDS["view_visit_details"], device)
+                # Final fallback: tap the History tab's card CTA area
+                w, h = get_screen_size(device)
+                tap(w // 2, int(h * 0.62), device)
         wait(2.5)
-        # Verify we landed on visit_detail (has "Visit Details" tab text)
-        # If still on visits_home, try one more tap at the card area.
+        # Verify — if still not on visit_detail, one more try via center tap
         raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
         raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
-        if "Tomorrow's visits" in raw or "Welcome, Bogdan" in raw:
-            log.warning("visit_detail: still on visits_home, retrying with center tap")
-            w, h = get_screen_size(device)
-            tap(w // 2, int(h * 0.55), device)
+        if "Welcome, Bogdan" in raw or "overview of your visits" in raw:
+            log.warning("visit_detail: still on history/home, retrying History + CTA tap")
+            tap(*COORDS["bottom_history"], device)
+            wait(1.5)
+            find_and_tap("View Visit Details", device)
             wait(2)
         _dump_login_state("post_nav_visit_detail", device)
 
