@@ -31,4 +31,15 @@ if [[ "$EXIT_CODE" -ne 0 ]]; then
   echo "::warning::QA Change Detector exited with code $EXIT_CODE"
 fi
 
+# Copy screenshots and any debug dumps into the artifact folder so we can
+# inspect them after the run.
+if [[ -d "screenshots" ]]; then
+  echo "=== Copying screenshots/ into artifacts ==="
+  cp -r screenshots "$ARTIFACTS/" || true
+fi
+if [[ -d "debug_dumps" ]]; then
+  echo "=== Copying debug_dumps/ into artifacts ==="
+  cp -r debug_dumps "$ARTIFACTS/" || true
+fi
+
 echo "=== QA-Check Done ==="
