@@ -544,28 +544,30 @@ def _navigate_to_visit_detail_v2(device: str = DEFAULT_DEVICE) -> None:
     Open a visit card via the History tab, where the Compose "View Visit
     Details" card IS exposed to uiautomator (unlike the visits_home Today
     list, which renders the card without a tappable uiautomator node).
-
-    Assumes we are on visits_home (cleanup_after_screen(visits_home) is a
-    no-op, so we arrive here right after the visits_home scan).
     """
-    # 1. Navigate to History tab via bottom-nav coord (auto-scaled).
     tap(*COORDS["bottom_history"], device)
     wait(2)
-
-    # 2. Tap the "View Visit Details" label on the testing-visit card.
     find_and_tap("View Visit Details", device)
     wait(2.5)
-
-    # 3. Verify we landed on visit_detail by checking for anchor labels.
     adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
     raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
     if "Visit Details" in raw and "Attachments" in raw:
         log.info("_navigate_to_visit_detail_v2: landed on visit_detail")
     else:
-        log.warning(
-            "_navigate_to_visit_detail_v2: anchors not found after tap "
-            "(Visit Details / Attachments) — may still be on History"
-        )
+        log.warning("_navigate_to_visit_detail_v2: anchors missing after tap")
+
+
+def _navigate_to_accordion_v2(device: str = DEFAULT_DEVICE) -> None:
+    """Standalone History-tab path for visit_detail_accordion."""
+    tap(*COORDS["bottom_history"], device)
+    wait(2)
+    if not find_and_tap("View Visit Details", device):
+        if not find_and_tap("View Visit", device):
+            tap(*COORDS["view_visit_details"], device)
+    wait(2.5)
+    if not find_and_tap_nth("Visit Details", n=1, device=device):
+        tap(*COORDS["visit_details_accordion"], device)
+    wait(2)
 
 
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
@@ -606,12 +608,10 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         return
 
     elif screen_id == "visit_detail_accordion":
-        # Assumes we are on visit_detail.
-        # "Visit Details" appears as both a tab (index 0) and an accordion (index 1).
-        # Tap the second occurrence to expand the accordion.
-        if not find_and_tap_nth("Visit Details", n=1, device=device):
-            tap(*COORDS["visit_details_accordion"], device)
-        wait(2)
+        # Standalone nav (upstream visit_detail is flaky — scanning landed
+        # on visits_home and produced 20+ false positives).
+        _navigate_to_accordion_v2(device)
+        return
 
     elif screen_id == "signature_dialog":
         # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
