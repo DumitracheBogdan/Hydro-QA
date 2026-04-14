@@ -1087,6 +1087,57 @@ def _tap_login_button(device: str) -> bool:
     return False
 
 
+def _dump_login_state(label: str, device: str) -> None:
+    """
+    Heavy diagnostic: list every clickable element with bounds + take a
+    screenshot to debug_dumps/. Use sparingly (e.g. on login failure).
+    """
+    out_dir = Path(__file__).parent / "debug_dumps"
+    out_dir.mkdir(exist_ok=True)
+
+    # 1. Save UI XML
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+    if raw_xml:
+        (out_dir / f"{label}_dump.xml").write_text(raw_xml, encoding="utf-8")
+
+    # 2. List ALL clickable elements (text/desc/class/bounds) to log
+    if raw_xml:
+        try:
+            root = ET.fromstring(raw_xml.strip())
+            log.info("=== _dump_login_state[%s] clickable elements ===", label)
+            count = 0
+            for node in root.iter("node"):
+                if node.attrib.get("clickable", "false") != "true":
+                    continue
+                txt = (node.attrib.get("text", "") or "")[:30]
+                desc = (node.attrib.get("content-desc", "") or "")[:30]
+                cls = node.attrib.get("class", "").split(".")[-1]
+                bounds = node.attrib.get("bounds", "")
+                log.info("  CLICK: txt=%r desc=%r cls=%s bounds=%s", txt, desc, cls, bounds)
+                count += 1
+            log.info("=== %d clickable elements total ===", count)
+        except ET.ParseError as e:
+            log.warning("_dump_login_state: XML parse failed: %s", e)
+
+    # 3. Save screenshot
+    try:
+        png_data = adb_screencap(device)
+        if png_data:
+            (out_dir / f"{label}.png").write_bytes(png_data)
+            log.info("_dump_login_state: screenshot saved to debug_dumps/%s.png", label)
+    except Exception as exc:
+        log.warning("_dump_login_state: screencap failed: %s", exc)
+
+
+def adb_screencap(device: str = DEFAULT_DEVICE) -> bytes:
+    """Take a screenshot via adb shell screencap and return raw PNG bytes."""
+    cmd = ["adb", "-s", device, "exec-out", "screencap", "-p"]
+    result = subprocess.run(cmd, capture_output=True, timeout=15)
+    return result.stdout if result.returncode == 0 else b""
+
+
 def _login_diag(label: str, device: str) -> None:
     """Dump UI and log a one-line summary to diagnose perform_login failures."""
     adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
@@ -1156,6 +1207,12 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     hide_keyboard(device)
     wait(1)
 
+    # CRITICAL DEBUG: dump every clickable element + screenshot at the
+    # exact moment we look for the Login button. This will reveal whether
+    # the button has different text, content-desc, or simply isn't in the
+    # accessibility tree at all (Compose semantics issue).
+    _dump_login_state("before_login_tap", device)
+
     # Try to find and tap the Login button now that the keyboard is down.
     # If the button is below the visible viewport (small emulator screens),
     # scroll the form up first and re-try.
@@ -1187,6 +1244,8 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
 
     log.warning("perform_login: home screen not detected within 30s — login likely failed")
     _login_diag("poll_30s_final", device)
+    # Final-failure heavy dump so we can inspect what's on screen post-failure.
+    _dump_login_state("after_login_failure", device)
 
 
 # ===================================================================
