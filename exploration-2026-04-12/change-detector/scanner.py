@@ -697,11 +697,14 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         adb("shell input keyevent 61", device)  # TAB to password field
         wait(0.5)
         input_text("WrongPassword123!", device)
-        # Submit via IME ENTER — same as perform_login.
-        adb("shell input keyevent 66", device)
-        wait(4)
         hide_keyboard(device)
-        wait(0.5)
+        wait(1)
+        if not _tap_login_button(device):
+            adb("shell input swipe 200 500 200 200 300", device)
+            wait(1)
+            if not _tap_login_button(device):
+                tap(160, 500, device)
+        wait(4)
 
     else:
         log.warning("Unknown screen_id: %s", screen_id)
@@ -714,7 +717,9 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
 SCREEN_ANCHORS = {
     "login": ["Email", "Password", "Login"],
     "forgot_password": ["Back to Login"],
-    "visits_home": ["Visits"],
+    # Maestro's working post-login marker is ".*overview of your visits.*".
+    # Accept either that or "Visits" (bottom nav tab text).
+    "visits_home": ["overview of your visits", "Visits"],
     "visit_detail": ["Visit Details"],
     "inspections_tab": ["Inspections"],
     "account_tab": ["Account"],
@@ -1113,7 +1118,21 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     adb(f"shell am force-stop {PACKAGE}", device)
     wait(1)
     adb(f"shell am start -n {MAIN_ACTIVITY}", device)
-    wait(4)
+
+    # Wait up to 30s for "Forgot password?" to appear — same gate Maestro
+    # uses (extendedWaitUntil text="Forgot.*"). Login screen is a Compose
+    # screen and renders progressively; tapping too early misses elements.
+    log.info("Waiting for login screen to fully render (Forgot anchor)...")
+    for i in range(30):
+        wait(1)
+        adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+        time.sleep(0.3)
+        raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+        if raw and "forgot" in raw.lower():
+            log.info("Login screen ready after %ds (Forgot found).", i + 1)
+            break
+    else:
+        log.warning("Login screen never showed Forgot anchor — proceeding anyway.")
 
     if not find_and_tap("Email", device):
         log.info("Tapping approximate email field location.")
@@ -1130,42 +1149,44 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     input_text(password, device)
     _login_diag("after_password", device)  # should show dots=Y (masked password)
 
-    # Submit via IME action (ENTER) while password field still has focus.
-    # The Login button itself is hidden behind the soft keyboard at this
-    # screen size, so a tap-based submission can't reach it. Most apps wire
-    # the password field's IME action to submit the form.
-    log.info("Submitting login via IME ENTER (keycode 66)...")
-    adb("shell input keyevent 66", device)
-    wait(2)
-
-    # Fallback: if the keyboard is now down and we're still on the login
-    # screen, try the Login button tap (it should now be visible).
+    # Hide keyboard FIRST so the Login button (positioned below the form)
+    # is no longer obscured. The previous IME-ENTER attempt didn't trigger
+    # a submit because the password field's imeAction isn't wired to submit
+    # in this Compose app.
     hide_keyboard(device)
-    wait(0.5)
-    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
-    time.sleep(0.3)
-    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
-    if raw and "visits" not in raw.lower() and ("welcome back" in raw.lower() or "forgot your password" in raw.lower()):
-        log.info("Still on login screen after IME ENTER — trying button tap fallback.")
-        if not _tap_login_button(device):
-            log.warning("Could not find login button — tapping fallback coords.")
-            tap(540, 1300, device)
+    wait(1)
 
-    # Poll for the home screen anchor up to 25s instead of a fixed wait.
-    # This handles slow CI emulator cold-starts and gives us diagnostic data.
-    for i in range(25):
+    # Try to find and tap the Login button now that the keyboard is down.
+    # If the button is below the visible viewport (small emulator screens),
+    # scroll the form up first and re-try.
+    if not _tap_login_button(device):
+        log.info("Login button not visible — scrolling form up and re-trying.")
+        # Swipe from lower part of form to upper to reveal the button below.
+        adb("shell input swipe 200 500 200 200 300", device)
+        wait(1)
+        if not _tap_login_button(device):
+            # Last-resort: blind tap using coordinates derived from artifact
+            # analysis (Forgot ~y=417; Login button typically ~80px below).
+            log.warning("Login button still not found — tapping (160,500) as blind fallback.")
+            tap(160, 500, device)
+
+    # Poll for the home screen — accept either "visits" tab text OR
+    # "overview" (Maestro's known post-login marker is "overview of your visits").
+    for i in range(30):
         wait(1)
         adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
         time.sleep(0.3)
         raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
-        if raw_xml and "visits" in raw_xml.lower():
-            log.info("perform_login: visits_home detected after %ds", i + 1)
-            return
-        if i in (4, 9, 14, 19):
+        if raw_xml:
+            xml_lo = raw_xml.lower()
+            if "overview" in xml_lo or ("visits" in xml_lo and "welcome back" not in xml_lo):
+                log.info("perform_login: home screen detected after %ds", i + 1)
+                return
+        if i in (4, 9, 14, 19, 24):
             _login_diag(f"poll_{i+1}s", device)
 
-    log.warning("perform_login: visits_home anchor not detected within 25s — login likely failed")
-    _login_diag("poll_25s_final", device)
+    log.warning("perform_login: home screen not detected within 30s — login likely failed")
+    _login_diag("poll_30s_final", device)
 
 
 # ===================================================================
