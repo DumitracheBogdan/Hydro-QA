@@ -44,9 +44,11 @@ LOGIN_PASSWORD = os.environ.get("MAESTRO_APP_PASSWORD", "Adnanbogdan123.!")
 # Screens that require a real device photo to trigger — skip in CI
 CI_SKIP_SCREENS = {"photo_label_dialog"}
 
-# Approximate tap coordinates gathered from QA sessions
-# Physical resolution on the CI emulator is ~1080x2340
-COORDS = {
+# Tap coordinates as FRACTIONS of the screen dimensions (0..1). Original
+# values were captured on a 1080x2340 device; the CI emulator renders at
+# 320x640. Storing fractions keeps these reusable across resolutions.
+_REF_W, _REF_H = 1080, 2340
+_COORDS_PX = {
     "bottom_visits":              (127, 2221),
     "bottom_history":             (403, 2221),
     "bottom_activity":            (678, 2221),
@@ -57,7 +59,6 @@ COORDS = {
     "tab_attachments":            (900, 857),
     "back_button":                (75,  221),
     "change_password":            (540, 1204),
-    # New fallback coords for expanded screens
     "forgot_password_link":       (540, 1150),
     "visit_details_accordion":    (540, 990),
     "client_signature_accordion": (540, 1080),
@@ -67,6 +68,36 @@ COORDS = {
     "fab_button":                 (960, 2120),
     "actions_accordion":          (540, 1200),
 }
+COORDS_FRAC = {k: (x / _REF_W, y / _REF_H) for k, (x, y) in _COORDS_PX.items()}
+
+_SCREEN_SIZE_CACHE: dict[str, tuple[int, int]] = {}
+
+def get_screen_size(device: str) -> tuple[int, int]:
+    if device in _SCREEN_SIZE_CACHE:
+        return _SCREEN_SIZE_CACHE[device]
+    out = adb("shell wm size", device) or ""
+    # Example output: "Physical size: 320x640" or "Override size: 320x640"
+    w, h = _REF_W, _REF_H
+    for line in out.splitlines():
+        if "size:" in line.lower():
+            try:
+                dims = line.split(":")[-1].strip()
+                w_s, h_s = dims.split("x")
+                w, h = int(w_s), int(h_s)
+            except Exception:
+                continue
+    _SCREEN_SIZE_CACHE[device] = (w, h)
+    log.info("Detected screen size for %s: %dx%d", device, w, h)
+    return w, h
+
+class _CoordsView:
+    """Dict-like view that returns pixel coords scaled to the live device."""
+    def __getitem__(self, key: str) -> tuple[int, int]:
+        fx, fy = COORDS_FRAC[key]
+        w, h = get_screen_size(DEFAULT_DEVICE)
+        return (int(fx * w), int(fy * h))
+
+COORDS = _CoordsView()
 
 # Ordered traversal of all 24 scannable screens.
 # Grouped into phases; order is critical for correct navigation state.
