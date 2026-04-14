@@ -385,6 +385,86 @@
           "class": "android.widget.ImageButton",
           "type": "fab",
           "clickable": true
+        },
+        {
+          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Location",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "BD",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Bogdan Dumitrache",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Booking Person",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Inspections (0)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Attachments (0)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Purchase Ord.",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "83254454965",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "HYDBH",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "No description available.",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Visit Details",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "content_desc": "Client Signature",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "content_desc": "Quick actions",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "content_desc": "Back",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "[qa]testing visit",
+          "class": "android.widget.TextView",
+          "clickable": false
         }
       ]
     },
@@ -415,6 +495,101 @@
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
+        },
+        {
+          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Location",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "BD",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Bogdan Dumitrache",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Booking Person",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Visit Details",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Inspections (0)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Attachments (0)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Purchase Ord.",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "83254454965",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Site Code",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "HYDBH",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "No description available.",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Visit Details",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "Description & Reference",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Enter description & reference....",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Quick actions",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "content_desc": "Back",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "[qa]testing visit",
+          "class": "android.widget.TextView",
+          "clickable": false
         }
       ]
     },
