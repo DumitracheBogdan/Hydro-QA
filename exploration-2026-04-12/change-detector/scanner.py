@@ -175,6 +175,7 @@ DYNAMIC_TEXT_PATTERNS = [
     re.compile(r"\d{1,2}:\d{2}"),                    # 07:00
     re.compile(r"#[A-Z]+\d+"),                       # #VN011710
     re.compile(r"[A-Z ]+\s*\(\d+\)"),                # INSPECTIONS (4)
+    re.compile(r"\d{7,}"),                           # Purchase Order / phone numbers (7+ digits)
 ]
 
 
