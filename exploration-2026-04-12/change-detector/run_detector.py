@@ -169,6 +169,26 @@ def main():
     print(f"{_GREEN}{_BOLD}Done.{_RESET} Report: {report_path}")
     print()
 
+    # ------------------------------------------------------------------
+    # Optional CI gate (feature-flagged, OFF by default)
+    # ------------------------------------------------------------------
+    # When FAIL_ON_NEW_ELEMENTS=1 is set, exit non-zero if any screen has
+    # new_element_count > 0. Off by default so in-progress navigation work
+    # on other branches isn't blocked by noisy diffs.
+    if os.environ.get("FAIL_ON_NEW_ELEMENTS") == "1":
+        screens = wrapped_results.get("screens", {})
+        offending = [
+            s for s, info in screens.items()
+            if info.get("new_element_count", 0) > 0
+        ]
+        if offending:
+            print(
+                f"{_RED}{_BOLD}FAIL_ON_NEW_ELEMENTS=1:{_RESET} "
+                f"{len(offending)} screen(s) with new elements: "
+                f"{', '.join(offending)}"
+            )
+            sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
