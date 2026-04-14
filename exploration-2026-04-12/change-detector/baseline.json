@@ -128,7 +128,7 @@
           "clickable": false
         },
         {
-          "text": "Type to search...",
+          "text": "Type to search…",
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
@@ -186,6 +186,91 @@
           "class": "android.widget.TextView",
           "type": "tab",
           "clickable": true
+        },
+        {
+          "content_desc": "Search",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "Type to search…",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Tomorrow's visits",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "QA test",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Status icon",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "text": "Upcoming",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "07:00 -> 09:30",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "15.04.2026",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "#VN011710",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "BD",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Bogdan Dumitrache",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Booking Person",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Inspections",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "text": "INSPECTIONS (4)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Welcome, Bogdan!",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Here's an overview of your visits.",
+          "class": "android.widget.TextView",
+          "clickable": false
         }
       ]
     },
