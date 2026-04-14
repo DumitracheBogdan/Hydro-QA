@@ -516,15 +516,22 @@ def _current_screen_marker(device: str) -> str:
     time.sleep(0.2)
     raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
     lo = raw.lower()
-    # Order matters — visit_detail's "Visit Details" tab is the strongest signal
-    if "inspections (" in lo or "attachments (" in lo:
-        return "visit_detail"
-    if "welcome, bogdan" in lo or "overview of your visits" in lo:
+    # Order matters. Home-level tab markers first: visits_home & history_tab
+    # BOTH show "INSPECTIONS (N)" on visit cards, so that substring is
+    # NOT a reliable visit_detail marker. Use screen-specific unique text:
+    #   - visits_home : "welcome, bogdan" or "overview of your visits"
+    #   - history_tab : "view visit details" AND not on visits_home
+    #   - visit_detail: "attachments (" (only the detail screen's tab row)
+    #                   combined with no "welcome" / "overview" text.
+    is_home = "welcome, bogdan" in lo or "overview of your visits" in lo
+    if is_home:
         return "visits_home"
-    if "view visit details" in lo:
-        return "history_tab"
-    if "email" in lo and "password" in lo and "login" in lo:
+    if "email" in lo and "password" in lo and "forgot" in lo:
         return "login"
+    if "attachments (" in lo and "visit details" in lo:
+        return "visit_detail"
+    if "view visit details" in lo and "history" in lo:
+        return "history_tab"
     return "unknown"
 
 
@@ -535,26 +542,21 @@ def _ensure_visit_detail(device: str, prefer: str = "history") -> None:
                         signature_dialog / visit_detail / accordion).
     prefer="visits_home" -> opens QA test visit (has action items — required
                             for priority_picker and delete_dialog).
-    Always force-enters by first backing out to bottom-nav root, so we
-    never inherit an expanded accordion from a previous screen.
+
+    Always relaunches from a bottom-nav root via adb `am start`, which is
+    safer than press_back (which can exit the app from a root screen).
     """
-    # Force a clean reset: press back until we are on a bottom-nav root,
-    # then re-enter through the chosen tab. This avoids inheriting
-    # an expanded Visit Details / Client Signature accordion from the
-    # previous screen.
-    for _ in range(3):
-        marker = _current_screen_marker(device)
-        if marker in ("visits_home", "history_tab", "login"):
-            break
-        press_back(device)
-        wait(0.6)
-        # If an unsaved-data dialog pops, confirm "Go back" to leave the visit
-        find_and_tap("Go back", device, retries=1)
-        wait(0.3)
     marker = _current_screen_marker(device)
+    if marker == "unknown":
+        # We may be outside HydroCert (e.g. Android home). Relaunch cleanly.
+        log.info("_ensure_visit_detail: unknown state, relaunching app")
+        adb(f"shell am start -n {MAIN_ACTIVITY}", device)
+        wait(3)
+        marker = _current_screen_marker(device)
     if marker == "login":
         perform_login(device)
         wait(2)
+        marker = _current_screen_marker(device)
 
     if prefer == "visits_home":
         # QA test visit on Visits Home. Scroll to find "View Visit Details".
