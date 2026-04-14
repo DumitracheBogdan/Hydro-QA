@@ -539,6 +539,72 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _navigate_to_signature_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
+    """
+    Open the Client Signature dialog from an arbitrary post-login state.
+
+    Full chain in isolation (does NOT rely on previous screen's cleanup):
+      1. Go to History tab (has clickable visit cards) and tap
+         "View Visit Details" to open a visit detail screen.
+      2. Expand the Client Signature accordion.
+      3. Scroll-until-visible loop (up to 5 swipes): try to tap the
+         "Tap to sign" canvas; if not found, swipe up and retry.
+      4. Wait for the signature dialog canvas to open.
+
+    Mirrors the Maestro pattern from mobile-flows-v2/16_visit_detail_signature.yaml
+    (scrollUntilVisible element "Tap to sign.*").
+    """
+    # Make sure no soft keyboard is eating the lower half of the screen
+    # (previous-screen carryover can leave IME up — seen in CI dumps).
+    hide_keyboard(device)
+    wait(0.5)
+
+    # --- Step 1: History tab -> View Visit Details ----------------
+    tap(*COORDS["bottom_history"], device)
+    wait(2)
+    if not find_and_tap("View Visit Details", device):
+        # Fallback: center tap on a visit card area
+        w, h = get_screen_size(device)
+        tap(w // 2, int(h * 0.55), device)
+    wait(2.5)
+
+    # --- Step 2: Expand Client Signature accordion ----------------
+    if not find_and_tap("Client Signature", device):
+        tap(*COORDS["client_signature_accordion"], device)
+    wait(1.5)
+
+    # --- Step 3: Scroll-until-visible loop for "Tap to sign" ------
+    w, h = get_screen_size(device)
+    # Swipe upward (content moves up) — scaled to live screen.
+    swipe_from_y = int(h * 0.75)
+    swipe_to_y = int(h * 0.30)
+    swipe_x = w // 2
+    tapped = False
+    for i in range(5):
+        if find_and_tap("Tap to sign", device, retries=1):
+            tapped = True
+            break
+        log.info(
+            "_navigate_to_signature_dialog_v2: 'Tap to sign' not visible, "
+            "swipe attempt %d/5", i + 1,
+        )
+        adb(
+            f"shell input swipe {swipe_x} {swipe_from_y} {swipe_x} {swipe_to_y} 400",
+            device,
+        )
+        wait(0.8)
+
+    if not tapped:
+        # Last-ditch: coordinate fallback.
+        log.warning(
+            "_navigate_to_signature_dialog_v2: falling back to COORDS['tap_to_sign']"
+        )
+        tap(*COORDS["tap_to_sign"], device)
+
+    # --- Step 4: Wait for signature dialog canvas to open ---------
+    wait(2)
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -602,15 +668,8 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(2)
 
     elif screen_id == "signature_dialog":
-        # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
-        # Expand the Client Signature accordion, then tap the signature canvas.
-        if not find_and_tap("Client Signature", device):
-            tap(*COORDS["client_signature_accordion"], device)
-        wait(1.5)
-        if not find_and_tap("Tap to sign", device):
-            if not find_and_tap("sign", device):
-                tap(*COORDS["tap_to_sign"], device)
-        wait(2)
+        _navigate_to_signature_dialog_v2(device)
+        return
 
     elif screen_id == "priority_picker":
         # Assumes we are on visit_detail.
