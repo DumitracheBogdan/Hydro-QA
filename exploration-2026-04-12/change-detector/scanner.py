@@ -543,9 +543,22 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         # Assumes we are on visits_home
         tap(*COORDS["bottom_visits"], device)
         wait(2)
+        # Try multiple strategies to open a visit card
         if not find_and_tap("View Visit Details", device):
-            tap(*COORDS["view_visit_details"], device)
-        wait(2)
+            if not find_and_tap("View Visit", device):
+                if not find_and_tap("#VN", device):
+                    if not find_and_tap("QA test", device):
+                        tap(*COORDS["view_visit_details"], device)
+        wait(2.5)
+        # Verify we landed on visit_detail (has "Visit Details" tab text)
+        # If still on visits_home, try one more tap at the card area.
+        raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+        raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+        if "Tomorrow's visits" in raw or "Welcome, Bogdan" in raw:
+            log.warning("visit_detail: still on visits_home, retrying with center tap")
+            w, h = get_screen_size(device)
+            tap(w // 2, int(h * 0.55), device)
+            wait(2)
 
     elif screen_id == "visit_detail_accordion":
         # Assumes we are on visit_detail.
