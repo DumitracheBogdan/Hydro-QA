@@ -554,12 +554,20 @@ def _navigate_to_signature_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     Mirrors the Maestro pattern from mobile-flows-v2/16_visit_detail_signature.yaml
     (scrollUntilVisible element "Tap to sign.*").
     """
-    # Make sure no soft keyboard is eating the lower half of the screen
-    # (previous-screen carryover can leave IME up — seen in CI dumps).
-    hide_keyboard(device)
-    wait(0.5)
+    # Dismiss any soft keyboard that may have been carried over from the
+    # previous screen's scan. Uses IME-close ADB (does NOT press BACK — a
+    # BACK on visits_home/login would navigate away or trigger logout).
+    adb("shell input keyevent 111", device)  # KEYCODE_ESCAPE (best-effort)
+    time.sleep(0.3)
 
     # --- Step 1: History tab -> View Visit Details ----------------
+    # Re-login if the previous cleanup dumped us to login (defensive).
+    raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+    if "Welcome back!" in raw or "Forgot your password?" in raw:
+        log.info("_navigate_to_signature_dialog_v2: on login — performing login")
+        perform_login(device)
+
     tap(*COORDS["bottom_history"], device)
     wait(2)
     if not find_and_tap("View Visit Details", device):
