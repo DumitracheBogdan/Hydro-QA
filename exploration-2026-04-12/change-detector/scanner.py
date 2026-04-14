@@ -1097,6 +1097,13 @@ def scan_all_screens(
     screens = QUICK_SCREENS if quick else ALL_SCREENS
     results: dict[str, list[dict]] = {}
 
+    # Disable autofill service to prevent it from interfering with form-filling.
+    # After a successful login, Android autofill saves credentials and on subsequent
+    # runs shows a dropdown that disrupts the TAB-key focus flow.
+    log.info("Disabling autofill service to prevent form-fill interference...")
+    adb("shell settings put secure autofill_service null", device)
+    wait(0.5)
+
     for screen_id in screens:
         # Skip screens that need real device hardware in CI
         if is_ci and screen_id in CI_SKIP_SCREENS:
