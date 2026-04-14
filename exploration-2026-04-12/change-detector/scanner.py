@@ -546,11 +546,27 @@ def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     Root cause of the old nav: cleanup from priority_picker left us on the
     "[qa]testing visit" (a History visit with no action items), so expanding
     Actions showed "No actions available." and the Delete icon was absent.
+    Additionally, the upstream priority_picker nav is currently cascading
+    through the login screen in CI, so we may arrive here unauthenticated.
 
-    Strategy: hop back to visits_home (bottom-nav "Visits" tab always works
-    from any main screen), open the seeded "QA test" visit card (which has
-    a Low-priority action item), expand Actions, then tap the Delete icon.
+    Strategy:
+      0. If we've cascaded to the login screen, re-authenticate.
+      1. Hop back to visits_home via the bottom-nav "Visits" tab.
+      2. Open the seeded "QA test" visit card (the only seeded visit with
+         action items — History seed has "No actions available.").
+      3. Expand the Actions accordion.
+      4. Tap the Delete action icon to open the confirm dialog.
     """
+    # 0. Detect cascade-to-login (priority_picker currently lands on login
+    #    per the 2026-04-14 qa-check artifacts) and re-authenticate so the
+    #    rest of this helper actually runs in the app.
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw_xml = (adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or "").lower()
+    if "welcome back" in raw_xml or "forgot your password" in raw_xml:
+        log.warning("delete_dialog_v2: detected login screen — re-authenticating")
+        perform_login(device)
+
     # 1. Navigate to visits_home via bottom nav.
     tap(*COORDS["bottom_visits"], device)
     wait(2)
