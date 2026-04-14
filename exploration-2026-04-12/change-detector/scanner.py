@@ -539,12 +539,13 @@ def _ensure_visit_detail(device: str, prefer: str = "history") -> None:
     """
     Idempotent: navigate to visit_detail via the chosen entry.
     prefer="history" -> opens [qa]testing visit (no action items, safe for
-                        signature_dialog / visit_detail / accordion).
+                        visit_detail / visit_detail_accordion / signature_dialog).
     prefer="visits_home" -> opens QA test visit (has action items — required
                             for priority_picker and delete_dialog).
 
-    Always relaunches from a bottom-nav root via adb `am start`, which is
-    safer than press_back (which can exit the app from a root screen).
+    Strategy: if we are already on visit_detail, press_back exactly once to
+    return to the owning root tab. Bottom-nav is not visible on visit_detail
+    so we can't tap the target tab from there. Then tap the target tab.
     """
     marker = _current_screen_marker(device)
     if marker == "unknown":
@@ -557,14 +558,20 @@ def _ensure_visit_detail(device: str, prefer: str = "history") -> None:
         perform_login(device)
         wait(2)
         marker = _current_screen_marker(device)
+    if marker == "visit_detail":
+        # Bottom-nav is hidden on visit_detail; back out once so we see the
+        # nav bar. Could pop an unsaved-data dialog — dismiss with "Go back".
+        press_back(device)
+        wait(1)
+        find_and_tap("Go back", device, retries=1)
+        wait(0.5)
 
     if prefer == "visits_home":
         # QA test visit on Visits Home. Scroll to find "View Visit Details".
         tap(*COORDS["bottom_visits"], device)
         wait(2)
         if not find_and_tap("View Visit Details", device):
-            # Scroll the card into view then retry.
-            for _ in range(3):
+            for _ in range(4):
                 scroll_down(device)
                 if find_and_tap("View Visit Details", device):
                     break
