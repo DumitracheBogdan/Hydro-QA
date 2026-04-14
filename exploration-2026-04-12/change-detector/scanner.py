@@ -539,6 +539,70 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _navigate_to_priority_picker_v2(device: str = DEFAULT_DEVICE) -> None:
+    """
+    Navigate to the priority picker sheet. Starting state is
+    visit_detail of '[qa]testing visit' (left there by signature_dialog
+    cleanup) — that visit has no action items so we must go back to
+    visits_home and open the 'QA test' card which has seeded actions.
+
+    Strategy:
+      1. Tap bottom_visits tab -> visits_home.
+      2. Open the QA test card via find_and_tap("QA test"); fall back to
+         approximate card-area coordinates if the text isn't tappable at
+         the emulator's 320x640 resolution.
+      3. Expand the Actions accordion.
+      4. Tap a priority badge (Low / Medium / High).
+    """
+    # Step 1: go to visits_home
+    tap(*COORDS["bottom_visits"], device)
+    wait(2)
+
+    # Verify we're on visits_home; a short swipe can also force cards to render
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=5) or ""
+    if "Tomorrow's visits" not in raw and "Welcome, Bogdan" not in raw:
+        # One more tap on bottom_visits in case the first one missed
+        tap(*COORDS["bottom_visits"], device)
+        wait(1.5)
+
+    # Small scroll nudge to ensure the QA test card is rendered (some Compose
+    # lists lazy-render until first interaction on 320x640).
+    w, h = get_screen_size(device)
+    adb(f"shell input swipe {w // 2} {int(h * 0.6)} {w // 2} {int(h * 0.55)} 300", device)
+    wait(1)
+
+    # Step 2: open the QA test visit. Prefer the textual match; if that fails,
+    # tap the approximate first-card area.
+    if not find_and_tap("QA test", device):
+        # Card-area fallback: first visit card sits roughly in the upper-
+        # middle of visits_home below the header. Use a point inside the
+        # card body rather than the edge.
+        tap(w // 2, int(h * 0.45), device)
+    wait(2.5)
+
+    # Confirm we landed on visit_detail of QA test (VN011710 from baseline).
+    raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+    if "Tomorrow's visits" in raw or "Welcome, Bogdan" in raw:
+        # Still on visits_home — try a coord-based card tap.
+        log.warning("priority_picker: still on visits_home after QA test tap; retrying")
+        tap(w // 2, int(h * 0.42), device)
+        wait(2.5)
+
+    # Step 3: expand the Actions accordion
+    if not find_and_tap("Actions", device):
+        tap(*COORDS["actions_accordion"], device)
+    wait(1.5)
+
+    # Step 4: tap a priority badge. The seeded action item's badge text may
+    # be Low, Medium, or High depending on test data — try each.
+    if not find_and_tap("Low", device):
+        if not find_and_tap("Medium", device):
+            if not find_and_tap("High", device):
+                tap(*COORDS["priority_badge"], device)
+    wait(1.5)
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -613,11 +677,13 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(2)
 
     elif screen_id == "priority_picker":
-        # Assumes we are on visit_detail.
-        # Tap a priority badge — "Low" is the default for the seeded action item.
-        if not find_and_tap("Low", device):
-            tap(*COORDS["priority_badge"], device)
-        wait(1.5)
+        # Previous state (after signature_dialog cleanup) is visit_detail of the
+        # '[qa]testing visit' from History, which has no action items, so no
+        # Low/Medium/High badge exists. Navigate to visits_home, open the
+        # 'QA test' card (which has seeded action items), expand Actions, then
+        # tap a priority badge.
+        _navigate_to_priority_picker_v2(device)
+        return
 
     elif screen_id == "delete_dialog":
         # Assumes we are on visit_detail.
