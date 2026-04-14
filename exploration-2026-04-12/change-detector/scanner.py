@@ -694,9 +694,7 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
             tap(540, 900, device)
         wait(0.5)
         input_text("qa.invalid.detector@nonexistent-domain.com", device)
-        if not find_and_tap_nth("Password", n=1, device=device):
-            if not find_and_tap("Password", device):
-                tap(540, 1050, device)
+        adb("shell input keyevent 61", device)  # TAB to password field
         wait(0.5)
         input_text("WrongPassword123!", device)
         hide_keyboard(device)
@@ -1044,12 +1042,10 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     wait(0.5)
     input_text(email, device)
 
-    # Use nth=1 to skip the "Show password" toggle and hit the Password EditText.
-    # find_and_tap("Password") would match "Show password" first (same substring).
-    if not find_and_tap_nth("Password", n=1, device=device):
-        if not find_and_tap("Password", device):
-            log.info("Tapping approximate password field location.")
-            tap(540, 1050, device)
+    # TAB to move focus to the password field.
+    # find_and_tap("Password") is unreliable on Compose — it can match the
+    # "Show password" toggle or a label node without transferring focus.
+    adb("shell input keyevent 61", device)  # TAB key
     wait(0.5)
     input_text(password, device)
 
