@@ -857,11 +857,9 @@ def cleanup_after_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(1)
 
     elif screen_id == "login_error_state":
-        # Clear the error state — force-stop and relaunch for clean login
+        # Just force-stop — perform_login() (visits_home) handles the full restart
         adb(f"shell am force-stop {PACKAGE}", device)
-        wait(1)
-        adb(f"shell am start -n {MAIN_ACTIVITY}", device)
-        wait(3)
+        wait(2)
 
     # Most screens (visits_home, visit_detail, tabs) need no cleanup
 
@@ -1060,6 +1058,7 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
                 tap(540, 1300, device)
     wait(5)
 
+    wait(2)  # Extra wait for home screen to fully settle
     log.info("Login sequence complete — waiting for home screen.")
 
 
@@ -1113,8 +1112,9 @@ def scan_all_screens(
         try:
             if screen_id == "visits_home":
                 # Special case: perform_login() transitions us from login screen
-                # (forgot_password cleanup left us on login) to visits_home.
+                # (login_error_state cleanup left app stopped) to visits_home.
                 perform_login(device)
+                wait(3)  # Extra wait for home screen to fully load after login
             else:
                 navigate_to_screen(screen_id, device)
         except Exception as exc:
