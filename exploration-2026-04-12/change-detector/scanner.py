@@ -684,7 +684,8 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(2)
 
     elif screen_id == "login_error_state":
-        # Force-stop, relaunch, enter wrong credentials
+        # Force-stop, relaunch, enter a non-existent email to trigger the error.
+        # Using a fake email avoids any risk of account-level rate limiting on the real account.
         adb(f"shell am force-stop {PACKAGE}", device)
         wait(1)
         adb(f"shell am start -n {MAIN_ACTIVITY}", device)
@@ -692,9 +693,10 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         if not find_and_tap("Email", device):
             tap(540, 900, device)
         wait(0.5)
-        input_text(os.environ.get("MAESTRO_APP_EMAIL", LOGIN_EMAIL), device)
-        if not find_and_tap("Password", device):
-            tap(540, 1050, device)
+        input_text("qa.invalid.detector@nonexistent-domain.com", device)
+        if not find_and_tap_nth("Password", n=1, device=device):
+            if not find_and_tap("Password", device):
+                tap(540, 1050, device)
         wait(0.5)
         input_text("WrongPassword123!", device)
         hide_keyboard(device)
@@ -702,7 +704,7 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         if not find_and_tap("Login", device):
             if not find_and_tap("LOG IN", device):
                 tap(540, 1300, device)
-        wait(3)
+        wait(4)
 
     else:
         log.warning("Unknown screen_id: %s", screen_id)
@@ -1042,9 +1044,12 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     wait(0.5)
     input_text(email, device)
 
-    if not find_and_tap("Password", device):
-        log.info("Tapping approximate password field location.")
-        tap(540, 1050, device)
+    # Use nth=1 to skip the "Show password" toggle and hit the Password EditText.
+    # find_and_tap("Password") would match "Show password" first (same substring).
+    if not find_and_tap_nth("Password", n=1, device=device):
+        if not find_and_tap("Password", device):
+            log.info("Tapping approximate password field location.")
+            tap(540, 1050, device)
     wait(0.5)
     input_text(password, device)
 
@@ -1056,9 +1061,8 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
             if not find_and_tap("Sign in", device):
                 log.warning("Could not find login button — tapping fallback.")
                 tap(540, 1300, device)
-    wait(5)
+    wait(7)  # Wait for login API + home screen to fully load
 
-    wait(2)  # Extra wait for home screen to fully settle
     log.info("Login sequence complete — waiting for home screen.")
 
 
