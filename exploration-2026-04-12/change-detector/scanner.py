@@ -1024,6 +1024,27 @@ def take_screenshot(name: str, device: str = DEFAULT_DEVICE) -> Path | None:
 # Login sequence
 # ===================================================================
 
+def _login_diag(label: str, device: str) -> None:
+    """Dump UI and log a one-line summary to diagnose perform_login failures."""
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+    if not raw_xml:
+        log.info("login_diag[%s]: empty dump", label)
+        return
+    xml_lo = raw_xml.lower()
+    tags = {
+        "Email": "email" in xml_lo,
+        "Password": "password" in xml_lo,
+        "Login_btn": 'text="login"' in xml_lo or 'text="log in"' in xml_lo,
+        "Visits": "visits" in xml_lo,
+        "dots": "\u2022" in raw_xml or "&#x2022;" in raw_xml,
+        "Invalid": "invalid" in xml_lo,
+    }
+    summary = "  ".join(f"{k}={'Y' if v else 'N'}" for k, v in tags.items())
+    log.info("login_diag[%s]: %s", label, summary)
+
+
 def perform_login(device: str = DEFAULT_DEVICE) -> None:
     """Launch the app, enter credentials, and tap Login."""
     log.info("Starting login sequence...")
@@ -1041,6 +1062,7 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
         tap(540, 900, device)
     wait(0.5)
     input_text(email, device)
+    _login_diag("after_email", device)  # should show Email=Y, dots=N
 
     # TAB to move focus to the password field.
     # find_and_tap("Password") is unreliable on Compose — it can match the
@@ -1048,6 +1070,7 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
     adb("shell input keyevent 61", device)  # TAB key
     wait(0.5)
     input_text(password, device)
+    _login_diag("after_password", device)  # should show dots=Y (masked password)
 
     hide_keyboard(device)
     wait(0.5)
@@ -1057,9 +1080,22 @@ def perform_login(device: str = DEFAULT_DEVICE) -> None:
             if not find_and_tap("Sign in", device):
                 log.warning("Could not find login button — tapping fallback.")
                 tap(540, 1300, device)
-    wait(7)  # Wait for login API + home screen to fully load
 
-    log.info("Login sequence complete — waiting for home screen.")
+    # Poll for the home screen anchor up to 25s instead of a fixed wait.
+    # This handles slow CI emulator cold-starts and gives us diagnostic data.
+    for i in range(25):
+        wait(1)
+        adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+        time.sleep(0.3)
+        raw_xml = adb("shell cat /sdcard/window_dump.xml", device, timeout=10)
+        if raw_xml and "visits" in raw_xml.lower():
+            log.info("perform_login: visits_home detected after %ds", i + 1)
+            return
+        if i in (4, 9, 14, 19):
+            _login_diag(f"poll_{i+1}s", device)
+
+    log.warning("perform_login: visits_home anchor not detected within 25s — login likely failed")
+    _login_diag("poll_25s_final", device)
 
 
 # ===================================================================
@@ -1120,8 +1156,8 @@ def scan_all_screens(
             if screen_id == "visits_home":
                 # Special case: perform_login() transitions us from login screen
                 # (login_error_state cleanup left app stopped) to visits_home.
+                # perform_login() now polls for the visits_home anchor internally.
                 perform_login(device)
-                wait(3)  # Extra wait for home screen to fully load after login
             else:
                 navigate_to_screen(screen_id, device)
         except Exception as exc:
