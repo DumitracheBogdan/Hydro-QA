@@ -571,6 +571,59 @@ def _navigate_to_accordion_v2(device: str = DEFAULT_DEVICE) -> None:
     wait(2)
 
 
+def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
+    """
+    Navigate to the Delete-action confirmation dialog.
+
+    Root cause of the old nav: cleanup from priority_picker left us on the
+    "[qa]testing visit" (a History visit with no action items), so expanding
+    Actions showed "No actions available." and the Delete icon was absent.
+    Additionally, the upstream priority_picker nav is currently cascading
+    through the login screen in CI, so we may arrive here unauthenticated.
+
+    Strategy:
+      0. If we've cascaded to the login screen, re-authenticate.
+      1. Hop back to visits_home via the bottom-nav "Visits" tab.
+      2. Open the seeded "QA test" visit card (the only seeded visit with
+         action items — History seed has "No actions available.").
+      3. Expand the Actions accordion.
+      4. Tap the Delete action icon to open the confirm dialog.
+    """
+    # 0. Detect cascade-to-login (priority_picker currently lands on login
+    #    per the 2026-04-14 qa-check artifacts) and re-authenticate so the
+    #    rest of this helper actually runs in the app.
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    raw_xml = (adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or "").lower()
+    if "welcome back" in raw_xml or "forgot your password" in raw_xml:
+        log.warning("delete_dialog_v2: detected login screen — re-authenticating")
+        perform_login(device)
+
+    # 1. Navigate to visits_home via bottom nav.
+    tap(*COORDS["bottom_visits"], device)
+    wait(2)
+
+    # 2. Open the QA test visit card.
+    #    "QA test" text is exposed in the uiautomator dump on 320x640; fall
+    #    back to a card-area coord tap if the text match misses.
+    if not find_and_tap("QA test", device):
+        log.warning("delete_dialog_v2: 'QA test' not found, falling back to card coord tap")
+        w, h = get_screen_size(device)
+        # Card body sits roughly mid-screen on visits_home.
+        tap(w // 2, int(h * 0.55), device)
+    wait(2.5)
+
+    # 3. Expand the Actions accordion.
+    if not find_and_tap("Actions", device):
+        tap(*COORDS["actions_accordion"], device)
+    wait(1.5)
+
+    # 4. Tap the Delete action icon (auto-scaled via _CoordsView fallback).
+    if not find_and_tap("Delete action", device):
+        tap(*COORDS["delete_action_icon"], device)
+    wait(2)
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -633,14 +686,8 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         wait(1.5)
 
     elif screen_id == "delete_dialog":
-        # Assumes we are on visit_detail.
-        # Expand the Actions accordion, then tap the Delete action icon.
-        if not find_and_tap("Actions", device):
-            tap(*COORDS["actions_accordion"], device)
-        wait(1.5)
-        if not find_and_tap("Delete action", device):
-            tap(*COORDS["delete_action_icon"], device)
-        wait(1.5)
+        _navigate_to_delete_dialog_v2(device)
+        return
 
     elif screen_id == "unsaved_data_dialog":
         # Assumes we are on visit_detail (after delete_dialog cleanup / Cancel).
