@@ -539,6 +539,35 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _navigate_to_visit_detail_v2(device: str = DEFAULT_DEVICE) -> None:
+    """
+    Open a visit card via the History tab, where the Compose "View Visit
+    Details" card IS exposed to uiautomator (unlike the visits_home Today
+    list, which renders the card without a tappable uiautomator node).
+
+    Assumes we are on visits_home (cleanup_after_screen(visits_home) is a
+    no-op, so we arrive here right after the visits_home scan).
+    """
+    # 1. Navigate to History tab via bottom-nav coord (auto-scaled).
+    tap(*COORDS["bottom_history"], device)
+    wait(2)
+
+    # 2. Tap the "View Visit Details" label on the testing-visit card.
+    find_and_tap("View Visit Details", device)
+    wait(2.5)
+
+    # 3. Verify we landed on visit_detail by checking for anchor labels.
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+    if "Visit Details" in raw and "Attachments" in raw:
+        log.info("_navigate_to_visit_detail_v2: landed on visit_detail")
+    else:
+        log.warning(
+            "_navigate_to_visit_detail_v2: anchors not found after tap "
+            "(Visit Details / Attachments) — may still be on History"
+        )
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -573,25 +602,8 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         perform_login(device)
 
     elif screen_id == "visit_detail":
-        # Assumes we are on visits_home
-        tap(*COORDS["bottom_visits"], device)
-        wait(2)
-        # Try multiple strategies to open a visit card
-        if not find_and_tap("View Visit Details", device):
-            if not find_and_tap("View Visit", device):
-                if not find_and_tap("#VN", device):
-                    if not find_and_tap("QA test", device):
-                        tap(*COORDS["view_visit_details"], device)
-        wait(2.5)
-        # Verify we landed on visit_detail (has "Visit Details" tab text)
-        # If still on visits_home, try one more tap at the card area.
-        raw = adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
-        raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
-        if "Tomorrow's visits" in raw or "Welcome, Bogdan" in raw:
-            log.warning("visit_detail: still on visits_home, retrying with center tap")
-            w, h = get_screen_size(device)
-            tap(w // 2, int(h * 0.55), device)
-            wait(2)
+        _navigate_to_visit_detail_v2(device)
+        return
 
     elif screen_id == "visit_detail_accordion":
         # Assumes we are on visit_detail.
