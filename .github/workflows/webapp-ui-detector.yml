@@ -1,0 +1,88 @@
+name: UI Change Detector web-app
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "compare = run against baseline; rebuild-baseline = regenerate the committed baseline"
+        type: choice
+        options:
+          - compare
+          - rebuild-baseline
+        default: compare
+      max_pages:
+        description: "Cap on pages crawled (safety net)"
+        type: string
+        default: "80"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: webapp-ui-detector
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: Development
+    env:
+      HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+      WEBAPP_UI_MODE: ${{ inputs.mode }}
+      WEBAPP_UI_MAX_PAGES: ${{ inputs.max_pages }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Excel dependency
+        run: python -m pip install --upgrade pip openpyxl pillow
+
+      - name: Run UI Change Detector web-app
+        run: node scripts/run_webapp_ui_detector.mjs
+
+      - name: Build Excel report
+        if: always()
+        run: |
+          if [[ -f qa-artifacts/webapp-ui-detector/diff.json ]]; then
+            python scripts/generate_webapp_ui_detector_excel.py \
+              --diff-json   qa-artifacts/webapp-ui-detector/diff.json \
+              --screenshots qa-artifacts/webapp-ui-detector \
+              --output      qa-artifacts/webapp-ui-detector/webapp-ui-detector.xlsx
+          else
+            echo "No diff.json (likely rebuild-baseline mode) — skipping Excel."
+          fi
+
+      - name: Publish workflow summary
+        if: always()
+        run: node scripts/webapp-ui-detector/publish-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp-ui-detector-${{ inputs.mode }}-${{ github.run_id }}
+          path: |
+            qa-artifacts/webapp-ui-detector/
+            webapp-baseline/
+          if-no-files-found: warn
+          retention-days: 14

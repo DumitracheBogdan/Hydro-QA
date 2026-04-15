@@ -15,7 +15,8 @@
   "description": "This repository contains the standalone QA tracker app used by QA/Dev teams.",
   "main": "server.js",
   "devDependencies": {
-    "playwright": "^1.58.2"
+    "playwright": "^1.58.2",
+    "sharp": "^0.33.5"
   },
   "repository": {
     "type": "git",
