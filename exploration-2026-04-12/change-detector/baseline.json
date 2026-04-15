@@ -980,6 +980,12 @@
           "text": "Account",
           "class": "android.widget.TextView",
           "clickable": false
+        },
+        {
+          "text": "Type to search\u2026",
+          "class": "android.widget.TextView",
+          "type": "placeholder",
+          "clickable": false
         }
       ]
     },
