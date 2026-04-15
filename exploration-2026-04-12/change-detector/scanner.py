@@ -275,15 +275,24 @@ def scroll_until_text(
     label: str, device: str = DEFAULT_DEVICE, max_scrolls: int = 6
 ) -> bool:
     """
-    Swipe up repeatedly until *label* (case-insensitive substring of text or
-    content-desc) appears in the uiautomator dump. Returns True on first match.
-    Stays put if the text is already visible on entry.
+    Swipe up repeatedly until a node with ``text`` containing *label*
+    (case-insensitive) appears in the uiautomator dump. Content-desc is
+    deliberately NOT matched — the "Quick actions" FAB has desc "Quick
+    actions" which would satisfy a substring match for "Actions" and
+    stop scrolling before the real Actions accordion text is on screen.
     """
     needle = label.lower()
     for i in range(max_scrolls + 1):
         raw = _dump_raw_xml(device)
-        if needle in raw.lower():
-            return True
+        try:
+            root = ET.fromstring(raw.strip())
+        except ET.ParseError:
+            root = None
+        if root is not None:
+            for node in root.iter("node"):
+                txt = (node.attrib.get("text") or "").strip().lower()
+                if txt and needle in txt:
+                    return True
         if i < max_scrolls:
             swipe_up_scaled(device)
     return False
@@ -926,15 +935,15 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         return
 
     elif screen_id == "unsaved_data_dialog":
-        # Re-enter visit_detail deterministically; expand Visit Details
-        # accordion, type in the Description field, press Back to trigger
-        # the unsaved-data dialog.
-        _navigate_to_visit_detail_v2(device)
-        wait(1)
+        # Assumes we are on visit_detail (after delete_dialog cleanup / Cancel).
+        # Expand Visit Details accordion, type in the Description field, press Back.
+        # NOTE: historically this screen scanned clean via a lucky empty-scan
+        # cascade state; the actual dialog trigger is known-fragile and a
+        # proper fix (tap EditText, then type) is deferred to a follow-up
+        # round once PP/DD are stable.
         if not find_and_tap_nth("Visit Details", n=1, device=device):
             tap(*COORDS["visit_details_accordion"], device)
         wait(1.5)
-        # Tap below the label to focus the EditText (API 30 Compose quirk)
         find_and_tap("Description", device)
         wait(0.5)
         input_text("DETECTOR_PROBE", device)
