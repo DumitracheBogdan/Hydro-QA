@@ -44,10 +44,25 @@ fi
 
 echo "=== QA-Check Done ==="
 
-# Feature-flagged CI gate (OFF by default). Only propagate the detector's
-# exit code when FAIL_ON_NEW_ELEMENTS=1 is set; otherwise keep the existing
-# warning-only behavior so in-progress navigation work isn't blocked.
-if [[ "$FAIL_ON_NEW_ELEMENTS" == "1" ]]; then
-  exit "$EXIT_CODE"
+# CI gate (ON by default as of 27/27 detector validation). Fail the build
+# when the detector reports new elements. Set FAIL_ON_NEW_ELEMENTS=0 to
+# temporarily disable while doing exploratory work on new screens.
+if [[ "$FAIL_ON_NEW_ELEMENTS" == "0" ]]; then
+  echo "::warning::CI gate disabled via FAIL_ON_NEW_ELEMENTS=0 — returning success regardless of detector result"
+  exit 0
 fi
-exit 0
+
+# Parse scan_results JSON for total_new_elements; exit 1 if > 0 even if
+# the detector process itself exited 0 (the detector returns 0 on normal
+# completion — we want the gate to key on the result, not the process).
+RESULT_FILE=$(ls -1t "$ARTIFACTS"/scan_results_*.json 2>/dev/null | head -1)
+if [[ -n "$RESULT_FILE" ]]; then
+  TOTAL_NEW=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('summary',{}).get('total_new_elements',0))" "$RESULT_FILE")
+  if [[ "$TOTAL_NEW" -gt 0 ]]; then
+    echo "::error::UI Change Detector found $TOTAL_NEW new element(s) — failing the build."
+    exit 1
+  fi
+  echo "UI Change Detector: 0 new elements — baseline matches."
+fi
+
+exit "$EXIT_CODE"

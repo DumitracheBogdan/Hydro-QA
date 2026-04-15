@@ -170,12 +170,15 @@ INTERACTIVE_CLASSES = {
 # These are whole-string matches only (re.fullmatch). Partial hits like
 # "Updated 07:00 ago" are left untouched so real label text is preserved.
 DYNAMIC_TEXT_PATTERNS = [
-    re.compile(r"\d{2}\.\d{2}\.\d{4}"),              # 15.04.2026
-    re.compile(r"\d{2}:\d{2}\s*->\s*\d{2}:\d{2}"),   # 07:00 -> 09:30
-    re.compile(r"\d{1,2}:\d{2}"),                    # 07:00
-    re.compile(r"#[A-Z]+\d+"),                       # #VN011710
-    re.compile(r"[A-Z ]+\s*\(\d+\)"),                # INSPECTIONS (4)
-    re.compile(r"\d{7,}"),                           # Purchase Order / phone numbers (7+ digits)
+    re.compile(r"\d{2}\.\d{2}\.\d{4}"),                 # 15.04.2026
+    re.compile(r"\d{4}-\d{2}-\d{2}"),                   # 2026-04-15 (ISO)
+    re.compile(r"\d{2}/\d{2}/\d{4}"),                   # 15/04/2026
+    re.compile(r"\d{2}:\d{2}\s*->\s*\d{2}:\d{2}"),      # 07:00 -> 09:30
+    re.compile(r"\d{1,2}:\d{2}(:\d{2})?"),              # 07:00 / 07:00:00
+    re.compile(r"#[A-Z]+\d+"),                          # #VN011710
+    re.compile(r"[A-Za-z ]+\s*\(\d+\)"),                # INSPECTIONS (4) / Inspections (0)
+    re.compile(r"\d{7,}"),                              # Purchase Order / phone numbers (7+ digits)
+    re.compile(r"[+]?\d[\d\s\-]{6,}"),                  # formatted phone numbers (+44 1234 567890)
 ]
 
 
