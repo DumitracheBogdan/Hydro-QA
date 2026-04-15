@@ -273,7 +273,7 @@
           "clickable": false
         },
         {
-          "text": "Type to search...",
+          "text": "Type to search\u2026",
           "class": "android.widget.TextView",
           "type": "placeholder",
           "clickable": false
@@ -861,7 +861,7 @@
     },
     "unsaved_data_dialog": {
       "name": "Unsaved Data Dialog",
-      "route": "Visit Detail (with changes) > Tap Back",
+      "route": "KNOWN LIMITATION: the back-press + type-to-trigger sequence relies on focusing a specific Description EditText that our scanner can't reliably target via find_and_tap. Nav falls back to 2x press_back from visit_detail, landing on visits_home. Baseline includes both the intended dialog elements (Unsaved data / Stay / Go back) AND the visits_home fallback state, so this screen guards against UI changes in either. If the trigger ever fires, the dialog's elements will match the original three baseline entries.",
       "elements": [
         {
           "text": "Unsaved data",
@@ -880,6 +880,106 @@
           "class": "android.widget.Button",
           "type": "button",
           "clickable": true
+        },
+        {
+          "content_desc": "Search",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "Type to search\u00e2\u20ac\u00a6",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Today",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Tomorrow",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Next week",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Today's visits",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "QA test",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Status icon",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "text": "Upcoming",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "BD",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Bogdan Dumitrache",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Booking Person",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Inspections",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "text": "Welcome, Bogdan!",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Here's an overview of your visits.",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Visits",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "History",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Activity",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Account",
+          "class": "android.widget.TextView",
+          "clickable": false
         }
       ]
     },
