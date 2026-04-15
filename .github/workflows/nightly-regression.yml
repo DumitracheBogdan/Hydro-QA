@@ -22,6 +22,11 @@ on:
         required: true
         type: boolean
         default: false
+      run_webapp_ui_tests:
+        description: UI Change Detector web-app
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -63,9 +68,18 @@ jobs:
             MOBILE="true"
           fi
 
+          # Determine if webapp UI detector should run
+          WEB_UI="false"
+          if [[ "${{ github.event.inputs.run_webapp_ui_tests }}" == "true" ]]; then
+            WEB_UI="true"
+          elif [[ "${MODE}" == "full" ]]; then
+            WEB_UI="true"
+          fi
+
           echo "value=${MODE}" >> "$GITHUB_OUTPUT"
           echo "mobile=${MOBILE}" >> "$GITHUB_OUTPUT"
-          echo "Regression mode: ${MODE} | Mobile: ${MOBILE}"
+          echo "webapp_ui=${WEB_UI}" >> "$GITHUB_OUTPUT"
+          echo "Regression mode: ${MODE} | Mobile: ${MOBILE} | WebappUI: ${WEB_UI}"
 
       # ── Checkout ───────────────────────────────────────────────
       - name: Checkout repository
@@ -148,6 +162,31 @@ jobs:
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+
+      # ── UI Change Detector web-app ────────────────────────────
+      - name: Run UI Change Detector web-app
+        if: steps.mode.outputs.webapp_ui == 'true'
+        continue-on-error: true
+        env:
+          WEBAPP_UI_MODE: compare
+          WEBAPP_UI_MAX_PAGES: "80"
+        run: |
+          node scripts/run_webapp_ui_detector.mjs
+          if [[ -f qa-artifacts/webapp-ui-detector/diff.json ]]; then
+            python scripts/generate_webapp_ui_detector_excel.py \
+              --diff-json   qa-artifacts/webapp-ui-detector/diff.json \
+              --screenshots qa-artifacts/webapp-ui-detector \
+              --output      qa-artifacts/webapp-ui-detector/webapp-ui-detector.xlsx
+          fi
+
+      - name: Upload UI Change Detector web-app artifact
+        if: steps.mode.outputs.webapp_ui == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: webapp-ui-detector-${{ github.run_id }}
+          path: qa-artifacts/webapp-ui-detector/
+          if-no-files-found: warn
+          retention-days: 14
 
       # ── Upload artifacts ───────────────────────────────────────
       - name: Upload regression artifacts
