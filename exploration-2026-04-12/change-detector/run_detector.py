@@ -89,6 +89,14 @@ def main():
         default=os.path.join(_SCRIPT_DIR, "reports"),
         help="Output directory for reports (default: ./reports).",
     )
+    parser.add_argument(
+        "--screens",
+        type=str,
+        default=None,
+        help="Comma-separated list of screen IDs to scan (overrides --quick). "
+             "Example: --screens priority_picker,delete_dialog. Requires the "
+             "listed screens' nav helpers to be self-contained from cold start.",
+    )
     args = parser.parse_args()
 
     _print_banner()
@@ -111,7 +119,16 @@ def main():
     # scan_all_screens(device, quick, ci_mode) returns {screen_id: [new_elements]}
     # It loads baseline.json internally via load_baseline().
     ci_mode = args.ci or bool(os.environ.get("GITHUB_ACTIONS"))
-    raw_results = scan_all_screens(quick=args.quick, ci_mode=ci_mode)
+    only_screens: list[str] | None = None
+    if args.screens:
+        only_screens = [s.strip() for s in args.screens.split(",") if s.strip()]
+    # Allow CI to pass a filter via env var without CLI changes.
+    env_filter = os.environ.get("DETECTOR_SCREENS")
+    if only_screens is None and env_filter:
+        only_screens = [s.strip() for s in env_filter.split(",") if s.strip()]
+    raw_results = scan_all_screens(
+        quick=args.quick, ci_mode=ci_mode, only_screens=only_screens
+    )
 
     elapsed_scan = time.time() - t0
     total_new = sum(len(els) for els in raw_results.values())

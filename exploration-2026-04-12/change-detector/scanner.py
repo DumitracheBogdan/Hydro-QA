@@ -759,6 +759,68 @@ def _tap_card_by_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
     return True
 
 
+def long_press(x: int, y: int, device: str = DEFAULT_DEVICE, duration_ms: int = 150) -> None:
+    """
+    Synthesize a press-release at (x, y) over ``duration_ms`` via
+    `input swipe` with identical start/end coords. Compose's
+    `detectTapGestures` sometimes fails to register the ultra-short
+    `input tap` event on cards whose Modifier.clickable doesn't expose
+    a clickable=true semantics node — a longer hold reliably fires the
+    onClick handler.
+    """
+    adb(f"shell input swipe {x} {y} {x} {y} {duration_ms}", device)
+    time.sleep(0.4)
+
+
+def _navigate_to_qa_test_from_home(device: str = DEFAULT_DEVICE) -> bool:
+    """
+    Open the "QA test" visit card on visits_home. This visit (unlike the
+    History `[qa]testing visit`) has action items — required for the
+    priority_picker and delete_dialog screens. The card composable doesn't
+    surface a clickable=true node in uiautomator on 320x640, so we bypass
+    find_and_tap's node matching and press-and-release directly at the
+    card body center.
+    """
+    _ensure_on_visits_home(device)
+    wait(0.5)
+
+    raw = _dump_raw_xml(device)
+    try:
+        root = ET.fromstring(raw.strip())
+    except ET.ParseError:
+        root = None
+
+    # Prefer the exact QA-test text bounds + offset to land inside the card body
+    # (the TextView sits near the top of the card; we want to hit center-card).
+    cx = cy = None
+    if root is not None:
+        for node in root.iter("node"):
+            if (node.attrib.get("text") or "").strip() == "QA test":
+                b = _parse_bounds(node.attrib.get("bounds", ""))
+                if b:
+                    # Card extends ~150px below the text; aim near card middle.
+                    cx = (b[0] + b[2]) // 2
+                    cy = b[3] + 40
+                    break
+
+    if cx is None or cy is None:
+        w, h = get_screen_size(device)
+        cx, cy = int(0.5 * w), int(380 / 640 * h)
+
+    log.info("_navigate_to_qa_test_from_home: long-press at (%d,%d)", cx, cy)
+    long_press(cx, cy, device)
+    wait(2.5)
+
+    raw = _dump_raw_xml(device)
+    if _on_visit_detail(raw):
+        log.info("_navigate_to_qa_test_from_home: landed on visit_detail")
+        _dump_login_state("qa_test_interior", device)
+        return True
+    log.warning("_navigate_to_qa_test_from_home: card long-press did not navigate")
+    _dump_login_state("qa_test_miss", device)
+    return False
+
+
 def _tap_exact_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
     """
     Tap the clickable ancestor of a node whose EXACT text equals ``text``.
@@ -811,13 +873,14 @@ def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate to the Delete-action confirmation dialog.
 
-    Round-3 CI evidence: the Actions accordion is collapsed by default and
-    "Delete action" / "Low" / "Medium" / "High" never appear in any dump
-    without first expanding Actions. Path: enter visit_detail, scroll to
-    Actions header, tap it (exact match — avoid "Quick actions" collision),
-    then scroll to the revealed "Delete action" icon and tap it.
+    Round-5 CI evidence: `[qa]testing visit` from History has no actions
+    ("No actions available."), so the path must open the QA-test visit
+    on visits_home via long-press (Compose card lacks clickable semantics),
+    then scroll → expand Actions → tap Delete action.
     """
-    _navigate_to_visit_detail_v2(device)
+    if not _navigate_to_qa_test_from_home(device):
+        log.warning("delete_dialog: QA-test long-press failed; History fallback has no delete")
+        _navigate_to_visit_detail_v2(device)
     wait(1)
 
     scroll_until_text("Actions", device)
@@ -912,15 +975,15 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         _dump_login_state("signature_dialog_post_tap", device)
 
     elif screen_id == "priority_picker":
-        # Re-enter visit_detail; scroll to the collapsed Actions accordion,
-        # expand it, then scroll to the Low priority badge and tap it.
-        # Round-3 CI proved Actions is collapsed by default and Low never
-        # appears in any dump without first expanding Actions.
-        _navigate_to_visit_detail_v2(device)
+        # The History visit `[qa]testing visit` has no action items
+        # ("No actions available." in round-5 CI dumps) so Low/Medium/High
+        # badges only exist on the QA-test visit from visits_home. Open
+        # that via long-press (Compose card lacks clickable semantics).
+        if not _navigate_to_qa_test_from_home(device):
+            log.warning("priority_picker: QA test card long-press failed; falling back to History visit (no actions)")
+            _navigate_to_visit_detail_v2(device)
         wait(1)
         scroll_until_text("Actions", device)
-        # Exact-text match — "Actions" substring collides with "Quick actions"
-        # FAB content-desc which would tap the wrong element.
         if not _tap_exact_text("Actions", device):
             tap(*COORDS["actions_accordion"], device)
         wait(1.5)
@@ -1678,6 +1741,7 @@ def scan_all_screens(
     device: str = DEFAULT_DEVICE,
     quick: bool = False,
     ci_mode: bool = False,
+    only_screens: list[str] | None = None,
 ) -> dict[str, list[dict]]:
     """
     Main orchestrator.  Logs in, iterates screens, dumps & diffs elements.
@@ -1685,10 +1749,17 @@ def scan_all_screens(
 
     ci_mode=True skips screens in CI_SKIP_SCREENS (e.g. photo_label_dialog).
     CI mode is also auto-detected via GITHUB_ACTIONS env var.
+
+    only_screens: if provided, runs exactly this subset in the listed order
+    (overrides quick/ALL_SCREENS). Use for rapid iteration on failing screens.
     """
     is_ci = ci_mode or bool(os.environ.get("GITHUB_ACTIONS"))
     baseline = load_baseline()
-    screens = QUICK_SCREENS if quick else ALL_SCREENS
+    if only_screens:
+        screens = only_screens
+        log.info("Running filtered scan over %d screen(s): %s", len(screens), screens)
+    else:
+        screens = QUICK_SCREENS if quick else ALL_SCREENS
     results: dict[str, list[dict]] = {}
 
     # Disable autofill service to prevent it from interfering with form-filling.

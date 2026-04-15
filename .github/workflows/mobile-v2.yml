@@ -15,6 +15,10 @@ on:
         description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows. Ignored in qa-check mode."
         type: string
         required: false
+      screens:
+        description: "qa-check only: comma-separated screen IDs (e.g. priority_picker,delete_dialog). Empty = all screens. Skips unrelated screens for fast iteration."
+        type: string
+        required: false
   push:
     branches:
       - fix/maestro-v2
@@ -91,6 +95,7 @@ jobs:
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
           FLOWS_FILTER: ${{ inputs.flows }}
+          DETECTOR_SCREENS: ${{ inputs.screens }}
 
       - name: Upload artifacts
         if: always()
