@@ -773,24 +773,53 @@ def long_press(x: int, y: int, device: str = DEFAULT_DEVICE, duration_ms: int = 
 
 
 def _find_qa_test_card_center(device: str) -> tuple[int, int]:
-    """Best-effort center coords of the QA-test card body on visits_home."""
+    """
+    Center of the QA-test CARD body (not the title TextView). Walks up from
+    the "QA test" text to the ancestor View whose bounds span the full card
+    (the container that holds title + address + time + person + inspections).
+    Returns horizontal screen center + vertical mid of that ancestor.
+    """
     raw = _dump_raw_xml(device)
     try:
         root = ET.fromstring(raw.strip())
     except ET.ParseError:
         root = None
+
+    w, h = get_screen_size(device)
     if root is not None:
+        # Find QA test text bounds first.
+        qa_bounds: tuple[int, int, int, int] | None = None
         for node in root.iter("node"):
             if (node.attrib.get("text") or "").strip() == "QA test":
                 b = _parse_bounds(node.attrib.get("bounds", ""))
                 if b:
-                    cx = (b[0] + b[2]) // 2
-                    # TextView sits near the top of the card; aim ~40px down
-                    # to land mid-card where Compose onClick typically fires.
-                    cy = b[3] + 40
-                    return cx, cy
-    w, h = get_screen_size(device)
-    return int(0.5 * w), int(380 / 640 * h)
+                    qa_bounds = b
+                    break
+        if qa_bounds:
+            tx1, ty1, tx2, ty2 = qa_bounds
+            # Smallest ancestor view whose bounds meaningfully span below the
+            # text (height > 100px) — that's the card container.
+            best: tuple[int, int, int, int] | None = None
+            for node in root.iter("node"):
+                b = _parse_bounds(node.attrib.get("bounds", ""))
+                if not b:
+                    continue
+                x1, y1, x2, y2 = b
+                if (
+                    x1 <= tx1 and y1 <= ty1 and x2 >= tx2 and y2 >= ty2
+                    and (y2 - y1) > 100
+                    and (x2 - x1) > 150
+                ):
+                    if best is None or ((b[2]-b[0])*(b[3]-b[1]) < (best[2]-best[0])*(best[3]-best[1])):
+                        best = b
+            if best:
+                cx = (best[0] + best[2]) // 2
+                cy = (best[1] + best[3]) // 2
+                return cx, cy
+            # No card-sized ancestor found — fall back to screen-x / below-text-y.
+            return w // 2, ty2 + 60
+
+    return int(0.5 * w), int(400 / 640 * h)
 
 
 def _navigate_to_qa_test_from_home(device: str = DEFAULT_DEVICE) -> bool:
@@ -801,13 +830,28 @@ def _navigate_to_qa_test_from_home(device: str = DEFAULT_DEVICE) -> bool:
     so we try a sequence of gesture strategies and verify with _on_visit_detail
     after each.
     """
+    def _search_bar_flow(_cx, _cy):
+        # Tap the search EditText, type "QA", hope for a clickable result row.
+        if not find_and_tap("Type to search", device):
+            # Search box placeholder may differ; try the input class directly.
+            w, _h = get_screen_size(device)
+            tap(w // 2, int(134 / 640 * _h), device)
+        wait(0.8)
+        input_text("QA", device)
+        wait(1.5)
+        hide_keyboard(device)
+        wait(0.5)
+        # Tap the first result row — try exact "QA test" again now that it's
+        # possibly in a different (searchable) list composable.
+        find_and_tap("QA test", device)
+        wait(1.0)
+
     strategies = [
-        # (name, callable). Each must tap/press at (cx, cy) on the card.
         ("plain_tap",          lambda cx, cy: tap(cx, cy, device)),
         ("long_press_150",     lambda cx, cy: long_press(cx, cy, device, duration_ms=150)),
         ("long_press_500",     lambda cx, cy: long_press(cx, cy, device, duration_ms=500)),
-        ("micro_swipe",        lambda cx, cy: (adb(f"shell input swipe {cx} {cy} {cx+1} {cy+1} 80", device), time.sleep(0.4))[-1]),
-        ("card_text_then_tap", lambda cx, cy: (find_and_tap("QA test", device), wait(0.3))[-1]),
+        ("micro_swipe",        lambda cx, cy: adb(f"shell input swipe {cx} {cy} {cx+1} {cy+1} 80", device) or time.sleep(0.4)),
+        ("search_flow",        _search_bar_flow),
     ]
 
     for name, action in strategies:
