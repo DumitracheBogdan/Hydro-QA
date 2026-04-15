@@ -261,6 +261,34 @@ def scroll_down(device: str = DEFAULT_DEVICE) -> None:
     time.sleep(0.6)
 
 
+def swipe_up_scaled(device: str = DEFAULT_DEVICE) -> None:
+    """Resolution-aware swipe-up: moves content up by ~half a screen."""
+    w, h = get_screen_size(device)
+    adb(
+        f"shell input swipe {w//2} {int(h*0.75)} {w//2} {int(h*0.25)} 400",
+        device,
+    )
+    time.sleep(0.8)
+
+
+def scroll_until_text(
+    label: str, device: str = DEFAULT_DEVICE, max_scrolls: int = 6
+) -> bool:
+    """
+    Swipe up repeatedly until *label* (case-insensitive substring of text or
+    content-desc) appears in the uiautomator dump. Returns True on first match.
+    Stays put if the text is already visible on entry.
+    """
+    needle = label.lower()
+    for i in range(max_scrolls + 1):
+        raw = _dump_raw_xml(device)
+        if needle in raw.lower():
+            return True
+        if i < max_scrolls:
+            swipe_up_scaled(device)
+    return False
+
+
 def wait(seconds: float = 2.0) -> None:
     """Simple sleep wrapper for readability."""
     time.sleep(seconds)
@@ -724,44 +752,24 @@ def _tap_card_by_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
 
 def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     """
-    Navigate to the Delete-action confirmation dialog via the QA test card
-    (the only seeded visit with action items).
+    Navigate to the Delete-action confirmation dialog.
 
-    Strategy (deterministic from any prior state):
-      1. Force visits_home.
-      2. Open the QA test card by tapping its clickable ancestor (the
-         card TextView itself is clickable=false in the dump).
-      3. Verify we landed on visit_detail; dump on failure.
-      4. Expand the Actions accordion and tap Delete.
+    Apr 15 CI evidence proved: the visit opened from our History path
+    (`[qa]testing visit`) DOES expose an "Actions" accordion with a "Delete
+    action" icon — baseline for visit_detail contains those texts, they just
+    live below the fold. So the path is: reach visit_detail deterministically
+    via the History lane, scroll until "Delete action" is visible, tap it.
     """
-    _ensure_on_visits_home(device)
-    wait(0.5)
+    _navigate_to_visit_detail_v2(device)
+    wait(1)
 
-    # 2. Open the QA test card via clickable-ancestor lookup.
-    if not _tap_card_by_text("QA test", device):
-        log.warning("delete_dialog_v2: no clickable ancestor for 'QA test' — coord fallback")
-        w, h = get_screen_size(device)
-        # Card sits just below "Today's visits" header; aim near card center.
-        tap(int(0.5 * w), int(330 / 640 * h), device)
-    wait(2.5)
-
-    raw = _dump_raw_xml(device)
-    if not _on_visit_detail(raw):
-        log.warning("delete_dialog_v2: did not reach visit_detail after card tap")
-        _dump_login_state("delete_dialog_card_miss", device)
-    else:
-        _dump_login_state("delete_dialog_post_card", device)
-
-    # 3. Expand Actions.
-    if not find_and_tap("Actions", device):
-        tap(*COORDS["actions_accordion"], device)
-    wait(1.5)
-
-    # 4. Tap Delete action (icon has no visible text — walk clickable nodes).
+    # Scroll until the Actions section + Delete action icon are exposed.
+    scroll_until_text("Delete action", device)
     if not find_and_tap("Delete action", device):
         if not find_and_tap("Delete", device):
             tap(*COORDS["delete_action_icon"], device)
     wait(2)
+    _dump_login_state("delete_dialog_post_tap", device)
 
 
 # Screens whose nav entry/exit state we dump to debug_dumps/ for diagnosis.
@@ -824,15 +832,18 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         return
 
     elif screen_id == "signature_dialog":
-        # Re-enter visit_detail deterministically (prior cleanup may have
-        # drifted us back to visits_home / History / login). Then expand the
-        # Client Signature accordion and tap the signature canvas.
+        # Re-enter visit_detail deterministically, then scroll until the
+        # Client Signature accordion is in a safe (non-edge) tap zone.
+        # Apr 15 CI dump showed the accordion at y=601-640 on a 640h screen
+        # so its center sits on the bottom gesture strip; scroll first.
         _navigate_to_visit_detail_v2(device)
         wait(1)
+        scroll_until_text("Client Signature", device)
         if not find_and_tap("Client Signature", device):
-            if not find_and_tap("Signature", device):
-                tap(*COORDS["client_signature_accordion"], device)
+            tap(*COORDS["client_signature_accordion"], device)
         wait(1.5)
+        # Expanded canvas is below the accordion header — scroll to reveal it.
+        scroll_until_text("Tap to sign", device, max_scrolls=4)
         if not find_and_tap("Tap to sign", device):
             if not find_and_tap("sign", device):
                 tap(*COORDS["tap_to_sign"], device)
@@ -840,9 +851,11 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         _dump_login_state("signature_dialog_post_tap", device)
 
     elif screen_id == "priority_picker":
-        # Re-enter visit_detail deterministically; tap the "Low" priority badge.
+        # Re-enter visit_detail; scroll until the Actions section with its
+        # Low/Medium/High priority badges is on screen, then tap "Low".
         _navigate_to_visit_detail_v2(device)
         wait(1)
+        scroll_until_text("Low", device)
         if not find_and_tap("Low", device):
             if not find_and_tap("Priority", device):
                 tap(*COORDS["priority_badge"], device)
