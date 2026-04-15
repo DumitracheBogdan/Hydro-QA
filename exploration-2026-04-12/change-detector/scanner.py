@@ -772,52 +772,63 @@ def long_press(x: int, y: int, device: str = DEFAULT_DEVICE, duration_ms: int = 
     time.sleep(0.4)
 
 
-def _navigate_to_qa_test_from_home(device: str = DEFAULT_DEVICE) -> bool:
-    """
-    Open the "QA test" visit card on visits_home. This visit (unlike the
-    History `[qa]testing visit`) has action items — required for the
-    priority_picker and delete_dialog screens. The card composable doesn't
-    surface a clickable=true node in uiautomator on 320x640, so we bypass
-    find_and_tap's node matching and press-and-release directly at the
-    card body center.
-    """
-    _ensure_on_visits_home(device)
-    wait(0.5)
-
+def _find_qa_test_card_center(device: str) -> tuple[int, int]:
+    """Best-effort center coords of the QA-test card body on visits_home."""
     raw = _dump_raw_xml(device)
     try:
         root = ET.fromstring(raw.strip())
     except ET.ParseError:
         root = None
-
-    # Prefer the exact QA-test text bounds + offset to land inside the card body
-    # (the TextView sits near the top of the card; we want to hit center-card).
-    cx = cy = None
     if root is not None:
         for node in root.iter("node"):
             if (node.attrib.get("text") or "").strip() == "QA test":
                 b = _parse_bounds(node.attrib.get("bounds", ""))
                 if b:
-                    # Card extends ~150px below the text; aim near card middle.
                     cx = (b[0] + b[2]) // 2
+                    # TextView sits near the top of the card; aim ~40px down
+                    # to land mid-card where Compose onClick typically fires.
                     cy = b[3] + 40
-                    break
+                    return cx, cy
+    w, h = get_screen_size(device)
+    return int(0.5 * w), int(380 / 640 * h)
 
-    if cx is None or cy is None:
-        w, h = get_screen_size(device)
-        cx, cy = int(0.5 * w), int(380 / 640 * h)
 
-    log.info("_navigate_to_qa_test_from_home: long-press at (%d,%d)", cx, cy)
-    long_press(cx, cy, device)
-    wait(2.5)
+def _navigate_to_qa_test_from_home(device: str = DEFAULT_DEVICE) -> bool:
+    """
+    Open the "QA test" visit card on visits_home. This visit (unlike the
+    History `[qa]testing visit`) has action items — required for PP/DD.
+    The card composable doesn't surface a clickable=true node on 320x640,
+    so we try a sequence of gesture strategies and verify with _on_visit_detail
+    after each.
+    """
+    strategies = [
+        # (name, callable). Each must tap/press at (cx, cy) on the card.
+        ("plain_tap",          lambda cx, cy: tap(cx, cy, device)),
+        ("long_press_150",     lambda cx, cy: long_press(cx, cy, device, duration_ms=150)),
+        ("long_press_500",     lambda cx, cy: long_press(cx, cy, device, duration_ms=500)),
+        ("micro_swipe",        lambda cx, cy: (adb(f"shell input swipe {cx} {cy} {cx+1} {cy+1} 80", device), time.sleep(0.4))[-1]),
+        ("card_text_then_tap", lambda cx, cy: (find_and_tap("QA test", device), wait(0.3))[-1]),
+    ]
 
-    raw = _dump_raw_xml(device)
-    if _on_visit_detail(raw):
-        log.info("_navigate_to_qa_test_from_home: landed on visit_detail")
-        _dump_login_state("qa_test_interior", device)
-        return True
-    log.warning("_navigate_to_qa_test_from_home: card long-press did not navigate")
-    _dump_login_state("qa_test_miss", device)
+    for name, action in strategies:
+        _ensure_on_visits_home(device)
+        wait(1.0)
+        cx, cy = _find_qa_test_card_center(device)
+        log.info("_navigate_to_qa_test_from_home[%s]: firing at (%d,%d)", name, cx, cy)
+        try:
+            action(cx, cy)
+        except Exception as exc:
+            log.warning("strategy %s raised: %s", name, exc)
+            continue
+        wait(2.5)
+        raw = _dump_raw_xml(device)
+        if _on_visit_detail(raw):
+            log.info("_navigate_to_qa_test_from_home: landed on visit_detail via %s", name)
+            _dump_login_state(f"qa_test_via_{name}", device)
+            return True
+        log.warning("strategy %s did not navigate", name)
+
+    _dump_login_state("qa_test_all_strategies_failed", device)
     return False
 
 
