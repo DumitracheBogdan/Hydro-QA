@@ -540,22 +540,114 @@ def find_and_tap_nth(
 # Navigation
 # ===================================================================
 
+def _dump_raw_xml(device: str) -> str:
+    """Fetch the current uiautomator dump as a raw XML string (lowercased test-ready)."""
+    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
+    time.sleep(0.3)
+    return adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
+
+
+def _on_visits_home(raw_xml: str) -> bool:
+    """Detect visits_home via its distinctive anchors (lowercased)."""
+    lo = raw_xml.lower()
+    return "today's visits" in lo or "welcome, bogdan" in lo
+
+
+def _on_visit_detail(raw_xml: str) -> bool:
+    """
+    Detect visit_detail interior. Requires BOTH "attachments" tab anchor AND
+    a visit-detail-specific anchor (tabs row). Avoids false positives from
+    visits_home lists that may contain stray "Visit Details" text.
+    """
+    lo = raw_xml.lower()
+    return "attachments" in lo and "inspections" in lo
+
+
+def _on_history_tab(raw_xml: str) -> bool:
+    lo = raw_xml.lower()
+    # The History screen's card exposes "View Visit Details" as an
+    # tappable node; visits_home's Today list does not.
+    return "view visit details" in lo
+
+
+def _ensure_on_visits_home(device: str = DEFAULT_DEVICE) -> bool:
+    """
+    Force the app to visits_home regardless of current state. Returns True
+    if the landing was verified. Strategy: tap bottom_visits, verify anchor;
+    on failure press_back a few times and retry; last resort is re-login.
+    """
+    for attempt in range(1, 4):
+        tap(*COORDS["bottom_visits"], device)
+        wait(1.5)
+        raw = _dump_raw_xml(device)
+        if _on_visits_home(raw):
+            log.info("_ensure_on_visits_home: landed (attempt %d)", attempt)
+            return True
+        log.warning("_ensure_on_visits_home: not landed on attempt %d, backing out", attempt)
+        for _ in range(2):
+            press_back(device)
+            wait(0.4)
+
+    # Last resort — re-login from cold start.
+    log.warning("_ensure_on_visits_home: fallback to cold-start re-login")
+    adb(f"shell am force-stop {PACKAGE}", device)
+    wait(1)
+    adb(f"shell am start -n {MAIN_ACTIVITY}", device)
+    wait(3)
+    try:
+        perform_login(device)
+    except Exception as exc:
+        log.error("_ensure_on_visits_home: re-login failed: %s", exc)
+    wait(2)
+    raw = _dump_raw_xml(device)
+    ok = _on_visits_home(raw)
+    log.info("_ensure_on_visits_home: post-relogin landed=%s", ok)
+    return ok
+
+
 def _navigate_to_visit_detail_v2(device: str = DEFAULT_DEVICE) -> None:
     """
-    Open a visit card via the History tab, where the Compose "View Visit
-    Details" card IS exposed to uiautomator (unlike the visits_home Today
-    list, which renders the card without a tappable uiautomator node).
+    Enter visit_detail deterministically from any prior state:
+      1. Force visits_home.
+      2. Tap History bottom-nav; verify History list is loaded.
+      3. Tap "View Visit Details" (with bounds-based fallback).
+      4. Verify visit_detail anchors (attachments + inspections).
+    On success dump the visit_detail interior to debug_dumps/ so downstream
+    screen selectors can be hardened against real evidence.
     """
-    tap(*COORDS["bottom_history"], device)
-    wait(2)
-    find_and_tap("View Visit Details", device)
+    _ensure_on_visits_home(device)
+
+    # 2. Land the History tab.
+    for attempt in range(1, 4):
+        tap(*COORDS["bottom_history"], device)
+        wait(2)
+        raw = _dump_raw_xml(device)
+        if _on_history_tab(raw):
+            log.info("_navigate_to_visit_detail_v2: History tab loaded (attempt %d)", attempt)
+            break
+        log.warning("_navigate_to_visit_detail_v2: History tab not loaded (attempt %d)", attempt)
+    else:
+        log.warning("_navigate_to_visit_detail_v2: giving up on History tab after 3 attempts")
+        return
+
+    # 3. Tap "View Visit Details". Try text match first, fall back to card bounds.
+    if not find_and_tap("View Visit Details", device):
+        w, h = get_screen_size(device)
+        # Per Apr 15 CI dump: card parent bounds [32,516][288,556] on 320x640.
+        cx = int(0.5 * w)
+        cy = int((516 + 556) / 2 / 640 * h)
+        log.info("_navigate_to_visit_detail_v2: text match missed — coord fallback at (%d,%d)", cx, cy)
+        tap(cx, cy, device)
     wait(2.5)
-    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
-    raw = adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or ""
-    if "Visit Details" in raw and "Attachments" in raw:
+
+    # 4. Verify + diagnostic dump of interior.
+    raw = _dump_raw_xml(device)
+    if _on_visit_detail(raw):
         log.info("_navigate_to_visit_detail_v2: landed on visit_detail")
+        _dump_login_state("visit_detail_interior", device)
     else:
         log.warning("_navigate_to_visit_detail_v2: anchors missing after tap")
+        _dump_login_state("visit_detail_miss", device)
 
 
 def _navigate_to_accordion_v2(device: str = DEFAULT_DEVICE) -> None:
@@ -571,56 +663,104 @@ def _navigate_to_accordion_v2(device: str = DEFAULT_DEVICE) -> None:
     wait(2)
 
 
+def _find_clickable_ancestor_bounds(
+    raw_xml: str, text: str
+) -> tuple[int, int, int, int] | None:
+    """
+    Locate a text (or content-desc) match then return the smallest clickable
+    node whose bounds contain it. Compose often renders cards with clickable
+    ancestors whose own node carries no text/desc — plain find_and_tap lands
+    on the non-clickable TextView inside, which may not route the tap to the
+    card's click handler.
+    """
+    try:
+        root = ET.fromstring(raw_xml.strip())
+    except ET.ParseError:
+        return None
+
+    lower = text.lower()
+    target: tuple[int, int, int, int] | None = None
+    for node in root.iter("node"):
+        txt = (node.attrib.get("text", "") or "").lower()
+        desc = (node.attrib.get("content-desc", "") or "").lower()
+        if lower in txt or lower in desc:
+            target = _parse_bounds(node.attrib.get("bounds", ""))
+            if target:
+                break
+    if not target:
+        return None
+
+    tx1, ty1, tx2, ty2 = target
+    best: tuple[int, int, int, int] | None = None
+    best_area: int | None = None
+    for node in root.iter("node"):
+        if node.attrib.get("clickable", "false") != "true":
+            continue
+        b = _parse_bounds(node.attrib.get("bounds", ""))
+        if not b:
+            continue
+        x1, y1, x2, y2 = b
+        if x1 <= tx1 and y1 <= ty1 and x2 >= tx2 and y2 >= ty2:
+            area = (x2 - x1) * (y2 - y1)
+            if best_area is None or area < best_area:
+                best, best_area = b, area
+    return best
+
+
+def _tap_card_by_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
+    """Tap the clickable ancestor of an element containing ``text``."""
+    raw = _dump_raw_xml(device)
+    bounds = _find_clickable_ancestor_bounds(raw, text)
+    if not bounds:
+        return False
+    cx, cy = _center(bounds)
+    log.info(
+        "_tap_card_by_text: tapping clickable ancestor of %r at (%d,%d) bounds=%s",
+        text, cx, cy, bounds,
+    )
+    tap(cx, cy, device)
+    return True
+
+
 def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     """
-    Navigate to the Delete-action confirmation dialog.
+    Navigate to the Delete-action confirmation dialog via the QA test card
+    (the only seeded visit with action items).
 
-    Root cause of the old nav: cleanup from priority_picker left us on the
-    "[qa]testing visit" (a History visit with no action items), so expanding
-    Actions showed "No actions available." and the Delete icon was absent.
-    Additionally, the upstream priority_picker nav is currently cascading
-    through the login screen in CI, so we may arrive here unauthenticated.
-
-    Strategy:
-      0. If we've cascaded to the login screen, re-authenticate.
-      1. Hop back to visits_home via the bottom-nav "Visits" tab.
-      2. Open the seeded "QA test" visit card (the only seeded visit with
-         action items — History seed has "No actions available.").
-      3. Expand the Actions accordion.
-      4. Tap the Delete action icon to open the confirm dialog.
+    Strategy (deterministic from any prior state):
+      1. Force visits_home.
+      2. Open the QA test card by tapping its clickable ancestor (the
+         card TextView itself is clickable=false in the dump).
+      3. Verify we landed on visit_detail; dump on failure.
+      4. Expand the Actions accordion and tap Delete.
     """
-    # 0. Detect cascade-to-login (priority_picker currently lands on login
-    #    per the 2026-04-14 qa-check artifacts) and re-authenticate so the
-    #    rest of this helper actually runs in the app.
-    adb("shell uiautomator dump /sdcard/window_dump.xml", device, timeout=15)
-    time.sleep(0.3)
-    raw_xml = (adb("shell cat /sdcard/window_dump.xml", device, timeout=10) or "").lower()
-    if "welcome back" in raw_xml or "forgot your password" in raw_xml:
-        log.warning("delete_dialog_v2: detected login screen — re-authenticating")
-        perform_login(device)
+    _ensure_on_visits_home(device)
+    wait(0.5)
 
-    # 1. Navigate to visits_home via bottom nav.
-    tap(*COORDS["bottom_visits"], device)
-    wait(2)
-
-    # 2. Open the QA test visit card.
-    #    "QA test" text is exposed in the uiautomator dump on 320x640; fall
-    #    back to a card-area coord tap if the text match misses.
-    if not find_and_tap("QA test", device):
-        log.warning("delete_dialog_v2: 'QA test' not found, falling back to card coord tap")
+    # 2. Open the QA test card via clickable-ancestor lookup.
+    if not _tap_card_by_text("QA test", device):
+        log.warning("delete_dialog_v2: no clickable ancestor for 'QA test' — coord fallback")
         w, h = get_screen_size(device)
-        # Card body sits roughly mid-screen on visits_home.
-        tap(w // 2, int(h * 0.55), device)
+        # Card sits just below "Today's visits" header; aim near card center.
+        tap(int(0.5 * w), int(330 / 640 * h), device)
     wait(2.5)
 
-    # 3. Expand the Actions accordion.
+    raw = _dump_raw_xml(device)
+    if not _on_visit_detail(raw):
+        log.warning("delete_dialog_v2: did not reach visit_detail after card tap")
+        _dump_login_state("delete_dialog_card_miss", device)
+    else:
+        _dump_login_state("delete_dialog_post_card", device)
+
+    # 3. Expand Actions.
     if not find_and_tap("Actions", device):
         tap(*COORDS["actions_accordion"], device)
     wait(1.5)
 
-    # 4. Tap the Delete action icon (auto-scaled via _CoordsView fallback).
+    # 4. Tap Delete action (icon has no visible text — walk clickable nodes).
     if not find_and_tap("Delete action", device):
-        tap(*COORDS["delete_action_icon"], device)
+        if not find_and_tap("Delete", device):
+            tap(*COORDS["delete_action_icon"], device)
     wait(2)
 
 
@@ -684,22 +824,30 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         return
 
     elif screen_id == "signature_dialog":
-        # Assumes visit_detail_accordion cleanup collapsed it, we are on visit_detail.
-        # Expand the Client Signature accordion, then tap the signature canvas.
+        # Re-enter visit_detail deterministically (prior cleanup may have
+        # drifted us back to visits_home / History / login). Then expand the
+        # Client Signature accordion and tap the signature canvas.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Client Signature", device):
-            tap(*COORDS["client_signature_accordion"], device)
+            if not find_and_tap("Signature", device):
+                tap(*COORDS["client_signature_accordion"], device)
         wait(1.5)
         if not find_and_tap("Tap to sign", device):
             if not find_and_tap("sign", device):
                 tap(*COORDS["tap_to_sign"], device)
         wait(2)
+        _dump_login_state("signature_dialog_post_tap", device)
 
     elif screen_id == "priority_picker":
-        # Assumes we are on visit_detail.
-        # Tap a priority badge — "Low" is the default for the seeded action item.
+        # Re-enter visit_detail deterministically; tap the "Low" priority badge.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Low", device):
-            tap(*COORDS["priority_badge"], device)
+            if not find_and_tap("Priority", device):
+                tap(*COORDS["priority_badge"], device)
         wait(1.5)
+        _dump_login_state("priority_picker_post_tap", device)
 
     elif screen_id == "delete_dialog":
         _navigate_to_delete_dialog_v2(device)
