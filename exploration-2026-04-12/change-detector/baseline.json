@@ -729,6 +729,24 @@
           "text": "[qa]testing visit",
           "class": "android.widget.TextView",
           "clickable": false
+        },
+        {
+          "text": "Purchase Ord.",
+          "class": "android.widget.TextView",
+          "type": "label",
+          "clickable": false
+        },
+        {
+          "text": "Site Code",
+          "class": "android.widget.TextView",
+          "type": "label",
+          "clickable": false
+        },
+        {
+          "text": "HYDBH",
+          "class": "android.widget.TextView",
+          "type": "value",
+          "clickable": false
         }
       ]
     },
@@ -819,6 +837,24 @@
         {
           "text": "[qa]testing visit",
           "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Purchase Ord.",
+          "class": "android.widget.TextView",
+          "type": "label",
+          "clickable": false
+        },
+        {
+          "text": "Site Code",
+          "class": "android.widget.TextView",
+          "type": "label",
+          "clickable": false
+        },
+        {
+          "text": "HYDBH",
+          "class": "android.widget.TextView",
+          "type": "value",
           "clickable": false
         }
       ]
