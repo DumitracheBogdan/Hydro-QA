@@ -750,21 +750,73 @@ def _tap_card_by_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
     return True
 
 
+def _tap_exact_text(text: str, device: str = DEFAULT_DEVICE) -> bool:
+    """
+    Tap the clickable ancestor of a node whose EXACT text equals ``text``.
+    Avoids substring false-matches (e.g. ``"Actions"`` accidentally hitting
+    the ``"Quick actions"`` FAB content-desc). Falls back to tapping the
+    text node's own center if no clickable ancestor exists.
+    """
+    raw = _dump_raw_xml(device)
+    try:
+        root = ET.fromstring(raw.strip())
+    except ET.ParseError:
+        return False
+
+    target: tuple[int, int, int, int] | None = None
+    for node in root.iter("node"):
+        if (node.attrib.get("text") or "").strip() == text:
+            b = _parse_bounds(node.attrib.get("bounds", ""))
+            if b:
+                target = b
+                break
+    if not target:
+        return False
+
+    tx1, ty1, tx2, ty2 = target
+    best: tuple[int, int, int, int] | None = None
+    best_area: int | None = None
+    for node in root.iter("node"):
+        if node.attrib.get("clickable", "false") != "true":
+            continue
+        b = _parse_bounds(node.attrib.get("bounds", ""))
+        if not b:
+            continue
+        x1, y1, x2, y2 = b
+        if x1 <= tx1 and y1 <= ty1 and x2 >= tx2 and y2 >= ty2:
+            area = (x2 - x1) * (y2 - y1)
+            if best_area is None or area < best_area:
+                best, best_area = b, area
+
+    tap_bounds = best or target
+    cx, cy = _center(tap_bounds)
+    log.info(
+        "_tap_exact_text: tapping %r at (%d,%d) bounds=%s (ancestor=%s)",
+        text, cx, cy, tap_bounds, best is not None,
+    )
+    tap(cx, cy, device)
+    return True
+
+
 def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate to the Delete-action confirmation dialog.
 
-    Apr 15 CI evidence proved: the visit opened from our History path
-    (`[qa]testing visit`) DOES expose an "Actions" accordion with a "Delete
-    action" icon — baseline for visit_detail contains those texts, they just
-    live below the fold. So the path is: reach visit_detail deterministically
-    via the History lane, scroll until "Delete action" is visible, tap it.
+    Round-3 CI evidence: the Actions accordion is collapsed by default and
+    "Delete action" / "Low" / "Medium" / "High" never appear in any dump
+    without first expanding Actions. Path: enter visit_detail, scroll to
+    Actions header, tap it (exact match — avoid "Quick actions" collision),
+    then scroll to the revealed "Delete action" icon and tap it.
     """
     _navigate_to_visit_detail_v2(device)
     wait(1)
 
-    # Scroll until the Actions section + Delete action icon are exposed.
-    scroll_until_text("Delete action", device)
+    scroll_until_text("Actions", device)
+    if not _tap_exact_text("Actions", device):
+        tap(*COORDS["actions_accordion"], device)
+    wait(1.5)
+
+    scroll_until_text("Delete action", device, max_scrolls=3)
     if not find_and_tap("Delete action", device):
         if not find_and_tap("Delete", device):
             tap(*COORDS["delete_action_icon"], device)
@@ -851,14 +903,21 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         _dump_login_state("signature_dialog_post_tap", device)
 
     elif screen_id == "priority_picker":
-        # Re-enter visit_detail; scroll until the Actions section with its
-        # Low/Medium/High priority badges is on screen, then tap "Low".
+        # Re-enter visit_detail; scroll to the collapsed Actions accordion,
+        # expand it, then scroll to the Low priority badge and tap it.
+        # Round-3 CI proved Actions is collapsed by default and Low never
+        # appears in any dump without first expanding Actions.
         _navigate_to_visit_detail_v2(device)
         wait(1)
-        scroll_until_text("Low", device)
+        scroll_until_text("Actions", device)
+        # Exact-text match — "Actions" substring collides with "Quick actions"
+        # FAB content-desc which would tap the wrong element.
+        if not _tap_exact_text("Actions", device):
+            tap(*COORDS["actions_accordion"], device)
+        wait(1.5)
+        scroll_until_text("Low", device, max_scrolls=3)
         if not find_and_tap("Low", device):
-            if not find_and_tap("Priority", device):
-                tap(*COORDS["priority_badge"], device)
+            tap(*COORDS["priority_badge"], device)
         wait(1.5)
         _dump_login_state("priority_picker_post_tap", device)
 
@@ -867,8 +926,11 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         return
 
     elif screen_id == "unsaved_data_dialog":
-        # Assumes we are on visit_detail (after delete_dialog cleanup / Cancel).
-        # Expand Visit Details accordion, type in the Description field, press Back.
+        # Re-enter visit_detail deterministically; expand Visit Details
+        # accordion, type in the Description field, press Back to trigger
+        # the unsaved-data dialog.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap_nth("Visit Details", n=1, device=device):
             tap(*COORDS["visit_details_accordion"], device)
         wait(1.5)
@@ -885,14 +947,17 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
     # Phase 3: FAB sub-screens
     # ------------------------------------------------------------------
     elif screen_id == "fab_expanded":
-        # Assumes we are on visit_detail (unsaved_data_dialog cleanup tapped "Stay").
+        # Re-enter visit_detail deterministically, then open the Quick-Actions FAB.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Quick actions", device):
             tap(*COORDS["fab_button"], device)
         wait(1.5)
 
     elif screen_id == "add_actions_sheet":
-        # Assumes FAB is closed (cleanup_after_screen closed it).
-        # Open FAB then tap Actions.
+        # Re-enter visit_detail, then open FAB, then tap Actions.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Quick actions", device):
             tap(*COORDS["fab_button"], device)
         wait(1)
@@ -903,6 +968,8 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         # Revoke camera permission first so the system dialog always appears.
         adb(f"shell pm revoke {PACKAGE} android.permission.CAMERA", device)
         wait(0.5)
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Quick actions", device):
             tap(*COORDS["fab_button"], device)
         wait(1)
@@ -910,7 +977,9 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         wait(2)
 
     elif screen_id == "gallery_picker":
-        # Assumes we are on visit_detail (camera_permission cleanup dismissed dialog).
+        # Re-enter visit_detail; open FAB; tap Gallery.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         if not find_and_tap("Quick actions", device):
             tap(*COORDS["fab_button"], device)
         wait(1)

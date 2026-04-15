@@ -128,7 +128,7 @@
           "clickable": false
         },
         {
-          "text": "Type to search…",
+          "text": "Type to search\u00e2\u20ac\u00a6",
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
@@ -193,7 +193,7 @@
           "clickable": false
         },
         {
-          "text": "Type to search…",
+          "text": "Type to search\u00e2\u20ac\u00a6",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -598,28 +598,34 @@
       "route": "Visit Detail > Tap 'Client Signature' accordion > Tap signature area",
       "elements": [
         {
-          "text": "Close",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
+          "content_desc": "Signature",
+          "class": "android.widget.ImageView",
+          "type": "icon",
+          "clickable": false
         },
         {
-          "text": "Drawing canvas",
-          "class": "android.view.View",
+          "text": "Client Signature",
+          "class": "android.widget.TextView",
+          "type": "title",
+          "clickable": false
+        },
+        {
+          "content_desc": "Close Signature Dialog",
+          "class": "android.widget.ImageView",
           "type": "button",
           "clickable": true
         },
         {
           "text": "Clear",
-          "class": "android.widget.Button",
+          "class": "android.widget.TextView",
           "type": "button",
-          "clickable": true
+          "clickable": false
         },
         {
           "text": "Submit",
-          "class": "android.widget.Button",
+          "class": "android.widget.TextView",
           "type": "button",
-          "clickable": true
+          "clickable": false
         }
       ]
     },
