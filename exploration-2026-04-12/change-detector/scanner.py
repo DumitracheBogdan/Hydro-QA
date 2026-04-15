@@ -624,6 +624,12 @@ def _navigate_to_delete_dialog_v2(device: str = DEFAULT_DEVICE) -> None:
     wait(2)
 
 
+# Screens whose nav entry/exit state we dump to debug_dumps/ for diagnosis.
+# Picked because they are the 3 currently-failing screens plus visit_detail,
+# which is the cascade root for SD and PP.
+DIAGNOSTIC_SCREENS = {"visit_detail", "signature_dialog", "priority_picker", "delete_dialog"}
+
+
 def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     """
     Navigate the emulator to the requested screen.
@@ -633,7 +639,17 @@ def navigate_to_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     the app is in the state left by the previous screen's cleanup.
     """
     log.info("Navigating to screen: %s", screen_id)
+    diag = screen_id in DIAGNOSTIC_SCREENS
+    if diag:
+        _dump_login_state(f"nav_before_{screen_id}", device)
+    try:
+        _navigate_to_screen_body(screen_id, device)
+    finally:
+        if diag:
+            _dump_login_state(f"nav_after_{screen_id}", device)
 
+
+def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
     # ------------------------------------------------------------------
     # Phase 1: Pre-login
     # ------------------------------------------------------------------
