@@ -10,6 +10,7 @@ export function isDynamicText(s) {
 export function applyChromeFilter(elements) {
   const out = [];
   for (const el of elements) {
+    if (!el.name || !el.name.trim()) continue;
     if (isDynamicText(el.name)) continue;
     if (el.role === 'heading' && isDynamicText(el.text)) continue;
     out.push(el);
