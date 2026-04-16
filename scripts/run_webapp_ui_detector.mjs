@@ -1,12 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { launchAuthed } from './lib/webapp-login.mjs';
-import { crawl, slugifyPath } from './webapp-ui-detector/crawler.mjs';
+import { crawlRoutes, slugifyPath } from './webapp-ui-detector/crawler.mjs';
 import { diffAll } from './webapp-ui-detector/diff.mjs';
 import { annotateFull, cropElement } from './webapp-ui-detector/annotate.mjs';
+import { ROUTES } from './webapp-ui-detector/route-config.mjs';
 
 const MODE = (process.env.WEBAPP_UI_MODE || 'compare').toLowerCase();
-const MAX_PAGES = Number(process.env.WEBAPP_UI_MAX_PAGES || '80');
 const WEB_BASE = process.env.HYDROCERT_WEB_BASE;
 const EMAIL = process.env.HYDROCERT_QA_EMAIL;
 const PASSWORD = process.env.HYDROCERT_QA_PASSWORD;
@@ -27,18 +27,16 @@ const baselineShots = path.join(baselineDir, 'screenshots');
 fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync(baselineShots, { recursive: true });
 
-console.log(`[detector] mode=${MODE} maxPages=${MAX_PAGES} base=${WEB_BASE}`);
+console.log(`[detector] mode=${MODE} routes=${ROUTES.length} base=${WEB_BASE}`);
 
 const { browser, page } = await launchAuthed({ webBase: WEB_BASE, email: EMAIL, password: PASSWORD });
 
 let currentPages;
 try {
-  currentPages = await crawl({
+  currentPages = await crawlRoutes({
     page,
     baseUrl: WEB_BASE,
-    startPath: '/dashboard',
-    seedPaths: ['/visits', '/customers', '/visits-list', '/planner', '/visits/addnewvisit'],
-    maxPages: MAX_PAGES,
+    routes: ROUTES,
     outDir,
   });
 } finally {
