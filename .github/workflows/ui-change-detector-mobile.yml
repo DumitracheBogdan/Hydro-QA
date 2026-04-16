@@ -7,10 +7,6 @@ on:
         description: "UI Change Detector Mobile (Android Emulator)"
         type: boolean
         default: true
-      screens:
-        description: "Optional: comma-separated screen IDs (e.g. priority_picker,delete_dialog). Empty = all 27 screens."
-        type: string
-        required: false
 
 permissions:
   contents: read
@@ -57,7 +53,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
-          DETECTOR_SCREENS: ${{ inputs.screens }}
 
       - name: Upload artifacts
         if: always()
