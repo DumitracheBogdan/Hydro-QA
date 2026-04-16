@@ -31,6 +31,63 @@ async function waitForPage(page) {
   await page.waitForTimeout(500);
 }
 
+async function applyInteraction(page, interaction) {
+  if (interaction.kind !== 'click') {
+    console.log(`[crawler]   unknown interaction kind: ${interaction.kind}`);
+    return false;
+  }
+  const locator = page.getByRole(interaction.role, { name: interaction.name, exact: !!interaction.exact }).first();
+  if (!(await locator.isVisible().catch(() => false))) {
+    console.log(`[crawler]   interaction target not visible: ${interaction.role}::${interaction.name}`);
+    return false;
+  }
+  await locator.click({ timeout: 3000 }).catch((e) => {
+    console.log(`[crawler]   click failed on ${interaction.role}::${interaction.name}: ${String(e).slice(0, 80)}`);
+  });
+  await page.waitForTimeout(interaction.waitMs || 400);
+  return true;
+}
+
+async function captureState({ page, fullUrl, canonicalKey, slug, shotDir, interactions }) {
+  console.log(`[crawler] visiting ${fullUrl}  →  ${canonicalKey}`);
+  try {
+    await page.goto(fullUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+  } catch (e) {
+    console.log(`[crawler] goto failed for ${fullUrl}: ${String(e).slice(0, 140)}`);
+    return null;
+  }
+  await waitForPage(page);
+  await dismissNoise(page);
+
+  if (page.url().includes('/login')) {
+    console.log(`[crawler] ${fullUrl} redirected to login — skipping`);
+    return null;
+  }
+
+  for (const action of interactions || []) {
+    await applyInteraction(page, action);
+  }
+
+  let raw = [];
+  try {
+    raw = await collectInventory(page, { excludeAncestorSelectors: EXCLUDE_ANCESTOR_SELECTORS });
+  } catch (e) {
+    console.log(`[crawler] inventory failed on ${canonicalKey}: ${String(e).slice(0, 140)}`);
+  }
+
+  const elements = applyChromeFilter(raw);
+
+  const shotPath = path.join(shotDir, `${slug}.png`);
+  try {
+    await page.screenshot({ path: shotPath, fullPage: true });
+  } catch (e) {
+    console.log(`[crawler] screenshot failed on ${canonicalKey}: ${String(e).slice(0, 140)}`);
+  }
+
+  console.log(`[crawler]   captured ${elements.length} chrome elements (raw=${raw.length})`);
+  return { url: fullUrl, slug, screenshot: shotPath, elements };
+}
+
 export async function crawlRoutes({ page, baseUrl, routes, outDir }) {
   const shotDir = path.join(outDir, 'current', 'screenshots');
   fs.mkdirSync(shotDir, { recursive: true });
@@ -39,49 +96,24 @@ export async function crawlRoutes({ page, baseUrl, routes, outDir }) {
 
   for (const route of routes) {
     const fullUrl = baseUrl + route.path;
-    const canonical = route.canonicalAs || route.path;
-    const slug = slugifyPath(canonical);
-    const shotPath = path.join(shotDir, `${slug}.png`);
+    const baseCanonical = route.canonicalAs || route.path;
+    const states = route.states && route.states.length > 0 ? route.states : [{ id: null }];
 
-    console.log(`[crawler] visiting ${fullUrl}  →  ${canonical}`);
-    try {
-      await page.goto(fullUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
-    } catch (e) {
-      console.log(`[crawler] goto failed for ${fullUrl}: ${String(e).slice(0, 140)}`);
-      continue;
+    for (const state of states) {
+      const canonical = state.id ? `${baseCanonical}@${state.id}` : baseCanonical;
+      const slug = slugifyPath(canonical);
+      const result = await captureState({
+        page,
+        fullUrl,
+        canonicalKey: canonical,
+        slug,
+        shotDir,
+        interactions: state.interactions,
+      });
+      if (result) {
+        pages[canonical] = { ...result, concretePath: route.path, stateId: state.id || null };
+      }
     }
-    await waitForPage(page);
-    await dismissNoise(page);
-
-    const finalUrl = page.url();
-    if (finalUrl.includes('/login')) {
-      console.log(`[crawler] ${route.path} redirected to login — skipping`);
-      continue;
-    }
-
-    let raw = [];
-    try {
-      raw = await collectInventory(page, { excludeAncestorSelectors: EXCLUDE_ANCESTOR_SELECTORS });
-    } catch (e) {
-      console.log(`[crawler] inventory failed on ${route.path}: ${String(e).slice(0, 140)}`);
-    }
-
-    const elements = applyChromeFilter(raw);
-
-    try {
-      await page.screenshot({ path: shotPath, fullPage: true });
-    } catch (e) {
-      console.log(`[crawler] screenshot failed on ${route.path}: ${String(e).slice(0, 140)}`);
-    }
-
-    pages[canonical] = {
-      url: fullUrl,
-      concretePath: route.path,
-      slug,
-      screenshot: shotPath,
-      elements,
-    };
-    console.log(`[crawler]   captured ${elements.length} chrome elements (raw=${raw.length})`);
   }
 
   return pages;

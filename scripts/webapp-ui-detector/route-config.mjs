@@ -10,6 +10,22 @@ export const ROUTES = [
     path: `/visits/details/${QA_PINNED_VISIT_UUID}`,
     mode: 'chrome',
     canonicalAs: '/visits/details/qa-pinned',
+    states: [
+      { id: null },
+      {
+        id: 'actions-expanded',
+        interactions: [
+          { kind: 'click', role: 'button', name: 'Actions', exact: true, waitMs: 500 },
+        ],
+      },
+      {
+        id: 'new-action-modal',
+        interactions: [
+          { kind: 'click', role: 'button', name: 'Actions', exact: true, waitMs: 500 },
+          { kind: 'click', role: 'button', name: 'New Action', exact: true, waitMs: 800 },
+        ],
+      },
+    ],
   },
 ];
 
