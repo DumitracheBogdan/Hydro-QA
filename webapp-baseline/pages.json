@@ -518,30 +518,6 @@
         },
         {
           "role": "button",
-          "name": "",
-          "text": "",
-          "selectorHint": "div > div > div.flex.flex-col:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > div.flex.items-center:nth-of-type(1) > button.inline-flex.items-center:nth-of-type(2)",
-          "bbox": {
-            "x": 437,
-            "y": 152,
-            "w": 36,
-            "h": 36
-          }
-        },
-        {
-          "role": "button",
-          "name": "",
-          "text": "",
-          "selectorHint": "div > div > div.flex.flex-col:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > div.flex.items-center:nth-of-type(1) > button.inline-flex.items-center:nth-of-type(3)",
-          "bbox": {
-            "x": 473,
-            "y": 152,
-            "w": 36,
-            "h": 36
-          }
-        },
-        {
-          "role": "button",
           "name": "Day",
           "text": "Day",
           "selectorHint": "div > div > div.flex.flex-col:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > div.inline-flex.items-center:nth-of-type(2) > button.inline-flex.items-center:nth-of-type(1)",
@@ -845,30 +821,6 @@
             "y": 268,
             "w": 84,
             "h": 65
-          }
-        },
-        {
-          "role": "button",
-          "name": "",
-          "text": "",
-          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.px-8.py-4 > div.flex.justify-between:nth-of-type(4) > div.ml-auto.flex:nth-of-type(2) > button.inline-flex.items-center:nth-of-type(1)",
-          "bbox": {
-            "x": 1242,
-            "y": 1657,
-            "w": 36,
-            "h": 36
-          }
-        },
-        {
-          "role": "button",
-          "name": "",
-          "text": "",
-          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.px-8.py-4 > div.flex.justify-between:nth-of-type(4) > div.ml-auto.flex:nth-of-type(2) > button.inline-flex.items-center:nth-of-type(2)",
-          "bbox": {
-            "x": 1372,
-            "y": 1657,
-            "w": 36,
-            "h": 36
           }
         }
       ]
@@ -1666,18 +1618,6 @@
           }
         },
         {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Chemistry Level 4",
-          "bbox": {
-            "x": 925,
-            "y": 459,
-            "w": 16,
-            "h": 16
-          }
-        },
-        {
           "role": "label",
           "name": "Biology",
           "text": "Biology",
@@ -1687,18 +1627,6 @@
             "y": 457,
             "w": 71,
             "h": 20
-          }
-        },
-        {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Biology",
-          "bbox": {
-            "x": 1077,
-            "y": 459,
-            "w": 16,
-            "h": 16
           }
         },
         {
@@ -1714,18 +1642,6 @@
           }
         },
         {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Physics",
-          "bbox": {
-            "x": 1163,
-            "y": 459,
-            "w": 16,
-            "h": 16
-          }
-        },
-        {
           "role": "label",
           "name": "Plumbing",
           "text": "Plumbing",
@@ -1735,18 +1651,6 @@
             "y": 457,
             "w": 83,
             "h": 20
-          }
-        },
-        {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Plumbing",
-          "bbox": {
-            "x": 1251,
-            "y": 459,
-            "w": 16,
-            "h": 16
           }
         },
         {
@@ -1762,18 +1666,6 @@
           }
         },
         {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Electrical",
-          "bbox": {
-            "x": 925,
-            "y": 495,
-            "w": 16,
-            "h": 16
-          }
-        },
-        {
           "role": "label",
           "name": "Safety Certified",
           "text": "Safety Certified",
@@ -1783,18 +1675,6 @@
             "y": 493,
             "w": 121,
             "h": 20
-          }
-        },
-        {
-          "role": "checkbox",
-          "name": "",
-          "text": "",
-          "selectorHint": "button#Safety Certified",
-          "bbox": {
-            "x": 1024,
-            "y": 495,
-            "w": 16,
-            "h": 16
           }
         },
         {
@@ -2112,6 +1992,632 @@
           "bbox": {
             "x": 742,
             "y": 939,
+            "w": 195,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "/visits/details/qa-pinned@actions-expanded": {
+      "url": "https://dev.gen-cert.com/visits/details/c7687462-9a25-4969-a35f-70c8dbfe7c2a",
+      "slug": "visits-details-qa-pinned-actions-expanded",
+      "screenshot": "webapp-baseline/screenshots/visits-details-qa-pinned-actions-expanded.png",
+      "elements": [
+        {
+          "role": "link",
+          "name": "Dashboard",
+          "text": "Dashboard",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(1) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 104,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Customers",
+          "text": "Customers",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(2) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 156,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "Schedule",
+          "text": "Schedule",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(3) > button.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 208,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Visits List",
+          "text": "Visits List",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(4) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 260,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Team Management",
+          "text": "Team Management",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(2) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(1) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 364,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Settings",
+          "text": "Settings",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(2) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(2) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 416,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "Toggle Sidebar",
+          "text": "",
+          "selectorHint": "div#root > div.group/sidebar-wrapper.has-data-[variant=inset]:bg-sidebar > div.group.peer > div.fixed.inset-y-0:nth-of-type(2) > div.bg-sidebar.group-data-[variant=floating]:border-sidebar-border > button.hover:after:bg-sidebar-border.absolute",
+          "bbox": {
+            "x": 231,
+            "y": 0,
+            "w": 16,
+            "h": 900
+          }
+        },
+        {
+          "role": "button",
+          "name": "Toggle Sidebar",
+          "text": "Toggle Sidebar",
+          "selectorHint": "div#root > div.group/sidebar-wrapper.has-data-[variant=inset]:bg-sidebar > main.bg-background.relative > header.sticky.top-0 > button.inline-flex.items-center",
+          "bbox": {
+            "x": 252,
+            "y": 18,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "role": "button",
+          "name": "TQ\nTech Quarter\nAdmin",
+          "text": "TQ\nTech Quarter\nAdmin",
+          "selectorHint": "button#radix-_r_0_",
+          "bbox": {
+            "x": 1233,
+            "y": 10,
+            "w": 175,
+            "h": 44
+          }
+        },
+        {
+          "role": "button",
+          "name": "Back to Visits",
+          "text": "Back to Visits",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > button.flex.items-center",
+          "bbox": {
+            "x": 272,
+            "y": 88,
+            "w": 108,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "[qa]testing visit",
+          "text": "[qa]testing visit",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > div.flex.items-start:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > h1.text-2xl.font-semibold",
+          "bbox": {
+            "x": 272,
+            "y": 132,
+            "w": 173,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "No files available for download",
+          "text": "Download Report",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > div.flex.items-start:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > button.inline-flex.items-center",
+          "bbox": {
+            "x": 1253,
+            "y": 132,
+            "w": 155,
+            "h": 32
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "button#radix-_r_2_-trigger-details",
+          "bbox": {
+            "x": 276,
+            "y": 388,
+            "w": 116,
+            "h": 30
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Inspections",
+          "text": "Inspections",
+          "selectorHint": "button#radix-_r_2_-trigger-inspections",
+          "bbox": {
+            "x": 394,
+            "y": 388,
+            "w": 116,
+            "h": 30
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Attachments",
+          "text": "Attachments",
+          "selectorHint": "button#radix-_r_2_-trigger-attachments",
+          "bbox": {
+            "x": 512,
+            "y": 388,
+            "w": 122,
+            "h": 30
+          }
+        },
+        {
+          "role": "heading",
+          "name": "No description available",
+          "text": "No description available",
+          "selectorHint": "div.space-y-4 > div.bg-card.text-card-foreground:nth-of-type(1) > div.p-3 > div.flex.flex-col:nth-of-type(2) > div.text-center.space-y-1:nth-of-type(2) > h3.text-sm.font-medium",
+          "bbox": {
+            "x": 744,
+            "y": 571,
+            "w": 191,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.space-y-2:nth-of-type(2) > div.border.rounded-lg:nth-of-type(1) > h3.flex",
+          "bbox": {
+            "x": 273,
+            "y": 641,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "button#radix-_r_6_",
+          "bbox": {
+            "x": 273,
+            "y": 641,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Actions",
+          "text": "Actions",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.space-y-2:nth-of-type(2) > div.border.rounded-lg:nth-of-type(2) > h3.flex",
+          "bbox": {
+            "x": 273,
+            "y": 697,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "Actions",
+          "text": "Actions",
+          "selectorHint": "button#radix-_r_8_",
+          "bbox": {
+            "x": 273,
+            "y": 697,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "New Action",
+          "text": "New Action",
+          "selectorHint": "div#radix-_r_9_ > div.pt-0.px-4 > div.flex.flex-col > button.inline-flex.items-center",
+          "bbox": {
+            "x": 782,
+            "y": 811,
+            "w": 115,
+            "h": 32
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Client Signature",
+          "text": "Client Signature",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.bg-white.border:nth-of-type(3) > div.flex.items-center:nth-of-type(1) > h2.text-sm.font-semibold",
+          "bbox": {
+            "x": 319,
+            "y": 933,
+            "w": 104,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "No signature available",
+          "text": "No signature available",
+          "selectorHint": "div.space-y-4 > div.bg-white.border:nth-of-type(3) > div.border-2.border-dashed:nth-of-type(2) > div.flex.flex-col > div.text-center.space-y-1:nth-of-type(2) > h3.text-sm.font-medium",
+          "bbox": {
+            "x": 742,
+            "y": 1087,
+            "w": 195,
+            "h": 20
+          }
+        }
+      ]
+    },
+    "/visits/details/qa-pinned@new-action-modal": {
+      "url": "https://dev.gen-cert.com/visits/details/c7687462-9a25-4969-a35f-70c8dbfe7c2a",
+      "slug": "visits-details-qa-pinned-new-action-modal",
+      "screenshot": "webapp-baseline/screenshots/visits-details-qa-pinned-new-action-modal.png",
+      "elements": [
+        {
+          "role": "link",
+          "name": "Dashboard",
+          "text": "Dashboard",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(1) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 104,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Customers",
+          "text": "Customers",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(2) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 156,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "Schedule",
+          "text": "Schedule",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(3) > button.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 208,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Visits List",
+          "text": "Visits List",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(4) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 260,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Team Management",
+          "text": "Team Management",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(2) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(1) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 364,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "link",
+          "name": "Settings",
+          "text": "Settings",
+          "selectorHint": "div.flex.min-h-0:nth-of-type(2) > div.relative.flex:nth-of-type(2) > div.w-full.text-sm:nth-of-type(2) > ul.flex.w-full > li.group/menu-item.relative:nth-of-type(2) > a.peer/menu-button.flex",
+          "bbox": {
+            "x": 16,
+            "y": 416,
+            "w": 207,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "Toggle Sidebar",
+          "text": "",
+          "selectorHint": "div#root > div.group/sidebar-wrapper.has-data-[variant=inset]:bg-sidebar > div.group.peer > div.fixed.inset-y-0:nth-of-type(2) > div.bg-sidebar.group-data-[variant=floating]:border-sidebar-border > button.hover:after:bg-sidebar-border.absolute",
+          "bbox": {
+            "x": 231,
+            "y": 0,
+            "w": 16,
+            "h": 900
+          }
+        },
+        {
+          "role": "button",
+          "name": "Toggle Sidebar",
+          "text": "Toggle Sidebar",
+          "selectorHint": "div#root > div.group/sidebar-wrapper.has-data-[variant=inset]:bg-sidebar > main.bg-background.relative > header.sticky.top-0 > button.inline-flex.items-center",
+          "bbox": {
+            "x": 252,
+            "y": 18,
+            "w": 28,
+            "h": 28
+          }
+        },
+        {
+          "role": "button",
+          "name": "TQ\nTech Quarter\nAdmin",
+          "text": "TQ\nTech Quarter\nAdmin",
+          "selectorHint": "button#radix-_r_0_",
+          "bbox": {
+            "x": 1233,
+            "y": 10,
+            "w": 175,
+            "h": 44
+          }
+        },
+        {
+          "role": "button",
+          "name": "Back to Visits",
+          "text": "Back to Visits",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > button.flex.items-center",
+          "bbox": {
+            "x": 272,
+            "y": 88,
+            "w": 108,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "[qa]testing visit",
+          "text": "[qa]testing visit",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > div.flex.items-start:nth-of-type(1) > div.flex.flex-col:nth-of-type(1) > h1.text-2xl.font-semibold",
+          "bbox": {
+            "x": 272,
+            "y": 132,
+            "w": 173,
+            "h": 32
+          }
+        },
+        {
+          "role": "button",
+          "name": "No files available for download",
+          "text": "Download Report",
+          "selectorHint": "main#main-content > div.grid.auto-rows-min > div.flex.flex-col > div.flex.items-start:nth-of-type(1) > div.flex.items-center:nth-of-type(2) > button.inline-flex.items-center",
+          "bbox": {
+            "x": 1253,
+            "y": 132,
+            "w": 155,
+            "h": 32
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "button#radix-_r_2_-trigger-details",
+          "bbox": {
+            "x": 276,
+            "y": 388,
+            "w": 116,
+            "h": 30
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Inspections",
+          "text": "Inspections",
+          "selectorHint": "button#radix-_r_2_-trigger-inspections",
+          "bbox": {
+            "x": 394,
+            "y": 388,
+            "w": 116,
+            "h": 30
+          }
+        },
+        {
+          "role": "tab",
+          "name": "Attachments",
+          "text": "Attachments",
+          "selectorHint": "button#radix-_r_2_-trigger-attachments",
+          "bbox": {
+            "x": 512,
+            "y": 388,
+            "w": 122,
+            "h": 30
+          }
+        },
+        {
+          "role": "heading",
+          "name": "No description available",
+          "text": "No description available",
+          "selectorHint": "div.space-y-4 > div.bg-card.text-card-foreground:nth-of-type(1) > div.p-3 > div.flex.flex-col:nth-of-type(2) > div.text-center.space-y-1:nth-of-type(2) > h3.text-sm.font-medium",
+          "bbox": {
+            "x": 744,
+            "y": 571,
+            "w": 191,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.space-y-2:nth-of-type(2) > div.border.rounded-lg:nth-of-type(1) > h3.flex",
+          "bbox": {
+            "x": 273,
+            "y": 641,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "Visit Details",
+          "text": "Visit Details",
+          "selectorHint": "button#radix-_r_6_",
+          "bbox": {
+            "x": 273,
+            "y": 641,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Actions",
+          "text": "Actions",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.space-y-2:nth-of-type(2) > div.border.rounded-lg:nth-of-type(2) > h3.flex",
+          "bbox": {
+            "x": 273,
+            "y": 697,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "Actions",
+          "text": "Actions",
+          "selectorHint": "button#radix-_r_8_",
+          "bbox": {
+            "x": 273,
+            "y": 697,
+            "w": 1134,
+            "h": 46
+          }
+        },
+        {
+          "role": "button",
+          "name": "New Action",
+          "text": "New Action",
+          "selectorHint": "div#radix-_r_9_ > div.pt-0.px-4 > div.flex.flex-col:nth-of-type(1) > button.inline-flex.items-center",
+          "bbox": {
+            "x": 782,
+            "y": 811,
+            "w": 115,
+            "h": 32
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Add Action",
+          "text": "Add Action",
+          "selectorHint": "div#radix-_r_9_ > div.pt-0.px-4 > div.fixed.inset-0:nth-of-type(2) > div.bg-white.rounded-lg > div.flex.justify-between:nth-of-type(1) > h2.text-lg.font-semibold",
+          "bbox": {
+            "x": 456,
+            "y": 190,
+            "w": 92,
+            "h": 28
+          }
+        },
+        {
+          "role": "textbox",
+          "name": "Search actions...",
+          "text": "",
+          "selectorHint": "div.pt-0.px-4 > div.fixed.inset-0:nth-of-type(2) > div.bg-white.rounded-lg > div.flex.flex-col:nth-of-type(2) > div.relative.h-10:nth-of-type(1) > input.file:text-foreground.placeholder:text-muted-foreground",
+          "bbox": {
+            "x": 456,
+            "y": 240,
+            "w": 528,
+            "h": 36
+          }
+        },
+        {
+          "role": "button",
+          "name": "Add Custom Action",
+          "text": "Add Custom Action",
+          "selectorHint": "div#radix-_r_9_ > div.pt-0.px-4 > div.fixed.inset-0:nth-of-type(2) > div.bg-white.rounded-lg > div.flex.flex-col:nth-of-type(2) > button.w-full.cursor-pointer",
+          "bbox": {
+            "x": 456,
+            "y": 294,
+            "w": 528,
+            "h": 44
+          }
+        },
+        {
+          "role": "button",
+          "name": "Cancel",
+          "text": "Cancel",
+          "selectorHint": "div.pt-0.px-4 > div.fixed.inset-0:nth-of-type(2) > div.bg-white.rounded-lg > div.flex.flex-col:nth-of-type(2) > div.flex.justify-between:nth-of-type(3) > button.inline-flex.items-center:nth-of-type(1)",
+          "bbox": {
+            "x": 456,
+            "y": 679,
+            "w": 78,
+            "h": 36
+          }
+        },
+        {
+          "role": "button",
+          "name": "Add Action",
+          "text": "Add Action",
+          "selectorHint": "div.pt-0.px-4 > div.fixed.inset-0:nth-of-type(2) > div.bg-white.rounded-lg > div.flex.flex-col:nth-of-type(2) > div.flex.justify-between:nth-of-type(3) > button.inline-flex.items-center:nth-of-type(2)",
+          "bbox": {
+            "x": 882,
+            "y": 679,
+            "w": 102,
+            "h": 36
+          }
+        },
+        {
+          "role": "heading",
+          "name": "Client Signature",
+          "text": "Client Signature",
+          "selectorHint": "div#radix-_r_2_-content-details > div.space-y-4 > div.bg-white.border:nth-of-type(3) > div.flex.items-center:nth-of-type(1) > h2.text-sm.font-semibold",
+          "bbox": {
+            "x": 319,
+            "y": 933,
+            "w": 104,
+            "h": 20
+          }
+        },
+        {
+          "role": "heading",
+          "name": "No signature available",
+          "text": "No signature available",
+          "selectorHint": "div.space-y-4 > div.bg-white.border:nth-of-type(3) > div.border-2.border-dashed:nth-of-type(2) > div.flex.flex-col > div.text-center.space-y-1:nth-of-type(2) > h3.text-sm.font-medium",
+          "bbox": {
+            "x": 742,
+            "y": 1087,
             "w": 195,
             "h": 20
           }
