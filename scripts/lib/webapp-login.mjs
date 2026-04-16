@@ -1,5 +1,7 @@
 import { chromium } from 'playwright';
 
+export const FROZEN_CLOCK = new Date('2026-04-16T09:00:00.000Z');
+
 export async function settle(page, ms = 800) {
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
@@ -21,8 +23,9 @@ export async function loginUi(page, { webBase, email, password }) {
 
 export async function launchAuthed({ webBase, email, password, viewport = { width: 1440, height: 900 } }) {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport });
+  const context = await browser.newContext({ viewport, locale: 'en-US', timezoneId: 'UTC' });
   const page = await context.newPage();
+  await page.clock.setFixedTime(FROZEN_CLOCK);
   const ok = await loginUi(page, { webBase, email, password });
   if (!ok) {
     await browser.close();

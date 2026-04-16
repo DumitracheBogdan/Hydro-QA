@@ -172,6 +172,12 @@ jobs:
           WEBAPP_UI_MAX_PAGES: "80"
         run: |
           node scripts/run_webapp_ui_detector.mjs
+          cp qa-artifacts/webapp-ui-detector/summary.json qa-artifacts/webapp-ui-detector/summary-run1.json
+          node scripts/run_webapp_ui_detector.mjs
+          cp qa-artifacts/webapp-ui-detector/summary.json qa-artifacts/webapp-ui-detector/summary-run2.json
+          node scripts/webapp-ui-detector/compare-summaries.mjs \
+            qa-artifacts/webapp-ui-detector/summary-run1.json \
+            qa-artifacts/webapp-ui-detector/summary-run2.json
           if [[ -f qa-artifacts/webapp-ui-detector/diff.json ]]; then
             python scripts/generate_webapp_ui_detector_excel.py \
               --diff-json   qa-artifacts/webapp-ui-detector/diff.json \
