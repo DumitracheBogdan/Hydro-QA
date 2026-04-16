@@ -1,24 +1,12 @@
-name: Mobile V2 (Android)
+name: UI Change Detector Mobile (Android Emulator)
 
 on:
   workflow_dispatch:
     inputs:
-      mode:
-        description: "Which V2 script to run"
-        type: choice
-        options:
-          - test
-          - discovery
-          - qa-check
-        default: test
-      flows:
-        description: "Comma-separated flow numbers to run (e.g. 26,38). Empty = all flows. Ignored in qa-check mode."
-        type: string
-        required: false
-      screens:
-        description: "qa-check only: comma-separated screen IDs (e.g. priority_picker,delete_dialog). Empty = all screens. Skips unrelated screens for fast iteration."
-        type: string
-        required: false
+      run_detector:
+        description: "UI Change Detector Mobile (Android Emulator)"
+        type: boolean
+        default: true
   push:
     branches:
       - fix/maestro-v2
@@ -34,6 +22,7 @@ permissions:
 
 jobs:
   mobile:
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.run_detector }}
     runs-on: ubuntu-latest
     timeout-minutes: 75
     steps:
@@ -44,9 +33,11 @@ jobs:
         id: mode
         shell: bash
         run: |
-          # workflow_dispatch -> inputs.mode, push -> read .v2-trigger or default "discovery"
-          RAW_MODE="${{ inputs.mode }}"
-          if [[ -z "$RAW_MODE" ]]; then
+          # workflow_dispatch (checkbox) -> qa-check; push -> read .v2-trigger or default "discovery"
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            RAW_MODE="qa-check"
+          else
+            RAW_MODE=""
             if [[ -f .v2-trigger ]]; then
               RAW_MODE=$(tr -d '[:space:]' < .v2-trigger)
             fi
@@ -94,8 +85,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
-          FLOWS_FILTER: ${{ inputs.flows }}
-          DETECTOR_SCREENS: ${{ inputs.screens }}
 
       - name: Upload artifacts
         if: always()
