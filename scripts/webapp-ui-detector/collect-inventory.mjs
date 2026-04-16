@@ -1,5 +1,6 @@
-export async function collectInventory(page) {
-  return page.evaluate(() => {
+export async function collectInventory(page, options = {}) {
+  const excludeAncestorSelectors = options.excludeAncestorSelectors || [];
+  return page.evaluate((excludeSelectors) => {
     const SEL = 'button, a[href], input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="combobox"], [role="option"], h1, h2, h3, label, th';
 
     function cssPath(el) {
@@ -76,11 +77,21 @@ export async function collectInventory(page) {
       return true;
     }
 
+    function isExcludedByAncestor(el) {
+      for (const sel of excludeSelectors) {
+        try {
+          if (el.closest(sel)) return true;
+        } catch {}
+      }
+      return false;
+    }
+
     const nodes = Array.from(document.querySelectorAll(SEL));
     const out = [];
     const seen = new Set();
     for (const el of nodes) {
       if (!isVisible(el)) continue;
+      if (isExcludedByAncestor(el)) continue;
       const role = computeRole(el);
       const name = accessibleName(el);
       const text = (el.innerText || el.textContent || '').trim().slice(0, 200);
@@ -100,5 +111,5 @@ export async function collectInventory(page) {
       out.push({ role, name, text, selectorHint, bbox });
     }
     return out;
-  });
+  }, excludeAncestorSelectors);
 }
