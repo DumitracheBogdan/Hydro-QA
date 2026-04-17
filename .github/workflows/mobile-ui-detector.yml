@@ -7,6 +7,10 @@ on:
         description: "UI Change Detector Mobile (Android Emulator)"
         type: boolean
         default: true
+      detector_screens:
+        description: "Comma-separated screen IDs for quick test (empty = all screens)"
+        type: string
+        default: ''
   push:
     branches:
       - fix/maestro-v2
@@ -94,6 +98,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+          DETECTOR_SCREENS: ${{ github.event.inputs.detector_screens || '' }}
 
       - name: Upload artifacts
         if: always()

@@ -204,7 +204,7 @@ def annotate_full_screenshot(
 
 
 def find_screenshot(screenshots_dir: Path, screen_id: str) -> Path | None:
-    for name in (f'{screen_id}.png', f'{screen_id}_new_elements.png'):
+    for name in (f'{screen_id}.png', f'{screen_id}_changes.png', f'{screen_id}_new_elements.png'):
         p = screenshots_dir / name
         if p.exists():
             return p
@@ -458,7 +458,7 @@ def write_screen_sheet(
 
         ws.row_dimensions[row].height = 110
 
-        # If the removed element has bounds from baseline, crop and annotate
+        # If the removed element has bounds, crop and annotate
         bounds = parse_bounds(bounds_str)
         if screenshot_img and bounds:
             x1, y1, x2, y2 = bounds
@@ -468,7 +468,10 @@ def write_screen_sheet(
                 tmp_dir=tmp_dir,
                 tag=f'{screen_id}_missing_{idx}',
             )
-            add_image_scaled(ws, str(crop_path), f'G{row}')
+            if crop_path:
+                add_image_scaled(ws, str(crop_path), f'G{row}')
+        elif not bounds:
+            ws.cell(row=row, column=7, value='N/A').font = Font(name='Aptos', italic=True, size=9, color=PALETTE['muted'])
 
         row += 1
 

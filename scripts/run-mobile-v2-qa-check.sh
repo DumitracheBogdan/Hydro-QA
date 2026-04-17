@@ -24,7 +24,12 @@ echo ""
 cd "$GITHUB_WORKSPACE/exploration-2026-04-12/change-detector"
 
 # run_detector.py imports scanner.py and runs the full 24-screen scan + HTML report
-python3 run_detector.py --ci --no-alert --output "$ARTIFACTS" 2>&1
+DETECTOR_ARGS="--ci --no-alert --output $ARTIFACTS"
+if [[ -n "${DETECTOR_SCREENS:-}" ]]; then
+  echo "Quick test mode: scanning only $DETECTOR_SCREENS"
+  DETECTOR_ARGS="$DETECTOR_ARGS --screens $DETECTOR_SCREENS"
+fi
+python3 run_detector.py $DETECTOR_ARGS 2>&1
 EXIT_CODE=$?
 
 if [[ "$EXIT_CODE" -ne 0 ]]; then

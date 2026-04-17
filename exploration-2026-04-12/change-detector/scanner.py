@@ -1469,6 +1469,9 @@ def detect_removed_elements(
 ) -> list[dict]:
     """
     Detect baseline elements that are NO LONGER present in the current scan.
+
+    Uses case-insensitive + substring matching and filters out dynamic text
+    to avoid false positives caused by data drift (dates, counters, etc.).
     """
     screen_data = baseline.get(screen_id, {})
     known = (
@@ -1477,17 +1480,18 @@ def detect_removed_elements(
         else screen_data
     )
 
-    current_texts = set()
-    current_descs = set()
-    current_ids = set()
+    # Build case-insensitive lookup sets from current scan
+    current_texts_lower: set[str] = set()
+    current_descs_lower: set[str] = set()
+    current_ids: set[str] = set()
     for el in current_elements:
         t = el.get("text", "").strip()
         d = el.get("content_desc", "").strip()
         r = el.get("resource_id", "").strip()
         if t:
-            current_texts.add(t)
+            current_texts_lower.add(t.lower())
         if d:
-            current_descs.add(d)
+            current_descs_lower.add(d.lower())
         if r:
             current_ids.add(r)
 
@@ -1497,11 +1501,32 @@ def detect_removed_elements(
         d = el.get("content_desc", "").strip()
         r = el.get("resource_id", "").strip()
 
-        if t and t in current_texts:
+        # Skip dynamic/volatile text (dates, counters, IDs) — same filter
+        # applied during element extraction to avoid false positives.
+        if t and _is_dynamic_text(t):
             continue
-        if d and d in current_descs:
+
+        # Case-insensitive exact match
+        if t and t.lower() in current_texts_lower:
+            continue
+        if d and d.lower() in current_descs_lower:
             continue
         if r and r in current_ids:
+            continue
+
+        # Substring / partial match — catches minor text changes
+        # (e.g. baseline "Show password" matches current "show password toggle")
+        if t:
+            t_low = t.lower()
+            if any(t_low in ct or ct in t_low for ct in current_texts_lower):
+                continue
+        if d:
+            d_low = d.lower()
+            if any(d_low in cd or cd in d_low for cd in current_descs_lower):
+                continue
+
+        # Skip "Placeholder" type entries — these are generic baseline filler
+        if el.get("type") == "placeholder":
             continue
 
         if not t and not d and not r:
