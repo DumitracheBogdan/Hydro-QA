@@ -19,6 +19,15 @@ tags:
     direction: DOWN
     timeout: 10000
 
+# --- Scroll further to bring Save button into view ---
+- scrollUntilVisible:
+    element:
+      text: "Save"
+    direction: DOWN
+    timeout: 10000
+    speed: 40
+    visibilityPercentage: 100
+
 # --- Verify Save button is visible ---
 - assertVisible: "Save"
 

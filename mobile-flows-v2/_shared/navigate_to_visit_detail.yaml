@@ -1,0 +1,41 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Navigate Home to Visit Detail"
+tags:
+  - shared
+  - navigation
+---
+
+# Shared subflow: performs the full Home -> Visit Detail navigation.
+# Mirrors the proven pattern used by passing flows 15-20:
+#   1. Fresh login (lands on Visits Home)
+#   2. Navigate to History tab (visit cards here are clickable)
+#   3. Tap "View Visit Details" to open the visit
+#   4. Wait for Visit Detail to finish loading
+#
+# Callers should already declare their own appId. Maestro
+# subflows inherit the parent's appId, so we still declare it
+# here so this file is also valid when run standalone.
+#
+# Usage from a test flow:
+#   - runFlow: _shared/navigate_to_visit_detail.yaml
+
+- runFlow: login.yaml
+
+# Navigate to History tab (has clickable visit cards with the
+# "View Visit Details" CTA button — Visits Home cards are not
+# reliably tappable on the CI emulator).
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 15000
+
+# Open first visit detail
+- tapOn:
+    text: "View Visit Details"
+
+# Wait for Visit Detail to load — the Inspections tab label
+# is unique to this screen and confirms all tabs rendered.
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000

@@ -7,13 +7,13 @@ tags:
   - smoke
 ---
 
-# Opens the "QA test" visit (which has action items with
-# priorities), finds a priority badge, taps it to open the
-# picker dropdown, verifies all options, dismisses.
+# Opens a visit that has action items with priorities, finds a
+# priority badge, taps it to open the picker dropdown, verifies
+# all options, dismisses.
 #
-# Navigates via Visits Home scroll to "View Visit Details".
+# Navigates via History tab (reliable) -> Visit Detail.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Scroll down to find a priority badge in Actions area ---
 - scrollUntilVisible:

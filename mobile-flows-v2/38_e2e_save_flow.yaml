@@ -11,7 +11,7 @@ tags:
 #
 # Uses Visits Home visit (QA test) for persistence check.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Tap Visit Details tab and expand accordion ---
 - tapOn: "Visit Details"
@@ -86,6 +86,9 @@ tags:
 - tapOn:
     text: "Go back"
     optional: true
+
+# Entry was via History tab, explicitly switch to Visits for the re-open step
+- tapOn: "Visits"
 
 # --- Verify back on Visits Home ---
 - extendedWaitUntil:

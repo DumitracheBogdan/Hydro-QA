@@ -9,7 +9,7 @@ tags:
 # Opens the first inspection form and verifies the Visit
 # Information accordion expands with fields visible.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:

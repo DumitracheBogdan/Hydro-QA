@@ -7,10 +7,12 @@ tags:
   - regression
 ---
 
-# Opens the QA test visit, expands the Visit Details accordion,
-# verifies the form fields are visible, then navigates back.
+# Opens a visit, expands the Visit Details accordion, verifies
+# the form fields are visible, then navigates back.
+#
+# Navigates via History tab (reliable) -> Visit Detail.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Expand Visit Details accordion ---
 - tapOn: "Visit Details"

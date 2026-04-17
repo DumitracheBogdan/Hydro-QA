@@ -8,11 +8,14 @@ tags:
 # Opens the Calorifier/Water Heater form (Type 3) and
 # verifies the form structure.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:
     text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 10000
 - extendedWaitUntil:
     visible: "Start Inspection"
     timeout: 10000

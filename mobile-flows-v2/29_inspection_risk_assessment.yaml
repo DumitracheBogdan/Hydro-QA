@@ -8,7 +8,7 @@ tags:
 # Opens the first inspection form, expands Risk Assessment
 # accordion, and verifies content appears.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:

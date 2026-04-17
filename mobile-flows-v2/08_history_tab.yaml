@@ -25,12 +25,14 @@ tags:
 - assertVisible:
     text: "Type to search.*"
 
-# --- Visit card for the fixture visit ---
-- assertVisible: ".*testing visit.*"
+# --- Visit card structural contents ---
+# Avoid hardcoded dynamic visit titles (volatile seed data)
+# The visit title and site name depend on which visit the seed
+# currently holds. Assert only structural elements that exist
+# for any History visit card: Upcoming badge, Booking Person
+# role label, INSPECTIONS(N) counter, and the "View Visit
+# Details" CTA that is unique to the History tab.
 - assertVisible: "Upcoming"
-- assertVisible:
-    text: ".*Eaton Socon.*"
-- assertVisible: "Bogdan Dumitrache"
 - assertVisible: "Booking Person"
 - assertVisible:
     text: "INSPECTIONS.*"

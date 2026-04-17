@@ -10,7 +10,7 @@ tags:
 # Inspections tab, taps "Start Inspection" on the first card,
 # verifies the form opened, then navigates back.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:

@@ -7,13 +7,13 @@ tags:
   - smoke
 ---
 
-# Opens the "QA test" visit, scrolls to a delete action icon,
-# taps it to open confirmation dialog, verifies Cancel/Delete
-# buttons, then cancels without deleting.
+# Opens a visit, scrolls to a delete action icon, taps it to
+# open confirmation dialog, verifies Cancel/Delete buttons,
+# then cancels without deleting.
 #
-# Navigates via Visits Home scroll to "View Visit Details".
+# Navigates via History tab (reliable) -> Visit Detail.
 
-- runFlow: _shared/open_visits_home_visit.yaml
+- runFlow: _shared/navigate_to_visit_detail.yaml
 
 # --- Scroll down to find delete action icon ---
 - scrollUntilVisible:
