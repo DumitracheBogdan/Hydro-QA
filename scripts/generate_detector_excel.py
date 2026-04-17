@@ -2,14 +2,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import re
 import sys
-from datetime import datetime
+import tempfile
 from pathlib import Path
 
 from openpyxl import Workbook
+from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
+
+try:
+    from PIL import Image as PILImage, ImageDraw, ImageFont
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
 
 PALETTE = {
     'navy': '0F172A',
@@ -24,34 +32,195 @@ PALETTE = {
     'skip_bg': 'FEF3C7',
 }
 
+BOUNDS_RE = re.compile(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]')
+CROP_PAD = 30  # pixels of padding around the element when cropping
+
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
+    p = argparse.ArgumentParser(
         description='Generate UI Change Detector Mobile Excel report from scan results.',
     )
-    parser.add_argument('--scan-json', required=True, help='Path to scan_results JSON file')
-    parser.add_argument('--output', required=True, help='Path for the output .xlsx file')
-    parser.add_argument('--title', default='UI Change Detector Mobile')
-    parser.add_argument('--subtitle', default='')
-    return parser.parse_args()
+    p.add_argument('--scan-json', required=True, help='Path to scan_results JSON file')
+    p.add_argument('--output', required=True, help='Path for the output .xlsx file')
+    p.add_argument('--screenshots-dir', default='', help='Directory containing screen PNGs')
+    p.add_argument('--title', default='UI Change Detector Mobile')
+    p.add_argument('--subtitle', default='')
+    return p.parse_args()
 
 
-def autosize(ws, min_width=12, max_width=58):
-    for col_cells in ws.columns:
-        col_letter = get_column_letter(col_cells[0].column)
-        max_len = 0
-        for cell in col_cells:
-            value = '' if cell.value is None else str(cell.value)
-            if '\n' in value:
-                value = max(value.splitlines(), key=len)
-            max_len = max(max_len, len(value))
-        ws.column_dimensions[col_letter].width = max(min_width, min(max_width, max_len + 2))
+# ===================================================================
+# PIL: crop + annotate helpers (matching webapp-ui-detector pattern)
+# ===================================================================
+
+def parse_bounds(bounds_str: str) -> tuple[int, int, int, int] | None:
+    """Parse '[x1,y1][x2,y2]' into (x1, y1, x2, y2)."""
+    m = BOUNDS_RE.match(bounds_str)
+    if not m:
+        return None
+    return int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))
 
 
-def style_header(cell, fill='navy', size=11, color='FFFFFF'):
+def _load_font(size: int = 16):
+    for path in (
+        'arial.ttf',
+        'arialbd.ttf',
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+        '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+    ):
+        try:
+            return ImageFont.truetype(path, size)
+        except (OSError, IOError):
+            continue
+    return ImageFont.load_default()
+
+
+def crop_and_annotate(
+    img: PILImage.Image,
+    x1: int, y1: int, x2: int, y2: int,
+    label: int,
+    tmp_dir: Path,
+    tag: str,
+) -> Path:
+    """
+    Crop a region around (x1,y1)-(x2,y2) with CROP_PAD padding,
+    draw a red circle + numbered label (matching webapp annotate.mjs style),
+    and save to tmp_dir.
+    """
+    # Crop region with padding, clamped to image bounds
+    cx1 = max(0, x1 - CROP_PAD)
+    cy1 = max(0, y1 - CROP_PAD)
+    cx2 = min(img.width, x2 + CROP_PAD)
+    cy2 = min(img.height, y2 + CROP_PAD)
+
+    crop = img.crop((cx1, cy1, cx2, cy2)).convert('RGBA')
+    draw = ImageDraw.Draw(crop)
+
+    # Element bounds relative to crop
+    rx1 = x1 - cx1
+    ry1 = y1 - cy1
+    rx2 = x2 - cx1
+    ry2 = y2 - cy1
+
+    # Circle: centred on the element, radius = max(w,h)/2 + 14
+    elem_w = rx2 - rx1
+    elem_h = ry2 - ry1
+    center_x = rx1 + elem_w / 2
+    center_y = ry1 + elem_h / 2
+    radius = max(elem_w, elem_h) / 2 + 14
+
+    draw.ellipse(
+        [center_x - radius, center_y - radius,
+         center_x + radius, center_y + radius],
+        outline=(220, 38, 38, 255),
+        width=4,
+    )
+
+    # Numbered label pill (top-right of circle)
+    font = _load_font(16)
+    label_text = str(label)
+    bbox = font.getbbox(label_text)
+    lw = bbox[2] - bbox[0]
+    lh = bbox[3] - bbox[1]
+    pill_r = 14
+    pill_cx = center_x + radius - 4
+    pill_cy = center_y - radius + 4
+    draw.ellipse(
+        [pill_cx - pill_r, pill_cy - pill_r,
+         pill_cx + pill_r, pill_cy + pill_r],
+        fill=(220, 38, 38, 230),
+    )
+    draw.text(
+        (pill_cx - lw / 2, pill_cy - lh / 2 - 2),
+        label_text,
+        font=font,
+        fill=(255, 255, 255, 255),
+    )
+
+    out = tmp_dir / f'{tag}.png'
+    crop.convert('RGB').save(str(out), 'PNG')
+    return out
+
+
+def annotate_full_screenshot(
+    img: PILImage.Image,
+    elements: list[dict],
+    tmp_dir: Path,
+    screen_id: str,
+) -> Path | None:
+    """Draw red circles + numbered labels on a full screenshot for all new elements."""
+    overlay = img.copy().convert('RGBA')
+    draw = ImageDraw.Draw(overlay)
+    font = _load_font(16)
+    drawn = 0
+
+    for idx, elem in enumerate(elements, start=1):
+        bounds = parse_bounds(elem.get('bounds', ''))
+        if bounds is None:
+            continue
+        x1, y1, x2, y2 = bounds
+
+        elem_w = x2 - x1
+        elem_h = y2 - y1
+        cx = x1 + elem_w / 2
+        cy = y1 + elem_h / 2
+        r = max(elem_w, elem_h) / 2 + 14
+
+        draw.ellipse(
+            [cx - r, cy - r, cx + r, cy + r],
+            outline=(220, 38, 38, 255),
+            width=4,
+        )
+
+        # Number label
+        label = str(idx)
+        bbox = font.getbbox(label)
+        lw = bbox[2] - bbox[0]
+        lh = bbox[3] - bbox[1]
+        pill_r = 14
+        pill_cx = cx + r - 4
+        pill_cy = cy - r + 4
+        draw.ellipse(
+            [pill_cx - pill_r, pill_cy - pill_r,
+             pill_cx + pill_r, pill_cy + pill_r],
+            fill=(220, 38, 38, 230),
+        )
+        draw.text(
+            (pill_cx - lw / 2, pill_cy - lh / 2 - 2),
+            label,
+            font=font,
+            fill=(255, 255, 255, 255),
+        )
+        drawn += 1
+
+    if drawn == 0:
+        return None
+
+    out = tmp_dir / f'{screen_id}_full_annotated.png'
+    overlay.convert('RGB').save(str(out), 'PNG')
+    return out
+
+
+def find_screenshot(screenshots_dir: Path, screen_id: str) -> Path | None:
+    for name in (f'{screen_id}.png', f'{screen_id}_new_elements.png'):
+        p = screenshots_dir / name
+        if p.exists():
+            return p
+    return None
+
+
+# ===================================================================
+# openpyxl helpers
+# ===================================================================
+
+def style_header(cell, fill='navy'):
     cell.fill = PatternFill('solid', fgColor=PALETTE[fill])
-    cell.font = Font(name='Aptos', bold=True, size=size, color=color)
-    cell.alignment = Alignment(horizontal='center', vertical='center')
+    cell.font = Font(name='Aptos', bold=True, size=11, color='FFFFFF')
+    cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+
+
+def set_col_widths(ws, widths):
+    for idx, w in enumerate(widths, start=1):
+        ws.column_dimensions[get_column_letter(idx)].width = w
 
 
 def card(ws, cell_range, title, value, fill_color, value_color='FFFFFF'):
@@ -67,39 +236,32 @@ def card(ws, cell_range, title, value, fill_color, value_color='FFFFFF'):
             item.border = Border(left=thin, right=thin, top=thin, bottom=thin)
 
 
-def add_table(ws, start_row, end_row, end_col, table_name):
-    ref = f'A{start_row}:{get_column_letter(end_col)}{end_row}'
-    table = Table(displayName=table_name, ref=ref)
-    table.tableStyleInfo = TableStyleInfo(
-        name='TableStyleMedium2',
-        showFirstColumn=False,
-        showLastColumn=False,
-        showRowStripes=True,
-        showColumnStripes=False,
-    )
-    ws.add_table(table)
+def add_image_scaled(ws, path_str, anchor_cell, max_w=240, max_h=140):
+    """Embed an image scaled to fit max_w x max_h (same as webapp)."""
+    p = Path(path_str)
+    if not p.exists():
+        return
+    try:
+        img = XLImage(str(p))
+    except Exception:
+        return
+    w, h = img.width, img.height
+    ratio_w = max_w / max(w, 1)
+    ratio_h = max_h / max(h, 1)
+    ratio = min(ratio_w, ratio_h, 1)
+    img.width = int(w * ratio)
+    img.height = int(h * ratio)
+    img.anchor = anchor_cell
+    ws.add_image(img)
 
 
 def load_scan(path: Path) -> dict:
     return json.loads(path.read_text(encoding='utf-8'))
 
 
-def status_fill(status: str):
-    if status == 'PASS':
-        return PatternFill('solid', fgColor=PALETTE['pass_bg'])
-    return PatternFill('solid', fgColor=PALETTE['fail_bg'])
-
-
-def status_font(status: str):
-    color = PALETTE['pass'] if status == 'PASS' else PALETTE['fail']
-    return Font(name='Aptos', bold=True, size=11, color=color)
-
-
-def apply_status_style(cell, status: str):
-    cell.fill = status_fill(status)
-    cell.font = status_font(status)
-    cell.alignment = Alignment(horizontal='center', vertical='center')
-
+# ===================================================================
+# Sheet: Summary
+# ===================================================================
 
 def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
     screens = data.get('screens', {})
@@ -108,214 +270,211 @@ def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
 
     screens_scanned = summary.get('screens_scanned', len(screens))
     total_new = summary.get('total_new_elements', 0)
-
     passed = sum(1 for s in screens.values() if s.get('new_element_count', 0) == 0)
     failed = screens_scanned - passed
 
-    # Title row
+    # Title
     ws.merge_cells('A1:H1')
-    title_cell = ws['A1']
-    title_cell.value = title
-    title_cell.fill = PatternFill('solid', fgColor=PALETTE['navy'])
-    title_cell.font = Font(name='Aptos Display', bold=True, size=22, color='FFFFFF')
-    title_cell.alignment = Alignment(horizontal='center', vertical='center')
+    ws['A1'].value = title
+    ws['A1'].fill = PatternFill('solid', fgColor=PALETTE['navy'])
+    ws['A1'].font = Font(name='Aptos Display', bold=True, size=22, color='FFFFFF')
+    ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
     ws.row_dimensions[1].height = 42
 
-    # Subtitle row
+    # Subtitle
     sub_text = subtitle if subtitle else f'Scan: {scan_ts}'
     ws.merge_cells('A2:H2')
-    sub_cell = ws['A2']
-    sub_cell.value = sub_text
-    sub_cell.fill = PatternFill('solid', fgColor=PALETTE['slate'])
-    sub_cell.font = Font(name='Aptos', size=12, color='FFFFFF')
-    sub_cell.alignment = Alignment(horizontal='center', vertical='center')
+    ws['A2'].value = sub_text
+    ws['A2'].fill = PatternFill('solid', fgColor=PALETTE['slate'])
+    ws['A2'].font = Font(name='Aptos', size=12, color='FFFFFF')
+    ws['A2'].alignment = Alignment(horizontal='center', vertical='center')
     ws.row_dimensions[2].height = 28
 
-    # Row 3 spacer
     ws.row_dimensions[3].height = 8
 
-    # Metric cards in row 4-5
+    # Metric cards
     ws.row_dimensions[4].height = 52
     ws.row_dimensions[5].height = 52
-
     card(ws, 'A4:B5', 'Screens Scanned', screens_scanned, PALETTE['slate'])
-    card(ws, 'C4:D5', 'Passed Screens', passed, PALETTE['pass'])
-    card(ws, 'E4:F5', 'Failed Screens', failed, PALETTE['fail'])
+    card(ws, 'C4:D5', 'Passed', passed, PALETTE['pass'])
+    card(ws, 'E4:F5', 'Failed', failed, PALETTE['fail'])
     card(ws, 'G4:H5', 'New Elements', total_new, PALETTE['skip'], value_color='000000')
 
-    # Row 6-7 spacer
     ws.row_dimensions[6].height = 8
     ws.row_dimensions[7].height = 8
 
-    # Label row
-    ws['A8'].value = 'Screen Summary'
-    ws['A8'].font = Font(name='Aptos', bold=True, size=13, color=PALETTE['navy'])
+    # Screen table
+    headers = ['Screen ID', 'Status', 'New Elements', 'New Element Details']
+    for i, h in enumerate(headers, start=1):
+        c = ws.cell(row=8, column=i, value=h)
+        style_header(c)
     ws.row_dimensions[8].height = 24
 
-    # Table header at row 9
-    headers = ['Screen ID', 'Status', 'Baseline Elements', 'New Elements', 'New Element Details']
-    for col_idx, header in enumerate(headers, start=1):
-        cell = ws.cell(row=9, column=col_idx, value=header)
-        style_header(cell)
-    ws.row_dimensions[9].height = 24
-
-    # Table data starting row 10
-    row = 10
+    row = 9
     for screen_id in sorted(screens.keys()):
         screen = screens[screen_id]
         new_count = screen.get('new_element_count', 0)
         status = 'PASS' if new_count == 0 else 'FAIL'
-        baseline_count = screen.get('baseline_element_count', '')
 
-        # Build detail summary
         details = ''
         if new_count > 0:
             parts = []
             for elem in screen.get('new_elements', []):
-                text = elem.get('text', '')
-                desc = elem.get('content_desc', '')
-                rid = elem.get('resource_id', '')
-                label = text or desc or rid or elem.get('class', '')
+                label = elem.get('text') or elem.get('content_desc') or elem.get('resource_id') or elem.get('class', '')
                 parts.append(label)
-            details = '; '.join(parts) if parts else f'{new_count} new element(s)'
+            details = '; '.join(parts) if parts else f'{new_count} new'
 
         ws.cell(row=row, column=1, value=screen_id)
-        status_cell = ws.cell(row=row, column=2, value=status)
-        apply_status_style(status_cell, status)
-        ws.cell(row=row, column=3, value=baseline_count)
-        ws.cell(row=row, column=4, value=new_count)
-        ws.cell(row=row, column=5, value=details)
 
+        sc = ws.cell(row=row, column=2, value=status)
+        if status == 'PASS':
+            sc.fill = PatternFill('solid', fgColor=PALETTE['pass_bg'])
+            sc.font = Font(name='Aptos', bold=True, color=PALETTE['pass'])
+        else:
+            sc.fill = PatternFill('solid', fgColor=PALETTE['fail_bg'])
+            sc.font = Font(name='Aptos', bold=True, color=PALETTE['fail'])
+        sc.alignment = Alignment(horizontal='center')
+
+        ws.cell(row=row, column=3, value=new_count)
+        ws.cell(row=row, column=4, value=details)
         row += 1
 
-    # Add table if we have data
-    if row > 10:
-        add_table(ws, 9, row - 1, len(headers), 'ScreenSummary')
+    set_col_widths(ws, [30, 12, 14, 60])
 
-    # Sheet settings
     ws.sheet_properties.tabColor = '3B82F6'
     ws.sheet_view.showGridLines = False
     ws.sheet_view.zoomScale = 90
 
-    autosize(ws)
+
+# ===================================================================
+# Sheet: per-screen (one sheet per screen with new elements)
+# ===================================================================
+
+MAX_SHEET_NAME = 31
+SHEET_NAME_RE = re.compile(r'[\\/*?:\[\]]')
 
 
-def build_all_screens_sheet(ws, data: dict):
-    screens = data.get('screens', {})
-
-    headers = ['#', 'Screen ID', 'Status', 'New Count', 'Element Text',
-               'Content Desc', 'Resource ID', 'Class', 'Bounds']
-
-    for col_idx, header in enumerate(headers, start=1):
-        cell = ws.cell(row=1, column=col_idx, value=header)
-        style_header(cell)
-
-    row = 2
-    seq = 0
-    for screen_id in sorted(screens.keys()):
-        screen = screens[screen_id]
-        new_count = screen.get('new_element_count', 0)
-        status = 'PASS' if new_count == 0 else 'FAIL'
-        new_elements = screen.get('new_elements', [])
-
-        if new_count == 0 or not new_elements:
-            seq += 1
-            ws.cell(row=row, column=1, value=seq)
-            ws.cell(row=row, column=2, value=screen_id)
-            sc = ws.cell(row=row, column=3, value=status)
-            apply_status_style(sc, status)
-            ws.cell(row=row, column=4, value=new_count)
-            for c in range(5, 10):
-                ws.cell(row=row, column=c, value='')
-            row += 1
-        else:
-            for elem in new_elements:
-                seq += 1
-                ws.cell(row=row, column=1, value=seq)
-                ws.cell(row=row, column=2, value=screen_id)
-                sc = ws.cell(row=row, column=3, value=status)
-                apply_status_style(sc, status)
-                ws.cell(row=row, column=4, value=new_count)
-                ws.cell(row=row, column=5, value=elem.get('text', ''))
-                ws.cell(row=row, column=6, value=elem.get('content_desc', ''))
-                ws.cell(row=row, column=7, value=elem.get('resource_id', ''))
-                ws.cell(row=row, column=8, value=elem.get('class', ''))
-                ws.cell(row=row, column=9, value=elem.get('bounds', ''))
-                row += 1
-
-    if row > 2:
-        add_table(ws, 1, row - 1, len(headers), 'AllScreens')
-
-    ws.freeze_panes = 'A2'
-    ws.sheet_properties.tabColor = '14B8A6'
-
-    autosize(ws)
+def safe_sheet_name(name: str, existing: set) -> str:
+    base = SHEET_NAME_RE.sub('_', name).strip()[:MAX_SHEET_NAME] or 'Screen'
+    candidate = base
+    idx = 2
+    while candidate in existing:
+        suffix = f' ({idx})'
+        candidate = (base[:MAX_SHEET_NAME - len(suffix)] + suffix)
+        idx += 1
+    existing.add(candidate)
+    return candidate
 
 
-def build_new_elements_sheet(ws, data: dict):
-    screens = data.get('screens', {})
+def write_screen_sheet(
+    ws,
+    screen_id: str,
+    screen_data: dict,
+    screenshots_dir: Path | None,
+    tmp_dir: Path,
+):
+    """Write a per-screen sheet with element rows + crop screenshots + full annotated image."""
+    new_elements = screen_data.get('new_elements', [])
 
-    headers = ['Screen ID', 'Element Text', 'Content Desc', 'Resource ID', 'Class', 'Bounds']
+    # Header
+    ws['A1'] = f'Screen: {screen_id}'
+    ws['A1'].font = Font(name='Aptos', bold=True, size=14, color=PALETTE['navy'])
+    ws['A2'] = f'{len(new_elements)} new element(s) detected'
+    ws['A2'].font = Font(name='Aptos', italic=True, size=10, color=PALETTE['muted'])
 
-    for col_idx, header in enumerate(headers, start=1):
-        cell = ws.cell(row=1, column=col_idx, value=header)
-        style_header(cell)
+    # Table headers (row 4) — matching webapp layout
+    headers = ['#', 'Change Type', 'Class', 'Text / Label', 'Resource ID', 'Bounds', 'Print-screen']
+    for i, h in enumerate(headers, start=1):
+        c = ws.cell(row=4, column=i, value=h)
+        style_header(c)
 
-    row = 2
-    has_new = False
-    for screen_id in sorted(screens.keys()):
-        screen = screens[screen_id]
-        new_elements = screen.get('new_elements', [])
-        if not new_elements:
-            continue
-        has_new = True
-        for elem in new_elements:
-            ws.cell(row=row, column=1, value=screen_id)
-            ws.cell(row=row, column=2, value=elem.get('text', ''))
-            ws.cell(row=row, column=3, value=elem.get('content_desc', ''))
-            ws.cell(row=row, column=4, value=elem.get('resource_id', ''))
-            ws.cell(row=row, column=5, value=elem.get('class', ''))
-            ws.cell(row=row, column=6, value=elem.get('bounds', ''))
-            row += 1
+    # Load screenshot for cropping
+    screenshot_img = None
+    if HAS_PIL and screenshots_dir and screenshots_dir.is_dir():
+        ss_path = find_screenshot(screenshots_dir, screen_id)
+        if ss_path:
+            screenshot_img = PILImage.open(ss_path)
 
-    if not has_new:
-        ws.cell(row=2, column=1, value='No new elements detected - all screens match baseline')
-        ws.merge_cells(f'A2:{get_column_letter(len(headers))}2')
-        ws['A2'].font = Font(name='Aptos', size=12, color=PALETTE['pass'])
-        ws['A2'].alignment = Alignment(horizontal='center', vertical='center')
+    # Element rows
+    row = 5
+    for idx, elem in enumerate(new_elements, start=1):
+        ws.cell(row=row, column=1, value=idx)
 
-    if row > 2:
-        add_table(ws, 1, row - 1, len(headers), 'NewElements')
+        ct = ws.cell(row=row, column=2, value='New Element')
+        ct.fill = PatternFill('solid', fgColor=PALETTE['fail_bg'])
+        ct.font = Font(name='Aptos', bold=True, color=PALETTE['fail'])
 
-    ws.sheet_properties.tabColor = 'EF4444'
+        ws.cell(row=row, column=3, value=elem.get('class', ''))
+        text = elem.get('text') or elem.get('content_desc') or ''
+        ws.cell(row=row, column=4, value=text[:200])
+        ws.cell(row=row, column=5, value=elem.get('resource_id', ''))
+        ws.cell(row=row, column=6, value=elem.get('bounds', ''))
 
-    autosize(ws)
+        ws.row_dimensions[row].height = 110
 
+        # Crop + annotate this element and embed in Print-screen column
+        bounds = parse_bounds(elem.get('bounds', ''))
+        if screenshot_img and bounds:
+            x1, y1, x2, y2 = bounds
+            crop_path = crop_and_annotate(
+                screenshot_img, x1, y1, x2, y2,
+                label=idx,
+                tmp_dir=tmp_dir,
+                tag=f'{screen_id}_crop_{idx}',
+            )
+            add_image_scaled(ws, str(crop_path), f'G{row}')
+
+        row += 1
+
+    # Full annotated screenshot at the bottom
+    if screenshot_img and new_elements:
+        row += 2
+        ws.cell(row=row, column=1, value='Full screenshot (with new elements circled):').font = Font(bold=True)
+        full_ann = annotate_full_screenshot(screenshot_img, new_elements, tmp_dir, screen_id)
+        if full_ann:
+            add_image_scaled(ws, str(full_ann), f'A{row + 1}', max_w=520, max_h=1000)
+
+    set_col_widths(ws, [6, 14, 28, 36, 36, 22, 40])
+
+
+# ===================================================================
+# Main
+# ===================================================================
 
 def main():
     args = parse_args()
     scan_path = Path(args.scan_json)
     output_path = Path(args.output)
+    screenshots_dir = Path(args.screenshots_dir) if args.screenshots_dir else None
+
+    if not HAS_PIL:
+        print('WARNING: Pillow not installed — screenshots will be skipped', file=sys.stderr)
 
     data = load_scan(scan_path)
+    screens = data.get('screens', {})
 
     wb = Workbook()
 
-    # Sheet 1: Summary
-    ws_summary = wb.active
-    ws_summary.title = 'Summary'
-    build_summary_sheet(ws_summary, data, args.title, args.subtitle)
+    with tempfile.TemporaryDirectory(prefix='detector_excel_') as tmp_dir_str:
+        tmp_dir = Path(tmp_dir_str)
 
-    # Sheet 2: All Screens
-    ws_all = wb.create_sheet('All Screens')
-    build_all_screens_sheet(ws_all, data)
+        # Sheet 1: Summary
+        ws_summary = wb.active
+        ws_summary.title = 'Summary'
+        build_summary_sheet(ws_summary, data, args.title, args.subtitle)
 
-    # Sheet 3: New Elements
-    ws_new = wb.create_sheet('New Elements')
-    build_new_elements_sheet(ws_new, data)
+        # Per-screen sheets (only for screens with new elements)
+        existing_names = {'Summary'}
+        for screen_id in sorted(screens.keys()):
+            screen_data = screens[screen_id]
+            if screen_data.get('new_element_count', 0) == 0:
+                continue
+            name = safe_sheet_name(screen_id, existing_names)
+            ws = wb.create_sheet(title=name)
+            write_screen_sheet(ws, screen_id, screen_data, screenshots_dir, tmp_dir)
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    wb.save(str(output_path))
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        wb.save(str(output_path))
 
     print(f'EXCEL_PATH={output_path}')
     sys.exit(0)

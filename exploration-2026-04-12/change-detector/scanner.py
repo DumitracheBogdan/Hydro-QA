@@ -1864,6 +1864,9 @@ def scan_all_screens(
             screen_id,
         )
 
+        # ------ Screenshot (always, for Excel report) ------
+        take_screenshot(screen_id, device)
+
         # ------ Baseline comparison ------
         new_elements = compare_with_baseline(screen_id, elements, baseline)
         results[screen_id] = new_elements

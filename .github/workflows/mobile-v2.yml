@@ -72,7 +72,7 @@ jobs:
           echo "Mobile secrets present"
 
       - name: Install Excel dependency
-        run: python3 -m pip install --upgrade pip openpyxl
+        run: python3 -m pip install --upgrade pip openpyxl Pillow
 
       - name: Run mobile V2 (${{ steps.mode.outputs.value }}) on Android emulator
         id: mobile
