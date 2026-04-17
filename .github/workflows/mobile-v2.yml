@@ -14,7 +14,9 @@ on:
     paths:
       - '.github/workflows/mobile-v2.yml'
       - 'scripts/run-mobile-v2-*.sh'
+      - 'scripts/generate_detector_excel.py'
       - 'mobile-flows-v2/**'
+      - 'exploration-2026-04-12/change-detector/**'
       - '.v2-trigger'
 
 permissions:
@@ -69,6 +71,9 @@ jobs:
           fi
           echo "Mobile secrets present"
 
+      - name: Install Excel dependency
+        run: python3 -m pip install --upgrade pip openpyxl
+
       - name: Run mobile V2 (${{ steps.mode.outputs.value }}) on Android emulator
         id: mobile
         uses: reactivecircus/android-emulator-runner@v2
@@ -97,6 +102,16 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Upload Excel report
+        if: always() && steps.mobile.outputs.excel_path != ''
+        id: upload_excel
+        uses: actions/upload-artifact@v4
+        with:
+          name: UIChangeDetector-Excel-${{ github.run_id }}
+          path: ${{ steps.mobile.outputs.excel_path }}
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Publish workflow summary
         if: always()
         shell: bash
@@ -104,35 +119,54 @@ jobs:
           MODE="${{ steps.mode.outputs.value }}"
           {
             if [[ "$MODE" == "qa-check" ]]; then
-              # ----- QA-Check summary -----
-              echo "## QA Change Detector (standalone)"
+              echo "## UI Change Detector Mobile (Android Emulator)"
               echo ""
               DETECTOR_RESULT=$(ls -1t qa-artifacts/change-detector/scan_results_*.json 2>/dev/null | head -1)
               if [[ -n "$DETECTOR_RESULT" ]]; then
                 node -e "
                   const s = require('./$DETECTOR_RESULT');
                   const sum = s.summary || {};
-                  console.log('- Screens scanned: ' + (sum.screens_scanned || 0));
-                  console.log('- New elements found: ' + (sum.total_new_elements || 0));
-                  if (sum.total_new_elements > 0) {
+                  const screens = s.screens || {};
+                  const scanned = sum.screens_scanned || 0;
+                  const newEls = sum.total_new_elements || 0;
+                  const passed = Object.values(screens).filter(v => (v.new_element_count || 0) === 0).length;
+                  const failed = scanned - passed;
+                  console.log('| Metric | Value |');
+                  console.log('|--------|-------|');
+                  console.log('| Screens scanned | ' + scanned + ' |');
+                  console.log('| Passed (no changes) | ' + passed + ' |');
+                  console.log('| Failed (new elements) | ' + failed + ' |');
+                  console.log('| Total new elements | ' + newEls + ' |');
+                  if (newEls > 0) {
                     console.log('');
-                    console.log('**New UI elements detected — review recommended!**');
-                    for (const [name, info] of Object.entries(s.screens || {})) {
+                    console.log('### New UI elements detected');
+                    console.log('');
+                    for (const [name, info] of Object.entries(screens)) {
                       const els = info.new_elements || [];
                       if (els.length > 0) {
-                        console.log('  - ' + name + ': ' + els.length + ' new element(s)');
+                        console.log('**' + name + '** (' + els.length + ' new):');
+                        for (const el of els) {
+                          const label = el.text || el.content_desc || el.resource_id || 'unlabeled';
+                          console.log('  - ' + label);
+                        }
                       }
                     }
                   } else {
                     console.log('');
                     console.log('All screens match baseline. No new elements detected.');
                   }
-                " 2>/dev/null || echo "QA Change Detector summary parse failed"
+                " 2>/dev/null || echo "Summary parse failed"
               else
                 echo "No scan results found — scanner may have failed. Check logs."
               fi
+              echo ""
+              EXCEL_FILE=$(ls -1t qa-artifacts/change-detector/UIChangeDetector_Mobile_*.xlsx 2>/dev/null | head -1)
+              if [[ -n "$EXCEL_FILE" ]]; then
+                echo "**Excel report:** \`$(basename "$EXCEL_FILE")\`"
+                echo ""
+                echo "[Download Excel report](${{ steps.upload_excel.outputs.artifact-url || '#' }})"
+              fi
             else
-              # ----- Normal test/discovery summary -----
               echo "## Mobile V2 ($MODE)"
               echo ""
               SUMMARY_FILE="qa-artifacts/mobile-v2/$MODE/summary.json"
@@ -143,5 +177,6 @@ jobs:
               fi
             fi
             echo ""
+            echo "---"
             echo "Artifact: mobile-v2-$MODE-${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"

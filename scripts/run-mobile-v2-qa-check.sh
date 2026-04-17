@@ -31,6 +31,23 @@ if [[ "$EXIT_CODE" -ne 0 ]]; then
   echo "::warning::QA Change Detector exited with code $EXIT_CODE"
 fi
 
+echo "=== Generating Excel Report ==="
+RESULT_FILE=$(ls -1t "$ARTIFACTS"/scan_results_*.json 2>/dev/null | head -1)
+if [[ -n "$RESULT_FILE" ]]; then
+  EXCEL_NAME="UIChangeDetector_Mobile_$(date +%Y-%m-%d).xlsx"
+  EXCEL_PATH="$ARTIFACTS/$EXCEL_NAME"
+  python3 "$GITHUB_WORKSPACE/scripts/generate_detector_excel.py" \
+    --scan-json "$RESULT_FILE" \
+    --output "$EXCEL_PATH" 2>&1 || echo "::warning::Excel report generation failed"
+  if [[ -f "$EXCEL_PATH" ]]; then
+    echo "Excel report: $EXCEL_PATH"
+    echo "excel_path=$EXCEL_PATH" >> "$GITHUB_OUTPUT"
+    echo "excel_name=$EXCEL_NAME" >> "$GITHUB_OUTPUT"
+  fi
+else
+  echo "::warning::No scan results found — skipping Excel generation"
+fi
+
 # Copy screenshots and any debug dumps into the artifact folder so we can
 # inspect them after the run.
 if [[ -d "screenshots" ]]; then
