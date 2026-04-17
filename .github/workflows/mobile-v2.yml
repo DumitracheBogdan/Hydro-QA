@@ -119,7 +119,7 @@ jobs:
           MODE="${{ steps.mode.outputs.value }}"
           {
             if [[ "$MODE" == "qa-check" ]]; then
-              echo "## UI Change Detector Mobile (Android Emulator)"
+              echo "## UI Change Detector — mobile (Android Emulator)"
               echo ""
               DETECTOR_RESULT=$(ls -1t qa-artifacts/change-detector/scan_results_*.json 2>/dev/null | head -1)
               if [[ -n "$DETECTOR_RESULT" ]]; then
@@ -131,12 +131,20 @@ jobs:
                   const newEls = sum.total_new_elements || 0;
                   const passed = Object.values(screens).filter(v => (v.new_element_count || 0) === 0).length;
                   const failed = scanned - passed;
-                  console.log('| Metric | Value |');
-                  console.log('|--------|-------|');
-                  console.log('| Screens scanned | ' + scanned + ' |');
-                  console.log('| Passed (no changes) | ' + passed + ' |');
-                  console.log('| Failed (new elements) | ' + failed + ' |');
-                  console.log('| Total new elements | ' + newEls + ' |');
+                  console.log('- Mode: **qa-check**');
+                  console.log('- Screens scanned: **' + scanned + '**');
+                  console.log('- Passed: **' + passed + '**  |  Failed: **' + failed + '**  |  New elements: **' + newEls + '**');
+                  console.log('');
+                  if (scanned > 0) {
+                    console.log('| Screen | Status | New Elements |');
+                    console.log('|--------|--------|--------------|');
+                    for (const [name, info] of Object.entries(screens).sort((a,b) => a[0].localeCompare(b[0]))) {
+                      const cnt = info.new_element_count || 0;
+                      const status = cnt === 0 ? 'PASS' : 'FAIL';
+                      const emoji = cnt === 0 ? '' : ' ';
+                      console.log('| \`' + name + '\` | ' + status + emoji + ' | ' + cnt + ' |');
+                    }
+                  }
                   if (newEls > 0) {
                     console.log('');
                     console.log('### New UI elements detected');
@@ -151,9 +159,6 @@ jobs:
                         }
                       }
                     }
-                  } else {
-                    console.log('');
-                    console.log('All screens match baseline. No new elements detected.');
                   }
                 " 2>/dev/null || echo "Summary parse failed"
               else
