@@ -456,11 +456,10 @@ def write_screen_sheet(
         bounds_str = elem.get('bounds', '')
         ws.cell(row=row, column=6, value=bounds_str)
 
-        ws.row_dimensions[row].height = 110
-
         # If the removed element has bounds, crop and annotate
         bounds = parse_bounds(bounds_str)
         if screenshot_img and bounds:
+            ws.row_dimensions[row].height = 110
             x1, y1, x2, y2 = bounds
             crop_path = crop_and_annotate(
                 screenshot_img, x1, y1, x2, y2,
@@ -470,8 +469,10 @@ def write_screen_sheet(
             )
             if crop_path:
                 add_image_scaled(ws, str(crop_path), f'G{row}')
-        elif not bounds:
-            ws.cell(row=row, column=7, value='N/A').font = Font(name='Aptos', italic=True, size=9, color=PALETTE['muted'])
+        else:
+            # No bounds for missing element — can't crop, just note it
+            ws.cell(row=row, column=7, value='(no bounds)').font = Font(
+                name='Aptos', italic=True, size=9, color=PALETTE['muted'])
 
         row += 1
 

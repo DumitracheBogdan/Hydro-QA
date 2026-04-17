@@ -179,6 +179,9 @@ DYNAMIC_TEXT_PATTERNS = [
     re.compile(r"[A-Za-z ]+\s*\(\d+\)"),                # INSPECTIONS (4) / Inspections (0)
     re.compile(r"\d{7,}"),                              # Purchase Order / phone numbers (7+ digits)
     re.compile(r"[+]?\d[\d\s\-]{6,}"),                  # formatted phone numbers (+44 1234 567890)
+    re.compile(r"\d{1,2}\s+[A-Z][a-z]+"),               # 20 April, 3 May (day + month)
+    re.compile(r"[A-Z]{1,3}"),                          # BD, AB, JD (avatar initials)
+    re.compile(r"(.)\1{9,}"),                           # AAAA... repeated chars (junk/test data)
 ]
 
 
@@ -1495,15 +1498,43 @@ def detect_removed_elements(
         if r:
             current_ids.add(r)
 
+    # Also build a set of current classes for fallback matching
+    current_classes: set[str] = set()
+    for el in current_elements:
+        c = el.get("class", "")
+        if c:
+            current_classes.add(c)
+
     removed: list[dict] = []
     for el in known:
         t = el.get("text", "").strip()
         d = el.get("content_desc", "").strip()
         r = el.get("resource_id", "").strip()
+        el_class = el.get("class", "")
+
+        # EditText: extract_elements strips text to "" for these, so baseline
+        # text like "Email"/"Password" will NEVER match current scan texts.
+        # Only match EditText by content_desc or resource_id.
+        if el_class == "android.widget.EditText":
+            if d and d.lower() in current_descs_lower:
+                continue
+            if r and r in current_ids:
+                continue
+            # EditText with only text (no desc/id) → skip, it's a label
+            if t and not d and not r:
+                continue
+            if not d and not r:
+                continue
+            removed.append(el)
+            continue
 
         # Skip dynamic/volatile text (dates, counters, IDs) — same filter
         # applied during element extraction to avoid false positives.
         if t and _is_dynamic_text(t):
+            continue
+
+        # Skip "Placeholder" type entries — these are generic baseline filler
+        if el.get("type") == "placeholder":
             continue
 
         # Case-insensitive exact match
@@ -1515,7 +1546,6 @@ def detect_removed_elements(
             continue
 
         # Substring / partial match — catches minor text changes
-        # (e.g. baseline "Show password" matches current "show password toggle")
         if t:
             t_low = t.lower()
             if any(t_low in ct or ct in t_low for ct in current_texts_lower):
@@ -1524,10 +1554,6 @@ def detect_removed_elements(
             d_low = d.lower()
             if any(d_low in cd or cd in d_low for cd in current_descs_lower):
                 continue
-
-        # Skip "Placeholder" type entries — these are generic baseline filler
-        if el.get("type") == "placeholder":
-            continue
 
         if not t and not d and not r:
             continue
