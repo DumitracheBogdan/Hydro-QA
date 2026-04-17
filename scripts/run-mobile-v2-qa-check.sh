@@ -24,7 +24,7 @@ echo ""
 cd "$GITHUB_WORKSPACE/exploration-2026-04-12/change-detector"
 
 # run_detector.py imports scanner.py and runs the full 24-screen scan + HTML report
-python3 run_detector.py --ci --no-alert --output "$ARTIFACTS" --screens login,visits_home 2>&1
+python3 run_detector.py --ci --no-alert --output "$ARTIFACTS" 2>&1
 EXIT_CODE=$?
 
 if [[ "$EXIT_CODE" -ne 0 ]]; then
@@ -66,11 +66,10 @@ echo "=== QA-Check Done ==="
 # CI gate (ON by default as of 27/27 detector validation). Fail the build
 # when the detector reports new elements. Set FAIL_ON_NEW_ELEMENTS=0 to
 # temporarily disable while doing exploratory work on new screens.
-# TEST MODE: temporarily force success so we can see Excel with annotated screenshots
-# if [[ "$FAIL_ON_NEW_ELEMENTS" == "0" ]]; then
-  echo "::warning::TEST MODE — CI gate temporarily disabled for screenshot test"
+if [[ "$FAIL_ON_NEW_ELEMENTS" == "0" ]]; then
+  echo "::warning::CI gate disabled via FAIL_ON_NEW_ELEMENTS=0 — returning success regardless of detector result"
   exit 0
-# fi
+fi
 
 # Parse scan_results JSON for total_new_elements; exit 1 if > 0 even if
 # the detector process itself exited 0 (the detector returns 0 on normal
