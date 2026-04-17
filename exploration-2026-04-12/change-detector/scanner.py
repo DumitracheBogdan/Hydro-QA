@@ -1532,15 +1532,6 @@ def detect_removed_elements(
         if not t and not d and not r:
             continue
 
-        # Try to attach bounds from a current element with matching class,
-        # so the Excel report can annotate the approximate screen region.
-        if not el.get("bounds"):
-            el_class = el.get("class", "")
-            for cur in current_elements:
-                if cur.get("class") == el_class and cur.get("bounds"):
-                    el = {**el, "bounds": cur["bounds"]}
-                    break
-
         removed.append(el)
 
     return removed
