@@ -185,10 +185,23 @@ DYNAMIC_TEXT_PATTERNS = [
 ]
 
 
+# Seed / test data that appears in the app from QA test fixtures.
+# These are real on-screen strings that change with seed data and
+# should never trigger new-element alerts.
+KNOWN_SEED_TEXTS = {
+    "QA test", "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
+    "Bogdan Dumitrache", "Booking Person", "BD avatar",
+    "HYDBH", "[qa]testing visit",
+    "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
+}
+
+
 def _is_dynamic_text(text: str) -> bool:
-    """Return True if *text* fully matches any dynamic-content pattern."""
+    """Return True if *text* fully matches any dynamic-content pattern or is known seed data."""
     if not text:
         return False
+    if text in KNOWN_SEED_TEXTS:
+        return True
     return any(p.fullmatch(text) for p in DYNAMIC_TEXT_PATTERNS)
 
 # ---------------------------------------------------------------------------
@@ -1515,7 +1528,7 @@ def detect_removed_elements(
         # EditText: extract_elements strips text to "" for these, so baseline
         # text like "Email"/"Password" will NEVER match current scan texts.
         # Only match EditText by content_desc or resource_id.
-        if el_class == "android.widget.EditText":
+        if el_class in ("android.widget.EditText", "android.widget.Spinner"):
             if d and d.lower() in current_descs_lower:
                 continue
             if r and r in current_ids:
@@ -1924,6 +1937,7 @@ def scan_all_screens(
         results[screen_id] = {
             "new": new_elements,
             "removed": removed_elements,
+            "all": elements,
         }
 
         if removed_elements:
@@ -1999,11 +2013,14 @@ def save_scan_results(results: dict, output_dir: Path | None = None) -> Path:
     for screen_id, data in results.items():
         new_els = data["new"] if isinstance(data, dict) else data
         removed_els = data.get("removed", []) if isinstance(data, dict) else []
+        all_els = data.get("all", []) if isinstance(data, dict) else []
         payload["screens"][screen_id] = {
             "new_element_count": len(new_els),
             "new_elements": new_els,
             "removed_element_count": len(removed_els),
             "removed_elements": removed_els,
+            "all_element_count": len(all_els),
+            "all_elements": all_els,
         }
         total_new += len(new_els)
         total_removed += len(removed_els)

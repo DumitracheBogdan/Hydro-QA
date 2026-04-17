@@ -42,10 +42,12 @@ if [[ -n "$RESULT_FILE" ]]; then
   EXCEL_NAME="UIChangeDetector_Mobile_$(date +%Y-%m-%d).xlsx"
   EXCEL_PATH="$ARTIFACTS/$EXCEL_NAME"
   SCREENSHOTS_DIR="$GITHUB_WORKSPACE/exploration-2026-04-12/change-detector/screenshots"
+  BASELINE_SCREENSHOTS_DIR="$GITHUB_WORKSPACE/exploration-2026-04-12/change-detector/baseline_screenshots"
   python3 "$GITHUB_WORKSPACE/scripts/generate_detector_excel.py" \
     --scan-json "$RESULT_FILE" \
     --output "$EXCEL_PATH" \
-    --screenshots-dir "$SCREENSHOTS_DIR" 2>&1 || echo "::warning::Excel report generation failed"
+    --screenshots-dir "$SCREENSHOTS_DIR" \
+    --baseline-screenshots-dir "$BASELINE_SCREENSHOTS_DIR" 2>&1 || echo "::warning::Excel report generation failed"
   if [[ -f "$EXCEL_PATH" ]]; then
     echo "Excel report: $EXCEL_PATH"
     echo "excel_path=$EXCEL_PATH" >> "$GITHUB_OUTPUT"

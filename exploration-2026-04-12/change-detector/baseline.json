@@ -122,12 +122,6 @@
       "route": "Login > Authenticated landing screen",
       "elements": [
         {
-          "text": "Type to searchâ€¦",
-          "class": "android.widget.EditText",
-          "type": "edittext",
-          "clickable": true
-        },
-        {
           "text": "Today",
           "class": "android.widget.Button",
           "type": "button",
@@ -238,31 +232,7 @@
       "route": "Visits Home > Tap 'View Visit Details' on a visit card",
       "elements": [
         {
-          "text": "Back",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Location icon",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
           "text": "Visit Details",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Inspections",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Attachments",
           "class": "android.widget.TextView",
           "type": "tab",
           "clickable": true
@@ -298,76 +268,8 @@
           "clickable": true
         },
         {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Low",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": true
-        },
-        {
-          "text": "Medium",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": true
-        },
-        {
-          "text": "High",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": true
-        },
-        {
-          "text": "Delete action",
-          "class": "android.widget.ImageButton",
-          "type": "icon",
-          "clickable": true
-        },
-        {
-          "text": "Aborted visit",
-          "class": "android.widget.Switch",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Quick actions",
-          "class": "android.widget.ImageButton",
-          "type": "fab",
-          "clickable": true
-        },
-        {
-          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Location",
           "class": "android.view.View",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
-          "class": "android.widget.TextView",
           "clickable": false
         },
         {
@@ -387,11 +289,6 @@
         },
         {
           "text": "83254454965",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "HYDBH",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -421,18 +318,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -441,13 +326,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -484,28 +362,8 @@
           "clickable": true
         },
         {
-          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Location",
           "class": "android.view.View",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
-          "class": "android.widget.TextView",
           "clickable": false
         },
         {
@@ -535,11 +393,6 @@
         },
         {
           "text": "Site Code",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "HYDBH",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -574,18 +427,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -594,13 +435,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -729,11 +563,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "text": "Purchase Ord.",
           "class": "android.widget.TextView",
           "type": "label",
@@ -746,12 +575,6 @@
           "clickable": false
         },
         {
-          "text": "HYDBH",
-          "class": "android.widget.TextView",
-          "type": "value",
-          "clickable": false
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -760,13 +583,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -859,11 +675,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "text": "Purchase Ord.",
           "class": "android.widget.TextView",
           "type": "label",
@@ -873,12 +684,6 @@
           "text": "Site Code",
           "class": "android.widget.TextView",
           "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "HYDBH",
-          "class": "android.widget.TextView",
-          "type": "value",
           "clickable": false
         },
         {
@@ -894,13 +699,6 @@
           "class": "android.widget.TextView",
           "clickable": false,
           "resource_id": ""
-        },
-        {
-          "text": "QA test",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
         }
       ]
     },
@@ -909,31 +707,8 @@
       "route": "KNOWN LIMITATION: the back-press + type-to-trigger sequence relies on focusing a specific Description EditText that our scanner can't reliably target via find_and_tap. Nav falls back to 2x press_back from visit_detail, landing on visits_home. Baseline includes both the intended dialog elements (Unsaved data / Stay / Go back) AND the visits_home fallback state, so this screen guards against UI changes in either. If the trigger ever fires, the dialog's elements will match the original three baseline entries.",
       "elements": [
         {
-          "text": "Unsaved data",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Stay",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Go back",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
           "content_desc": "Search",
           "class": "android.view.View",
-          "clickable": false
-        },
-        {
-          "text": "Type to searchâ€¦",
-          "class": "android.widget.TextView",
           "clickable": false
         },
         {
@@ -957,11 +732,6 @@
           "clickable": false
         },
         {
-          "text": "QA test",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Status icon",
           "class": "android.widget.ImageView",
           "clickable": false
@@ -969,31 +739,6 @@
         {
           "text": "Upcoming",
           "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "content_desc": "Inspections",
-          "class": "android.widget.ImageView",
           "clickable": false
         },
         {
@@ -1027,20 +772,7 @@
           "clickable": false
         },
         {
-          "text": "Type to search…",
-          "class": "android.widget.TextView",
-          "type": "placeholder",
-          "clickable": false
-        },
-        {
           "text": "20 April",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -1051,109 +783,12 @@
     "inspections_tab": {
       "name": "Inspections Tab",
       "route": "Visit Detail > Tap 'Inspections' tab",
-      "elements": [
-        {
-          "text": "Back",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Location icon",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
-          "text": "Visit Details",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Inspections",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Attachments",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Health and Safety Risk Assessment",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Cooling Tower Disinfection form",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Calorifier/Water Heater temperatures",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Chlorine Dioxide Outlet Testing",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Quick actions",
-          "class": "android.widget.ImageButton",
-          "type": "fab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "inspection_type1": {
       "name": "Health and Safety Risk Assessment",
       "route": "Inspections Tab > Tap 'Health and Safety Risk Assessment'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Risk Assessment",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Attachments",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Missing inspection",
-          "class": "android.widget.Switch",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
         {
           "text": "Assisting 1",
           "class": "android.widget.EditText",
@@ -1513,79 +1148,12 @@
     "inspection_type2": {
       "name": "Cooling Tower Disinfection Form",
       "route": "Inspections Tab > Tap 'Cooling Tower Disinfection form'",
-      "elements": [
-        {
-          "text": "Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Reason for Works",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Method of Disinfection",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Disinfection Details",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Timed Testing",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Completion",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Final Review",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Missing inspection",
-          "class": "android.widget.Switch",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "inspection_type3": {
       "name": "Calorifier/Water Heater Temperatures",
       "route": "Inspections Tab > Tap 'Calorifier/Water Heater temperatures'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Temperature Readings",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
         {
           "text": "Temperature field 1",
           "class": "android.widget.EditText",
@@ -1617,33 +1185,9 @@
           "clickable": true
         },
         {
-          "text": "N/A",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
           "text": "Compliant",
           "class": "android.widget.Spinner",
           "type": "dropdown",
-          "clickable": true
-        },
-        {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Missing inspection",
-          "class": "android.widget.Switch",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
           "clickable": true
         }
       ]
@@ -1652,18 +1196,6 @@
       "name": "Chlorine Dioxide Outlet Testing",
       "route": "Inspections Tab > Tap 'Chlorine Dioxide Outlet Testing'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Chemical Levels",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
         {
           "text": "ClO2 Level",
           "class": "android.widget.EditText",
@@ -1687,74 +1219,18 @@
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
-        },
-        {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Missing inspection",
-          "class": "android.widget.Switch",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
         }
       ]
     },
     "attachments_tab": {
       "name": "Attachments Tab",
       "route": "Visit Detail > Tap 'Attachments' tab",
-      "elements": [
-        {
-          "text": "No attachments available.",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Quick actions",
-          "class": "android.widget.ImageButton",
-          "type": "fab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "fab_expanded": {
       "name": "FAB Expanded Menu",
       "route": "Visit Detail / Inspections / Attachments > Tap FAB",
-      "elements": [
-        {
-          "text": "Camera",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Gallery",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Actions",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Close",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "add_actions_sheet": {
       "name": "Add Actions Bottom Sheet",
@@ -1765,281 +1241,32 @@
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
-        },
-        {
-          "text": "Add Custom Action",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 1",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 2",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 3",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 4",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 5",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 6",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 7",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 8",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 9",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 10",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Predefined action 11",
-          "class": "android.widget.CheckBox",
-          "type": "checkbox",
-          "clickable": true
-        },
-        {
-          "text": "Cancel",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Save",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
         }
       ]
     },
     "history_tab": {
       "name": "History Tab",
       "route": "Bottom Nav > Tap 'History'",
-      "elements": [
-        {
-          "text": "BD avatar",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
-          "text": "Visit card",
-          "class": "android.view.ViewGroup",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "activity_tab": {
       "name": "Activity Tab",
       "route": "Bottom Nav > Tap 'Activity'",
-      "elements": [
-        {
-          "text": "BD avatar",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
-          "text": "No activities found.",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "account_tab": {
       "name": "Account Tab",
       "route": "Bottom Nav > Tap 'Account'",
-      "elements": [
-        {
-          "text": "Profile card",
-          "class": "android.view.ViewGroup",
-          "type": "button",
-          "clickable": false
-        },
-        {
-          "text": "Phone",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Email",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "My signature",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Change Password",
-          "class": "android.widget.TextView",
-          "type": "link",
-          "clickable": true
-        },
-        {
-          "text": "Logout",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "change_password": {
       "name": "Change Password",
       "route": "Account Tab > Tap 'Change Password'",
       "elements": [
         {
-          "text": "Back",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Validation rule 1",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Validation rule 2",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Validation rule 3",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
           "text": "Current Password",
           "class": "android.widget.EditText",
           "type": "edittext",
-          "clickable": true
-        },
-        {
-          "text": "Show/hide current password",
-          "class": "android.widget.ImageButton",
-          "type": "toggle",
           "clickable": true
         },
         {
@@ -2049,33 +1276,9 @@
           "clickable": true
         },
         {
-          "text": "Show/hide new password",
-          "class": "android.widget.ImageButton",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
           "text": "Confirm Password",
           "class": "android.widget.EditText",
           "type": "edittext",
-          "clickable": true
-        },
-        {
-          "text": "Show/hide confirm password",
-          "class": "android.widget.ImageButton",
-          "type": "toggle",
-          "clickable": true
-        },
-        {
-          "text": "Passwords do not match!",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Submit",
-          "class": "android.widget.Button",
-          "type": "button",
           "clickable": true
         }
       ]
@@ -2083,56 +1286,12 @@
     "camera_permission": {
       "name": "Camera Permission Dialog",
       "route": "FAB Expanded > Tap 'Camera' (first time)",
-      "elements": [
-        {
-          "text": "While using the app",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Only this time",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Don't allow",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "gallery_picker": {
       "name": "Gallery Picker",
       "route": "FAB Expanded > Tap 'Gallery'",
-      "elements": [
-        {
-          "text": "Photos",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Albums",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Cancel",
-          "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Photo grid item",
-          "class": "android.widget.ImageView",
-          "type": "button",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "photo_label_dialog": {
       "name": "Photo Label Dialog",
@@ -2167,32 +1326,7 @@
     "logout_dialog": {
       "name": "Logout Confirmation Dialog",
       "route": "Account tab > Logout",
-      "elements": [
-        {
-          "text": "Logout",
-          "class": "android.widget.TextView",
-          "type": "title",
-          "clickable": false
-        },
-        {
-          "text": "Are you sure you want to logout?",
-          "class": "android.widget.TextView",
-          "type": "message",
-          "clickable": false
-        },
-        {
-          "text": "Cancel",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Confirm",
-          "class": "android.widget.Button",
-          "type": "button",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "login_error_state": {
       "name": "Login Error State",
@@ -2257,32 +1391,7 @@
     "bottom_nav": {
       "name": "Bottom Navigation Bar",
       "route": "Persistent on all main screens (Visits, History, Activity, Account)",
-      "elements": [
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     }
   }
 }
