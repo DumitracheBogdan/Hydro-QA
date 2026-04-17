@@ -131,11 +131,12 @@ def main():
     )
 
     elapsed_scan = time.time() - t0
-    total_new = sum(len(els) for els in raw_results.values())
+    total_new = sum(len(data["new"]) if isinstance(data, dict) else len(data) for data in raw_results.values())
+    total_removed = sum(len(data.get("removed", [])) if isinstance(data, dict) else 0 for data in raw_results.values())
 
     print(
         f"  Scanned {len(raw_results)} screen(s) in {elapsed_scan:.1f}s "
-        f"-- {total_new} new element(s) found."
+        f"-- {total_new} new, {total_removed} removed element(s) found."
     )
     print()
 
@@ -196,7 +197,7 @@ def main():
         screens = wrapped_results.get("screens", {})
         offending = [
             s for s, info in screens.items()
-            if info.get("new_element_count", 0) > 0
+            if info.get("new_element_count", 0) > 0 or info.get("removed_element_count", 0) > 0
         ]
         if offending:
             print(

@@ -129,33 +129,39 @@ jobs:
                   const screens = s.screens || {};
                   const scanned = sum.screens_scanned || 0;
                   const newEls = sum.total_new_elements || 0;
-                  const passed = Object.values(screens).filter(v => (v.new_element_count || 0) === 0).length;
+                  const removedEls = sum.total_removed_elements || 0;
+                  const passed = Object.values(screens).filter(v => (v.new_element_count || 0) === 0 && (v.removed_element_count || 0) === 0).length;
                   const failed = scanned - passed;
                   console.log('- Mode: **qa-check**');
                   console.log('- Screens scanned: **' + scanned + '**');
-                  console.log('- Passed: **' + passed + '**  |  Failed: **' + failed + '**  |  New elements: **' + newEls + '**');
+                  console.log('- Passed: **' + passed + '**  |  Failed: **' + failed + '**  |  New: **' + newEls + '**  |  Missing: **' + removedEls + '**');
                   console.log('');
                   if (scanned > 0) {
-                    console.log('| Screen | Status | New Elements |');
-                    console.log('|--------|--------|--------------|');
+                    console.log('| Screen | Status | New | Missing |');
+                    console.log('|--------|--------|-----|---------|');
                     for (const [name, info] of Object.entries(screens).sort((a,b) => a[0].localeCompare(b[0]))) {
-                      const cnt = info.new_element_count || 0;
-                      const status = cnt === 0 ? 'PASS' : 'FAIL';
-                      const emoji = cnt === 0 ? '' : ' ';
-                      console.log('| \`' + name + '\` | ' + status + emoji + ' | ' + cnt + ' |');
+                      const nCnt = info.new_element_count || 0;
+                      const rCnt = info.removed_element_count || 0;
+                      const status = (nCnt === 0 && rCnt === 0) ? 'PASS' : 'FAIL';
+                      console.log('| \`' + name + '\` | ' + status + ' | ' + nCnt + ' | ' + rCnt + ' |');
                     }
                   }
-                  if (newEls > 0) {
+                  if (newEls > 0 || removedEls > 0) {
                     console.log('');
-                    console.log('### New UI elements detected');
+                    console.log('### UI changes detected');
                     console.log('');
                     for (const [name, info] of Object.entries(screens)) {
-                      const els = info.new_elements || [];
-                      if (els.length > 0) {
-                        console.log('**' + name + '** (' + els.length + ' new):');
-                        for (const el of els) {
+                      const newE = info.new_elements || [];
+                      const remE = info.removed_elements || [];
+                      if (newE.length > 0 || remE.length > 0) {
+                        console.log('**' + name + '**:');
+                        for (const el of newE) {
                           const label = el.text || el.content_desc || el.resource_id || 'unlabeled';
-                          console.log('  - ' + label);
+                          console.log('  - + ' + label + ' (new)');
+                        }
+                        for (const el of remE) {
+                          const label = el.text || el.content_desc || el.resource_id || 'unlabeled';
+                          console.log('  - - ' + label + ' (missing)');
                         }
                       }
                     }

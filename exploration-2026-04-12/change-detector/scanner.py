@@ -1869,10 +1869,12 @@ def scan_all_screens(
 
         # ------ Baseline comparison ------
         new_elements = compare_with_baseline(screen_id, elements, baseline)
-        results[screen_id] = new_elements
-
-        # ------ Check for removed elements ------
         removed_elements = detect_removed_elements(screen_id, elements, baseline)
+        results[screen_id] = {
+            "new": new_elements,
+            "removed": removed_elements,
+        }
+
         if removed_elements:
             log.warning(
                 "  >>> %d REMOVED element(s) on '%s'!",
@@ -1902,7 +1904,9 @@ def scan_all_screens(
                     el.get("resource_id"),
                     el.get("class"),
                 )
-            take_screenshot(f"{screen_id}_new_elements", device)
+
+        if new_elements or removed_elements:
+            take_screenshot(f"{screen_id}_changes", device)
         else:
             log.info("  No new elements on '%s'.", screen_id)
 
@@ -1940,16 +1944,23 @@ def save_scan_results(results: dict, output_dir: Path | None = None) -> Path:
     }
 
     total_new = 0
-    for screen_id, new_els in results.items():
+    total_removed = 0
+    for screen_id, data in results.items():
+        new_els = data["new"] if isinstance(data, dict) else data
+        removed_els = data.get("removed", []) if isinstance(data, dict) else []
         payload["screens"][screen_id] = {
             "new_element_count": len(new_els),
             "new_elements": new_els,
+            "removed_element_count": len(removed_els),
+            "removed_elements": removed_els,
         }
         total_new += len(new_els)
+        total_removed += len(removed_els)
 
     payload["summary"] = {
         "screens_scanned": len(results),
         "total_new_elements": total_new,
+        "total_removed_elements": total_removed,
     }
 
     with open(out_path, "w", encoding="utf-8") as fh:
@@ -2026,7 +2037,9 @@ def main() -> None:
     print("=" * 60)
 
     total_new = 0
-    for screen_id, new_els in results.items():
+    for screen_id, data in results.items():
+        new_els = data["new"] if isinstance(data, dict) else data
+        removed_els = data.get("removed", []) if isinstance(data, dict) else []
         count = len(new_els)
         total_new += count
         marker = "  *** NEW ***" if count else ""

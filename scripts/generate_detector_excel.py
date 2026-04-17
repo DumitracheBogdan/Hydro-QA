@@ -270,8 +270,10 @@ def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
 
     screens_scanned = summary.get('screens_scanned', len(screens))
     total_new = summary.get('total_new_elements', 0)
-    passed = sum(1 for s in screens.values() if s.get('new_element_count', 0) == 0)
+    passed = sum(1 for s in screens.values()
+                 if s.get('new_element_count', 0) == 0 and s.get('removed_element_count', 0) == 0)
     failed = screens_scanned - passed
+    total_removed = sum(s.get('removed_element_count', 0) for s in screens.values())
 
     # Title
     ws.merge_cells('A1:H1')
@@ -298,13 +300,13 @@ def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
     card(ws, 'A4:B5', 'Screens Scanned', screens_scanned, PALETTE['slate'])
     card(ws, 'C4:D5', 'Passed', passed, PALETTE['pass'])
     card(ws, 'E4:F5', 'Failed', failed, PALETTE['fail'])
-    card(ws, 'G4:H5', 'New Elements', total_new, PALETTE['skip'], value_color='000000')
+    card(ws, 'G4:H5', 'Changes', f'{total_new} new / {total_removed} removed', PALETTE['skip'], value_color='000000')
 
     ws.row_dimensions[6].height = 8
     ws.row_dimensions[7].height = 8
 
     # Screen table
-    headers = ['Screen ID', 'Status', 'New Elements', 'New Element Details']
+    headers = ['Screen ID', 'Status', 'New Elements', 'Removed Elements', 'Details']
     for i, h in enumerate(headers, start=1):
         c = ws.cell(row=8, column=i, value=h)
         style_header(c)
@@ -314,15 +316,23 @@ def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
     for screen_id in sorted(screens.keys()):
         screen = screens[screen_id]
         new_count = screen.get('new_element_count', 0)
-        status = 'PASS' if new_count == 0 else 'FAIL'
+        removed_count = screen.get('removed_element_count', 0)
+        status = 'PASS' if (new_count == 0 and removed_count == 0) else 'FAIL'
 
-        details = ''
+        details_parts = []
         if new_count > 0:
             parts = []
             for elem in screen.get('new_elements', []):
                 label = elem.get('text') or elem.get('content_desc') or elem.get('resource_id') or elem.get('class', '')
-                parts.append(label)
-            details = '; '.join(parts) if parts else f'{new_count} new'
+                parts.append(f'+{label}')
+            details_parts.extend(parts)
+        if removed_count > 0:
+            parts = []
+            for elem in screen.get('removed_elements', []):
+                label = elem.get('text') or elem.get('content_desc') or elem.get('resource_id') or elem.get('class', '')
+                parts.append(f'-{label}')
+            details_parts.extend(parts)
+        details = '; '.join(details_parts) if details_parts else ''
 
         ws.cell(row=row, column=1, value=screen_id)
 
@@ -336,10 +346,11 @@ def build_summary_sheet(ws, data: dict, title: str, subtitle: str):
         sc.alignment = Alignment(horizontal='center')
 
         ws.cell(row=row, column=3, value=new_count)
-        ws.cell(row=row, column=4, value=details)
+        ws.cell(row=row, column=4, value=removed_count)
+        ws.cell(row=row, column=5, value=details)
         row += 1
 
-    set_col_widths(ws, [30, 12, 14, 60])
+    set_col_widths(ws, [30, 12, 14, 16, 60])
 
     ws.sheet_properties.tabColor = '3B82F6'
     ws.sheet_view.showGridLines = False
@@ -375,11 +386,12 @@ def write_screen_sheet(
 ):
     """Write a per-screen sheet with element rows + crop screenshots + full annotated image."""
     new_elements = screen_data.get('new_elements', [])
+    removed_elements = screen_data.get('removed_elements', [])
 
     # Header
     ws['A1'] = f'Screen: {screen_id}'
     ws['A1'].font = Font(name='Aptos', bold=True, size=14, color=PALETTE['navy'])
-    ws['A2'] = f'{len(new_elements)} new element(s) detected'
+    ws['A2'] = f'{len(new_elements)} new element(s), {len(removed_elements)} removed element(s) detected'
     ws['A2'].font = Font(name='Aptos', italic=True, size=10, color=PALETTE['muted'])
 
     # Table headers (row 4) — matching webapp layout
@@ -426,11 +438,43 @@ def write_screen_sheet(
 
         row += 1
 
+    # Removed elements
+    for idx, elem in enumerate(removed_elements, start=len(new_elements) + 1):
+        ws.cell(row=row, column=1, value=idx)
+
+        ct = ws.cell(row=row, column=2, value='Missing')
+        ct.fill = PatternFill('solid', fgColor=PALETTE['skip_bg'])
+        ct.font = Font(name='Aptos', bold=True, color=PALETTE['skip'])
+
+        ws.cell(row=row, column=3, value=elem.get('class', ''))
+        text = elem.get('text') or elem.get('content_desc') or ''
+        ws.cell(row=row, column=4, value=text[:200])
+        ws.cell(row=row, column=5, value=elem.get('resource_id', ''))
+        bounds_str = elem.get('bounds', '')
+        ws.cell(row=row, column=6, value=bounds_str)
+
+        ws.row_dimensions[row].height = 110
+
+        # If the removed element has bounds from baseline, crop and annotate
+        bounds = parse_bounds(bounds_str)
+        if screenshot_img and bounds:
+            x1, y1, x2, y2 = bounds
+            crop_path = crop_and_annotate(
+                screenshot_img, x1, y1, x2, y2,
+                label=idx,
+                tmp_dir=tmp_dir,
+                tag=f'{screen_id}_missing_{idx}',
+            )
+            add_image_scaled(ws, str(crop_path), f'G{row}')
+
+        row += 1
+
     # Full annotated screenshot at the bottom
-    if screenshot_img and new_elements:
+    all_changes = new_elements + removed_elements
+    if screenshot_img and all_changes:
         row += 2
-        ws.cell(row=row, column=1, value='Full screenshot (with new elements circled):').font = Font(bold=True)
-        full_ann = annotate_full_screenshot(screenshot_img, new_elements, tmp_dir, screen_id)
+        ws.cell(row=row, column=1, value='Full screenshot (with changes circled):').font = Font(bold=True)
+        full_ann = annotate_full_screenshot(screenshot_img, all_changes, tmp_dir, screen_id)
         if full_ann:
             add_image_scaled(ws, str(full_ann), f'A{row + 1}', max_w=520, max_h=1000)
 
@@ -467,7 +511,7 @@ def main():
         existing_names = {'Summary'}
         for screen_id in sorted(screens.keys()):
             screen_data = screens[screen_id]
-            if screen_data.get('new_element_count', 0) == 0:
+            if screen_data.get('new_element_count', 0) == 0 and screen_data.get('removed_element_count', 0) == 0:
                 continue
             name = safe_sheet_name(screen_id, existing_names)
             ws = wb.create_sheet(title=name)

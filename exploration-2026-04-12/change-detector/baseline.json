@@ -14,12 +14,6 @@
           "clickable": false
         },
         {
-          "text": "Welcome back!",
-          "class": "android.widget.TextView",
-          "type": "heading",
-          "clickable": false
-        },
-        {
           "text": "Enter your email and password to login",
           "class": "android.widget.TextView",
           "type": "subtitle",
@@ -297,6 +291,13 @@
           "class": "android.widget.TextView",
           "clickable": false,
           "resource_id": ""
+        },
+        {
+          "text": "FAKE: Premium Feature Button",
+          "class": "android.widget.Button",
+          "type": "button",
+          "clickable": true,
+          "bounds": "[400,700][680,760]"
         }
       ]
     },
