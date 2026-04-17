@@ -230,6 +230,12 @@
           "class": "android.widget.TextView",
           "type": "label",
           "clickable": false
+        },
+        {
+          "text": "Type to search…",
+          "class": "android.widget.TextView",
+          "type": "label",
+          "clickable": false
         }
       ]
     },

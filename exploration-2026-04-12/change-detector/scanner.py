@@ -179,6 +179,9 @@ DYNAMIC_TEXT_PATTERNS = [
     re.compile(r"[A-Za-z ]+\s*\(\d+\)"),                # INSPECTIONS (4) / Inspections (0)
     re.compile(r"\d{7,}"),                              # Purchase Order / phone numbers (7+ digits)
     re.compile(r"[+]?\d[\d\s\-]{6,}"),                  # formatted phone numbers (+44 1234 567890)
+    re.compile(r"\d{1,2}\s+[A-Z][a-z]+"),               # 20 April, 3 May (day + month)
+    re.compile(r"[A-Z]{1,3}"),                          # BD, AB, JD (avatar initials)
+    re.compile(r"(.)\1{9,}"),                           # AAAA... repeated chars (junk/test data)
 ]
 
 
