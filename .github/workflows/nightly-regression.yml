@@ -40,6 +40,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: Development
+    outputs:
+      mode: ${{ steps.mode.outputs.value }}
+      mobile: ${{ steps.mode.outputs.mobile }}
+      webapp_ui: ${{ steps.mode.outputs.webapp_ui }}
     env:
       HYDROCERT_TARGET_ENV: dev
       HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
@@ -133,36 +137,6 @@ jobs:
           set -euo pipefail
           node scripts/run_regression_bundle.mjs
 
-      # ── Enable KVM for Android emulator hardware acceleration ──
-      - name: Enable KVM
-        if: steps.mode.outputs.mobile == 'true'
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      # ── Run mobile V2 tests on Android emulator ───────────────
-      - name: Run mobile V2 tests (Android emulator)
-        id: mobile
-        if: steps.mode.outputs.mobile == 'true'
-        continue-on-error: true
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          target: default
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          disable-animations: true
-          emulator-boot-timeout: 600
-          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
-          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
-          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
-          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
-
       # ── UI Change Detector web-app ────────────────────────────
       - name: Run UI Change Detector web-app
         if: steps.mode.outputs.webapp_ui == 'true'
@@ -213,14 +187,13 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-      - name: Upload test videos and mobile V2 artifacts
+      - name: Upload test videos
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-videos-${{ github.run_id }}
           path: |
             qa-artifacts/**/videos/
-            qa-artifacts/mobile-v2/
           if-no-files-found: ignore
           retention-days: 14
 
@@ -463,3 +436,9 @@ jobs:
           else
             echo "::warning::Teams webhook returned HTTP ${HTTP_STATUS}. Notification may not have been delivered."
           fi
+
+  mobile:
+    needs: nightly
+    if: needs.nightly.outputs.mobile == 'true'
+    uses: ./.github/workflows/post-deploy-regression-mobile.yml
+    secrets: inherit

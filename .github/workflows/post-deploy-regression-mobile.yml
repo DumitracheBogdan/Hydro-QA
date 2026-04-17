@@ -1,0 +1,58 @@
+name: Post-Deploy regression (Mobile)
+run-name: "Post-Deploy regression (Mobile) - ${{ github.event_name }}"
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-deploy-regression-mobile-dev
+  cancel-in-progress: false
+
+jobs:
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    environment: Development
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run mobile V2 tests (Android emulator)
+        id: mobile
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+
+      - name: Upload mobile V2 artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-v2-${{ github.run_id }}
+          path: qa-artifacts/mobile-v2/
+          if-no-files-found: ignore
+          retention-days: 14
