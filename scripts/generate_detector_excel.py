@@ -203,8 +203,44 @@ def annotate_full_screenshot(
     return out
 
 
+def _make_missing_thumbnail(
+    img: PILImage.Image,
+    label_text: str,
+    idx: int,
+    tmp_dir: Path,
+    tag: str,
+) -> Path | None:
+    """Create a thumbnail of the full screenshot with an amber 'MISSING' banner for elements without bounds."""
+    try:
+        # Scale to thumbnail size
+        thumb = img.copy().convert('RGBA')
+        thumb.thumbnail((240, 400))
+        draw = ImageDraw.Draw(thumb)
+        font = _load_font(14)
+
+        # Amber banner at top
+        banner_h = 28
+        draw.rectangle([0, 0, thumb.width, banner_h], fill=(245, 158, 11, 220))
+        banner_text = f'#{idx} MISSING'
+        bbox = font.getbbox(banner_text)
+        tw = bbox[2] - bbox[0]
+        draw.text(((thumb.width - tw) / 2, 4), banner_text, font=font, fill=(255, 255, 255, 255))
+
+        # Element name label at bottom
+        if label_text:
+            small_font = _load_font(11)
+            draw.rectangle([0, thumb.height - 22, thumb.width, thumb.height], fill=(0, 0, 0, 160))
+            draw.text((4, thumb.height - 20), label_text[:40], font=small_font, fill=(255, 255, 255, 255))
+
+        out = tmp_dir / f'{tag}.png'
+        thumb.convert('RGB').save(str(out), 'PNG')
+        return out
+    except Exception:
+        return None
+
+
 def find_screenshot(screenshots_dir: Path, screen_id: str) -> Path | None:
-    for name in (f'{screen_id}.png', f'{screen_id}_new_elements.png'):
+    for name in (f'{screen_id}.png', f'{screen_id}_changes.png', f'{screen_id}_new_elements.png'):
         p = screenshots_dir / name
         if p.exists():
             return p
@@ -458,7 +494,7 @@ def write_screen_sheet(
 
         ws.row_dimensions[row].height = 110
 
-        # If the removed element has bounds from baseline, crop and annotate
+        # If the removed element has bounds, crop and annotate
         bounds = parse_bounds(bounds_str)
         if screenshot_img and bounds:
             x1, y1, x2, y2 = bounds
@@ -468,7 +504,14 @@ def write_screen_sheet(
                 tmp_dir=tmp_dir,
                 tag=f'{screen_id}_missing_{idx}',
             )
-            add_image_scaled(ws, str(crop_path), f'G{row}')
+            if crop_path:
+                add_image_scaled(ws, str(crop_path), f'G{row}')
+        elif screenshot_img and HAS_PIL:
+            # No bounds available — embed a scaled-down full screenshot
+            # with an amber "MISSING" label overlay as context.
+            thumb = _make_missing_thumbnail(screenshot_img, text, idx, tmp_dir, f'{screen_id}_missing_thumb_{idx}')
+            if thumb:
+                add_image_scaled(ws, str(thumb), f'G{row}')
 
         row += 1
 
