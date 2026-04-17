@@ -185,10 +185,23 @@ DYNAMIC_TEXT_PATTERNS = [
 ]
 
 
+# Seed / test data that appears in the app from QA test fixtures.
+# These are real on-screen strings that change with seed data and
+# should never trigger new-element alerts.
+KNOWN_SEED_TEXTS = {
+    "QA test", "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
+    "Bogdan Dumitrache", "Booking Person", "BD avatar",
+    "HYDBH", "[qa]testing visit",
+    "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
+}
+
+
 def _is_dynamic_text(text: str) -> bool:
-    """Return True if *text* fully matches any dynamic-content pattern."""
+    """Return True if *text* fully matches any dynamic-content pattern or is known seed data."""
     if not text:
         return False
+    if text in KNOWN_SEED_TEXTS:
+        return True
     return any(p.fullmatch(text) for p in DYNAMIC_TEXT_PATTERNS)
 
 # ---------------------------------------------------------------------------
