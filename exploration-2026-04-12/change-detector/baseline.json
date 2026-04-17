@@ -783,7 +783,43 @@
     "inspections_tab": {
       "name": "Inspections Tab",
       "route": "Visit Detail > Tap 'Inspections' tab",
-      "elements": []
+      "elements": [
+        {
+          "text": "Visit Details",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "1. Health and Safty Risk Assessment",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "2. Cooling Tower Disinfection form (one per system)",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Start Inspection",
+          "class": "android.widget.TextView",
+          "clickable": true
+        },
+        {
+          "content_desc": "Back",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "content_desc": "Quick actions",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "content_desc": "Location",
+          "class": "android.view.View",
+          "clickable": false
+        }
+      ]
     },
     "inspection_type1": {
       "name": "Health and Safety Risk Assessment",
@@ -1257,7 +1293,78 @@
     "account_tab": {
       "name": "Account Tab",
       "route": "Bottom Nav > Tap 'Account'",
-      "elements": []
+      "elements": [
+        {
+          "text": "User",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "My signature",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "My signature",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "content_desc": "Phone",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Email",
+          "class": "android.widget.ImageView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Email",
+          "class": "android.view.View",
+          "clickable": false
+        },
+        {
+          "text": "Change Password",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Go to change password screen",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "text": "Logout",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "content_desc": "Logout",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "text": "Visits",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "History",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Activity",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Account",
+          "class": "android.widget.TextView",
+          "clickable": false
+        }
+      ]
     },
     "change_password": {
       "name": "Change Password",
@@ -1280,6 +1387,21 @@
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
+        },
+        {
+          "content_desc": "Back",
+          "class": "android.view.View",
+          "clickable": true
+        },
+        {
+          "text": "***",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "-",
+          "class": "android.widget.TextView",
+          "clickable": false
         }
       ]
     },
@@ -1326,7 +1448,28 @@
     "logout_dialog": {
       "name": "Logout Confirmation Dialog",
       "route": "Account tab > Logout",
-      "elements": []
+      "elements": [
+        {
+          "text": "Logout?",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Are you sure you want to logout?",
+          "class": "android.widget.TextView",
+          "clickable": false
+        },
+        {
+          "text": "Cancel",
+          "class": "android.widget.TextView",
+          "clickable": true
+        },
+        {
+          "text": "Confirm",
+          "class": "android.widget.TextView",
+          "clickable": true
+        }
+      ]
     },
     "login_error_state": {
       "name": "Login Error State",
