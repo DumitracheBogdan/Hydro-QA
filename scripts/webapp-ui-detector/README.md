@@ -5,7 +5,7 @@ Detects unintended UI changes (missing buttons, renamed labels, removed pages, n
 every interactive element, and diffing against a committed baseline. Produces an Excel report with
 annotated PNGs.
 
-Modeled after the existing mobile UI detector (`.github/workflows/mobile-v2.yml`) but for web.
+Modeled after the existing mobile UI detector (`.github/workflows/mobile-ui-detector.yml`) but for web.
 
 ---
 

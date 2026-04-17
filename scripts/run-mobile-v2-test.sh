@@ -12,7 +12,8 @@ ARTIFACTS="$GITHUB_WORKSPACE/qa-artifacts/mobile-v2/test"
 SHOT_DIR="$ARTIFACTS/screenshots"
 LOG_DIR="$ARTIFACTS/logs"
 RESULTS_DIR="$ARTIFACTS/results"
-mkdir -p "$SHOT_DIR" "$LOG_DIR" "$RESULTS_DIR"
+UI_DUMP_DIR="$ARTIFACTS/ui-dumps"
+mkdir -p "$SHOT_DIR" "$LOG_DIR" "$RESULTS_DIR" "$UI_DUMP_DIR"
 
 echo "=== Downloading and installing APK ==="
 gh release download mobile-apk-v1 -p "app-debug.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber || true
@@ -83,6 +84,10 @@ for flow in "${FLOWS[@]}"; do
     FAIL_COUNT=$((FAIL_COUNT + 1))
     CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"FAIL\", \"details\": \"${ERR_LINE}\" }")
     echo "Flow $FLOW_NAME FAILED: $ERR_LINE"
+    # Dump uiautomator XML so we can later resolve element bounds for the failure screenshot.
+    adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null 2>&1 \
+      && adb pull /sdcard/window_dump.xml "$UI_DUMP_DIR/${FLOW_NAME}.xml" >/dev/null 2>&1 \
+      || echo "::warning::ui-dump failed for ${FLOW_NAME}"
   fi
 done
 

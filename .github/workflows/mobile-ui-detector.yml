@@ -12,7 +12,7 @@ on:
       - fix/maestro-v2
       - fix/maestro-v2-round2
     paths:
-      - '.github/workflows/mobile-v2.yml'
+      - '.github/workflows/mobile-ui-detector.yml'
       - 'scripts/run-mobile-v2-*.sh'
       - 'scripts/generate_detector_excel.py'
       - 'mobile-flows-v2/**'
@@ -21,6 +21,10 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  group: mobile-ui-detector-dev
+  cancel-in-progress: false
 
 jobs:
   mobile:
