@@ -203,40 +203,6 @@ def annotate_full_screenshot(
     return out
 
 
-def _make_missing_thumbnail(
-    img: PILImage.Image,
-    label_text: str,
-    idx: int,
-    tmp_dir: Path,
-    tag: str,
-) -> Path | None:
-    """Scaled-down screenshot with amber MISSING banner showing what element is absent."""
-    try:
-        thumb = img.copy().convert('RGBA')
-        thumb.thumbnail((240, 400))
-        draw = ImageDraw.Draw(thumb)
-        font = _load_font(14)
-
-        # Amber banner at top
-        draw.rectangle([0, 0, thumb.width, 28], fill=(245, 158, 11, 220))
-        banner = f'#{idx} MISSING'
-        bbox = font.getbbox(banner)
-        tw = bbox[2] - bbox[0]
-        draw.text(((thumb.width - tw) / 2, 4), banner, font=font, fill=(255, 255, 255, 255))
-
-        # Element name at bottom
-        if label_text:
-            small_font = _load_font(11)
-            draw.rectangle([0, thumb.height - 22, thumb.width, thumb.height], fill=(0, 0, 0, 160))
-            draw.text((4, thumb.height - 20), label_text[:40], font=small_font, fill=(255, 255, 255, 255))
-
-        out = tmp_dir / f'{tag}.png'
-        thumb.convert('RGB').save(str(out), 'PNG')
-        return out
-    except Exception:
-        return None
-
-
 def find_screenshot(screenshots_dir: Path, screen_id: str) -> Path | None:
     for name in (f'{screen_id}.png', f'{screen_id}_changes.png', f'{screen_id}_new_elements.png'):
         p = screenshots_dir / name
@@ -490,11 +456,10 @@ def write_screen_sheet(
         bounds_str = elem.get('bounds', '')
         ws.cell(row=row, column=6, value=bounds_str)
 
-        ws.row_dimensions[row].height = 110
-
         # If the removed element has bounds, crop and annotate
         bounds = parse_bounds(bounds_str)
         if screenshot_img and bounds:
+            ws.row_dimensions[row].height = 110
             x1, y1, x2, y2 = bounds
             crop_path = crop_and_annotate(
                 screenshot_img, x1, y1, x2, y2,
@@ -504,11 +469,10 @@ def write_screen_sheet(
             )
             if crop_path:
                 add_image_scaled(ws, str(crop_path), f'G{row}')
-        elif screenshot_img and HAS_PIL:
-            # No bounds — show scaled screenshot with amber MISSING banner
-            thumb = _make_missing_thumbnail(screenshot_img, text, idx, tmp_dir, f'{screen_id}_missing_thumb_{idx}')
-            if thumb:
-                add_image_scaled(ws, str(thumb), f'G{row}')
+        else:
+            # No bounds for missing element — can't crop, just note it
+            ws.cell(row=row, column=7, value='(no bounds)').font = Font(
+                name='Aptos', italic=True, size=9, color=PALETTE['muted'])
 
         row += 1
 
