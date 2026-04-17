@@ -14,12 +14,6 @@
           "clickable": false
         },
         {
-          "text": "Welcome back!",
-          "class": "android.widget.TextView",
-          "type": "heading",
-          "clickable": false
-        },
-        {
           "text": "Enter your email and password to login",
           "class": "android.widget.TextView",
           "type": "subtitle",
@@ -27,12 +21,6 @@
         },
         {
           "text": "Email",
-          "class": "android.widget.EditText",
-          "type": "edittext",
-          "clickable": true
-        },
-        {
-          "text": "Password",
           "class": "android.widget.EditText",
           "type": "edittext",
           "clickable": true
@@ -131,12 +119,6 @@
           "text": "Type to searchâ€¦",
           "class": "android.widget.EditText",
           "type": "edittext",
-          "clickable": true
-        },
-        {
-          "text": "Today",
-          "class": "android.widget.Button",
-          "type": "button",
           "clickable": true
         },
         {
