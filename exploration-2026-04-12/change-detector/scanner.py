@@ -1910,7 +1910,13 @@ def scan_all_screens(
 
         # ------ Verify we reached the right screen ------
         if not verify_screen(screen_id, device):
-            log.warning("Screen verification failed for %s — snapshot may be inaccurate", screen_id)
+            log.warning("Screen verification failed for %s — skipping to avoid false positives", screen_id)
+            try:
+                cleanup_after_screen(screen_id, device)
+            except Exception:
+                press_back(device)
+                wait(0.5)
+            continue
 
         # ------ Snapshot (scroll-aware for long screens) ------
         try:
