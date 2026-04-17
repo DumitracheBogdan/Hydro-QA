@@ -1515,7 +1515,7 @@ def detect_removed_elements(
         # EditText: extract_elements strips text to "" for these, so baseline
         # text like "Email"/"Password" will NEVER match current scan texts.
         # Only match EditText by content_desc or resource_id.
-        if el_class == "android.widget.EditText":
+        if el_class in ("android.widget.EditText", "android.widget.Spinner"):
             if d and d.lower() in current_descs_lower:
                 continue
             if r and r in current_ids:
@@ -1924,6 +1924,7 @@ def scan_all_screens(
         results[screen_id] = {
             "new": new_elements,
             "removed": removed_elements,
+            "all": elements,
         }
 
         if removed_elements:
@@ -1999,11 +2000,14 @@ def save_scan_results(results: dict, output_dir: Path | None = None) -> Path:
     for screen_id, data in results.items():
         new_els = data["new"] if isinstance(data, dict) else data
         removed_els = data.get("removed", []) if isinstance(data, dict) else []
+        all_els = data.get("all", []) if isinstance(data, dict) else []
         payload["screens"][screen_id] = {
             "new_element_count": len(new_els),
             "new_elements": new_els,
             "removed_element_count": len(removed_els),
             "removed_elements": removed_els,
+            "all_element_count": len(all_els),
+            "all_elements": all_els,
         }
         total_new += len(new_els)
         total_removed += len(removed_els)

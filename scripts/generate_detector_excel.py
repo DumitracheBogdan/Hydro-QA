@@ -43,6 +43,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument('--scan-json', required=True, help='Path to scan_results JSON file')
     p.add_argument('--output', required=True, help='Path for the output .xlsx file')
     p.add_argument('--screenshots-dir', default='', help='Directory containing screen PNGs')
+    p.add_argument('--baseline-screenshots-dir', default='', help='Directory containing baseline reference PNGs for missing element crops')
     p.add_argument('--title', default='UI Change Detector Mobile')
     p.add_argument('--subtitle', default='')
     return p.parse_args()
@@ -385,6 +386,7 @@ def write_screen_sheet(
     screen_id: str,
     screen_data: dict,
     screenshots_dir: Path | None,
+    baseline_screenshots_dir: Path | None,
     tmp_dir: Path,
 ):
     """Write a per-screen sheet with element rows + crop screenshots + full annotated image."""
@@ -409,6 +411,13 @@ def write_screen_sheet(
         ss_path = find_screenshot(screenshots_dir, screen_id)
         if ss_path:
             screenshot_img = PILImage.open(ss_path)
+
+    # Load baseline screenshot for removed/missing element crops
+    baseline_img = None
+    if HAS_PIL and baseline_screenshots_dir and baseline_screenshots_dir.is_dir():
+        baseline_ss = find_screenshot(baseline_screenshots_dir, screen_id)
+        if baseline_ss:
+            baseline_img = PILImage.open(baseline_ss)
 
     # Element rows
     row = 5
@@ -458,11 +467,12 @@ def write_screen_sheet(
 
         # If the removed element has bounds, crop and annotate
         bounds = parse_bounds(bounds_str)
-        if screenshot_img and bounds:
+        source_img = baseline_img if baseline_img else screenshot_img
+        if source_img and bounds:
             ws.row_dimensions[row].height = 110
             x1, y1, x2, y2 = bounds
             crop_path = crop_and_annotate(
-                screenshot_img, x1, y1, x2, y2,
+                source_img, x1, y1, x2, y2,
                 label=idx,
                 tmp_dir=tmp_dir,
                 tag=f'{screen_id}_missing_{idx}',
@@ -470,7 +480,6 @@ def write_screen_sheet(
             if crop_path:
                 add_image_scaled(ws, str(crop_path), f'G{row}')
         else:
-            # No bounds for missing element — can't crop, just note it
             ws.cell(row=row, column=7, value='(no bounds)').font = Font(
                 name='Aptos', italic=True, size=9, color=PALETTE['muted'])
 
@@ -497,6 +506,7 @@ def main():
     scan_path = Path(args.scan_json)
     output_path = Path(args.output)
     screenshots_dir = Path(args.screenshots_dir) if args.screenshots_dir else None
+    baseline_screenshots_dir = Path(args.baseline_screenshots_dir) if args.baseline_screenshots_dir else None
 
     if not HAS_PIL:
         print('WARNING: Pillow not installed — screenshots will be skipped', file=sys.stderr)
@@ -522,7 +532,7 @@ def main():
                 continue
             name = safe_sheet_name(screen_id, existing_names)
             ws = wb.create_sheet(title=name)
-            write_screen_sheet(ws, screen_id, screen_data, screenshots_dir, tmp_dir)
+            write_screen_sheet(ws, screen_id, screen_data, screenshots_dir, baseline_screenshots_dir, tmp_dir)
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
         wb.save(str(output_path))

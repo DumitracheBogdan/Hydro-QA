@@ -244,12 +244,6 @@
           "clickable": true
         },
         {
-          "text": "Location icon",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
           "text": "Visit Details",
           "class": "android.widget.TextView",
           "type": "tab",
@@ -298,12 +292,6 @@
           "clickable": true
         },
         {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
           "text": "Low",
           "class": "android.widget.TextView",
           "type": "label",
@@ -346,28 +334,8 @@
           "clickable": true
         },
         {
-          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Location",
           "class": "android.view.View",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
-          "class": "android.widget.TextView",
           "clickable": false
         },
         {
@@ -387,11 +355,6 @@
         },
         {
           "text": "83254454965",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "HYDBH",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -421,18 +384,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -441,13 +392,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -484,28 +428,8 @@
           "clickable": true
         },
         {
-          "text": "Test Site, Eaton Socon, AB1 2CD, Cambs, St Neots",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Location",
           "class": "android.view.View",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
-          "class": "android.widget.TextView",
           "clickable": false
         },
         {
@@ -535,11 +459,6 @@
         },
         {
           "text": "Site Code",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "HYDBH",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -574,18 +493,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -594,13 +501,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -729,11 +629,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "text": "Purchase Ord.",
           "class": "android.widget.TextView",
           "type": "label",
@@ -746,12 +641,6 @@
           "clickable": false
         },
         {
-          "text": "HYDBH",
-          "class": "android.widget.TextView",
-          "type": "value",
-          "clickable": false
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -760,13 +649,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -859,11 +741,6 @@
           "clickable": false
         },
         {
-          "text": "[qa]testing visit",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "text": "Purchase Ord.",
           "class": "android.widget.TextView",
           "type": "label",
@@ -876,12 +753,6 @@
           "clickable": false
         },
         {
-          "text": "HYDBH",
-          "class": "android.widget.TextView",
-          "type": "value",
-          "clickable": false
-        },
-        {
           "text": "BBAC",
           "content_desc": "",
           "class": "android.widget.TextView",
@@ -890,13 +761,6 @@
         },
         {
           "text": "test1",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
-        },
-        {
-          "text": "QA test",
           "content_desc": "",
           "class": "android.widget.TextView",
           "clickable": false,
@@ -957,37 +821,12 @@
           "clickable": false
         },
         {
-          "text": "QA test",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
           "content_desc": "Status icon",
           "class": "android.widget.ImageView",
           "clickable": false
         },
         {
           "text": "Upcoming",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Avondale Court, Churchfields, E18 2RD, South Woodford, London",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "BD",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Bogdan Dumitrache",
-          "class": "android.widget.TextView",
-          "clickable": false
-        },
-        {
-          "text": "Booking Person",
           "class": "android.widget.TextView",
           "clickable": false
         },
@@ -1038,13 +877,6 @@
           "class": "android.widget.TextView",
           "clickable": false,
           "resource_id": ""
-        },
-        {
-          "text": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-          "content_desc": "",
-          "class": "android.widget.TextView",
-          "clickable": false,
-          "resource_id": ""
         }
       ]
     },
@@ -1057,12 +889,6 @@
           "class": "android.widget.ImageButton",
           "type": "button",
           "clickable": true
-        },
-        {
-          "text": "Location icon",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
         },
         {
           "text": "Visit Details",
@@ -1118,30 +944,6 @@
       "name": "Health and Safety Risk Assessment",
       "route": "Inspections Tab > Tap 'Health and Safety Risk Assessment'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Risk Assessment",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Attachments",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
         {
           "text": "Missing inspection",
           "class": "android.widget.Switch",
@@ -1515,48 +1317,6 @@
       "route": "Inspections Tab > Tap 'Cooling Tower Disinfection form'",
       "elements": [
         {
-          "text": "Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Reason for Works",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Method of Disinfection",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Disinfection Details",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Timed Testing",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Completion",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Final Review",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
           "text": "Missing inspection",
           "class": "android.widget.Switch",
           "type": "toggle",
@@ -1574,18 +1334,6 @@
       "name": "Calorifier/Water Heater Temperatures",
       "route": "Inspections Tab > Tap 'Calorifier/Water Heater temperatures'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Temperature Readings",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
         {
           "text": "Temperature field 1",
           "class": "android.widget.EditText",
@@ -1629,12 +1377,6 @@
           "clickable": true
         },
         {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
           "text": "Missing inspection",
           "class": "android.widget.Switch",
           "type": "toggle",
@@ -1652,18 +1394,6 @@
       "name": "Chlorine Dioxide Outlet Testing",
       "route": "Inspections Tab > Tap 'Chlorine Dioxide Outlet Testing'",
       "elements": [
-        {
-          "text": "Visit Information",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
-          "text": "Chemical Levels",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
         {
           "text": "ClO2 Level",
           "class": "android.widget.EditText",
@@ -1689,12 +1419,6 @@
           "clickable": true
         },
         {
-          "text": "Actions",
-          "class": "android.view.ViewGroup",
-          "type": "accordion",
-          "clickable": true
-        },
-        {
           "text": "Missing inspection",
           "class": "android.widget.Switch",
           "type": "toggle",
@@ -1712,12 +1436,6 @@
       "name": "Attachments Tab",
       "route": "Visit Detail > Tap 'Attachments' tab",
       "elements": [
-        {
-          "text": "No attachments available.",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
         {
           "text": "Quick actions",
           "class": "android.widget.ImageButton",
@@ -1857,39 +1575,9 @@
       "route": "Bottom Nav > Tap 'History'",
       "elements": [
         {
-          "text": "BD avatar",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
           "text": "Visit card",
           "class": "android.view.ViewGroup",
           "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
           "clickable": true
         }
       ]
@@ -1897,44 +1585,7 @@
     "activity_tab": {
       "name": "Activity Tab",
       "route": "Bottom Nav > Tap 'Activity'",
-      "elements": [
-        {
-          "text": "BD avatar",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
-          "text": "No activities found.",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     },
     "account_tab": {
       "name": "Account Tab",
@@ -1975,30 +1626,6 @@
           "class": "android.widget.Button",
           "type": "button",
           "clickable": true
-        },
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
         }
       ]
     },
@@ -2011,24 +1638,6 @@
           "class": "android.widget.ImageButton",
           "type": "button",
           "clickable": true
-        },
-        {
-          "text": "Validation rule 1",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Validation rule 2",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
-        },
-        {
-          "text": "Validation rule 3",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
         },
         {
           "text": "Current Password",
@@ -2065,12 +1674,6 @@
           "class": "android.widget.ImageButton",
           "type": "toggle",
           "clickable": true
-        },
-        {
-          "text": "Passwords do not match!",
-          "class": "android.widget.TextView",
-          "type": "label",
-          "clickable": false
         },
         {
           "text": "Submit",
@@ -2123,12 +1726,6 @@
         {
           "text": "Cancel",
           "class": "android.widget.ImageButton",
-          "type": "button",
-          "clickable": true
-        },
-        {
-          "text": "Photo grid item",
-          "class": "android.widget.ImageView",
           "type": "button",
           "clickable": true
         }
@@ -2257,32 +1854,7 @@
     "bottom_nav": {
       "name": "Bottom Navigation Bar",
       "route": "Persistent on all main screens (Visits, History, Activity, Account)",
-      "elements": [
-        {
-          "text": "Visits",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "History",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Activity",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        },
-        {
-          "text": "Account",
-          "class": "android.widget.TextView",
-          "type": "tab",
-          "clickable": true
-        }
-      ]
+      "elements": []
     }
   }
 }
