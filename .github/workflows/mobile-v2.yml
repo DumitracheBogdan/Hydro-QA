@@ -116,6 +116,7 @@ jobs:
         if: always()
         shell: bash
         run: |
+          set +e
           MODE="${{ steps.mode.outputs.value }}"
           {
             if [[ "$MODE" == "qa-check" ]]; then

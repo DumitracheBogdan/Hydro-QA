@@ -87,10 +87,13 @@ def crop_and_annotate(
     and save to tmp_dir.
     """
     # Crop region with padding, clamped to image bounds
-    cx1 = max(0, x1 - CROP_PAD)
-    cy1 = max(0, y1 - CROP_PAD)
-    cx2 = min(img.width, x2 + CROP_PAD)
-    cy2 = min(img.height, y2 + CROP_PAD)
+    cx1 = max(0, min(x1 - CROP_PAD, img.width - 1))
+    cy1 = max(0, min(y1 - CROP_PAD, img.height - 1))
+    cx2 = min(img.width, max(x2 + CROP_PAD, cx1 + 1))
+    cy2 = min(img.height, max(y2 + CROP_PAD, cy1 + 1))
+
+    if cx2 <= cx1 or cy2 <= cy1:
+        return None
 
     crop = img.crop((cx1, cy1, cx2, cy2)).convert('RGBA')
     draw = ImageDraw.Draw(crop)
