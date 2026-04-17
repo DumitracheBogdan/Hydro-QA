@@ -37,10 +37,11 @@ tags:
     direction: DOWN
     timeout: 10000
 
-# --- Navigate back to Visits Home ---
+# --- Navigate back ---
+# Entry was via History tab -> Visit Detail, so `back` lands on History.
 - back
 
-# --- Verify on Visits Home ---
+# --- Verify returned to the History visit list ---
 - extendedWaitUntil:
-    visible: ".*overview of your visits.*"
+    visible: "View Visit Details"
     timeout: 15000

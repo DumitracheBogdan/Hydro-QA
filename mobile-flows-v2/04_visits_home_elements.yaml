@@ -25,17 +25,12 @@ tags:
 - assertVisible: "Tomorrow"
 - assertVisible: "Next week"
 
-# --- Visit card structural contents ---
-# Avoid hardcoded dynamic visit titles (volatile seed data)
-# Assert the time-window separator "HH:MM -> HH:MM" that every
-# visit card renders, and the INSPECTIONS(N) label. These are
-# structural to the card, independent of which visit is seeded.
-- assertVisible:
-    text: ".*[0-9]{2}:[0-9]{2}.*->.*[0-9]{2}:[0-9]{2}.*"
+# --- Filter state chip ---
+# "Upcoming" is the default filter group label shown on Visits Home.
+# Visit card contents (time, Booking Person, INSPECTIONS) are NOT asserted
+# here — in the CI emulator seed Visits Home can be empty of cards
+# (seeded visit is historical). Those assertions belong in the History flow.
 - assertVisible: "Upcoming"
-- assertVisible: "Booking Person"
-- assertVisible:
-    text: "INSPECTIONS.*"
 
 # --- Bottom navigation tabs ---
 - assertVisible: "Visits"
