@@ -122,12 +122,6 @@
       "route": "Login > Authenticated landing screen",
       "elements": [
         {
-          "text": "BD avatar",
-          "class": "android.widget.ImageView",
-          "type": "icon",
-          "clickable": false
-        },
-        {
           "text": "Type to searchâ€¦",
           "class": "android.widget.EditText",
           "type": "edittext",
