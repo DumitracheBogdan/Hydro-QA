@@ -138,6 +138,26 @@ def main():
         f"  Scanned {len(raw_results)} screen(s) in {elapsed_scan:.1f}s "
         f"-- {total_new} new, {total_removed} removed element(s) found."
     )
+    if total_new > 0 or total_removed > 0:
+        for _sid, _data in raw_results.items():
+            if not isinstance(_data, dict):
+                continue
+            _removed = _data.get("removed", [])
+            _new = _data.get("new", [])
+            if _removed:
+                print(f"  {_BOLD}REMOVED in {_sid}:{_RESET}")
+                for _el in _removed:
+                    _t = _el.get("text", "")
+                    _d = _el.get("content-desc", "")
+                    _r = _el.get("resource-id", "")
+                    print(f"    text={_t!r} desc={_d!r} id={_r!r}")
+            if _new:
+                print(f"  {_BOLD}NEW in {_sid}:{_RESET}")
+                for _el in _new:
+                    _t = _el.get("text", "")
+                    _d = _el.get("content-desc", "")
+                    _r = _el.get("resource-id", "")
+                    print(f"    text={_t!r} desc={_d!r} id={_r!r}")
     print()
 
     # ------------------------------------------------------------------
