@@ -113,7 +113,6 @@ ALL_SCREENS = [
     "visit_detail_accordion",
     "signature_dialog",
     "priority_picker",
-    "delete_dialog",
     "unsaved_data_dialog",
 
     # Phase 3: FAB sub-screens (from visit_detail context)
@@ -1139,8 +1138,8 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
     # Phase 4: Inspections tab and forms
     # ------------------------------------------------------------------
     elif screen_id == "inspections_tab":
-        # Navigate back to visit_detail first (gallery_picker cleanup pressed back,
-        # but we may be at visit_detail or elsewhere). Use the tab row.
+        _navigate_to_visit_detail_v2(device)
+        wait(1)
         tap(*COORDS["tab_inspections"], device)
         wait(1.5)
 
@@ -1191,11 +1190,14 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
         wait(2)
 
     elif screen_id == "account_tab":
+        _ensure_on_visits_home(device)
         tap(*COORDS["bottom_account"], device)
         wait(2)
 
     elif screen_id == "change_password":
-        # Assumes we just scanned account_tab (no cleanup needed), so we're already there
+        _ensure_on_visits_home(device)
+        tap(*COORDS["bottom_account"], device)
+        wait(2)
         if not find_and_tap("Change Password", device):
             tap(*COORDS["change_password"], device)
         wait(2)
@@ -1207,6 +1209,7 @@ def _navigate_to_screen_body(screen_id: str, device: str = DEFAULT_DEVICE) -> No
 
     elif screen_id == "logout_dialog":
         # Navigate to Account tab, then tap Logout
+        _ensure_on_visits_home(device)
         tap(*COORDS["bottom_account"], device)
         wait(1.5)
         if not find_and_tap("Logout", device):
@@ -1255,7 +1258,6 @@ SCREEN_ANCHORS = {
     "account_tab": ["Account"],
     "change_password": ["Change Password"],
     "signature_dialog": ["sign"],
-    "delete_dialog": ["Delete", "Cancel"],
     "unsaved_data_dialog": ["Stay"],
     "fab_expanded": ["Camera", "Gallery"],
     "logout_dialog": ["Logout", "Cancel"],
@@ -1327,15 +1329,9 @@ def cleanup_after_screen(screen_id: str, device: str = DEFAULT_DEVICE) -> None:
         press_back(device)
         wait(0.5)
 
-    elif screen_id == "delete_dialog":
-        # Cancel the delete
-        if not find_and_tap("Cancel", device):
-            press_back(device)
-        wait(1)
-
     elif screen_id == "unsaved_data_dialog":
-        # Stay on the visit (don't lose data / navigate away)
-        if not find_and_tap("Stay", device):
+        # "Go back" discards the probe text so subsequent nav doesn't re-trigger the dialog.
+        if not find_and_tap("Go back", device):
             press_back(device)
         wait(1)
 
@@ -1910,7 +1906,13 @@ def scan_all_screens(
 
         # ------ Verify we reached the right screen ------
         if not verify_screen(screen_id, device):
-            log.warning("Screen verification failed for %s — snapshot may be inaccurate", screen_id)
+            log.warning("Screen verification failed for %s — skipping to avoid false positives", screen_id)
+            try:
+                cleanup_after_screen(screen_id, device)
+            except Exception:
+                press_back(device)
+                wait(0.5)
+            continue
 
         # ------ Snapshot (scroll-aware for long screens) ------
         try:

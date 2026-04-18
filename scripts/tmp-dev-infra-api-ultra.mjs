@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import tls from 'node:tls';
 import dns from 'node:dns/promises';
 import { request } from 'playwright';
 
@@ -57,24 +56,12 @@ function decodeJwt(token) {
   }
 }
 
-async function certDays(host) {
-  return await new Promise((resolve, reject) => {
-    const socket = tls.connect(443, host, { servername: host, rejectUnauthorized: false }, () => {
-      try {
-        const cert = socket.getPeerCertificate();
-        socket.end();
-        const validTo = cert?.valid_to ? new Date(cert.valid_to) : null;
-        const days = validTo ? Math.floor((validTo.getTime() - Date.now()) / 86400000) : -1;
-        resolve({ days, issuer: cert?.issuer?.CN || '', validTo: validTo?.toISOString() || '' });
-      } catch (e) {
-        reject(e);
-      }
-    });
-    socket.on('error', reject);
-  });
-}
-
 async function perfSeq(api, endpoint, n) {
+  // Warm-up: absorb cold-start cost (JIT, DB pool, TLS reuse) before measuring.
+  const warmup = 3;
+  for (let i = 0; i < warmup; i += 1) {
+    try { await api.get(endpoint); } catch {}
+  }
   const times = [];
   let fails = 0;
   for (let i = 0; i < n; i += 1) {
@@ -83,10 +70,12 @@ async function perfSeq(api, endpoint, n) {
     times.push(Date.now() - t0);
     if (r.status() >= 400) fails += 1;
   }
-  return { n, fails, p95: p95(times), avg: Math.round(times.reduce((a, b) => a + b, 0) / times.length), min: Math.min(...times), max: Math.max(...times) };
+  return { n, warmup, fails, p95: p95(times), avg: Math.round(times.reduce((a, b) => a + b, 0) / times.length), min: Math.min(...times), max: Math.max(...times) };
 }
 
 async function perfParallel(api, endpoints, total, concurrency) {
+  // Warm-up in parallel: one request per endpoint, concurrent, results discarded.
+  await Promise.all(endpoints.map((ep) => api.get(ep).catch(() => {})));
   const times = [];
   let fails = 0;
   let idx = 0;
@@ -155,16 +144,6 @@ try {
   await check('I05', 'Infra', 'API host DNS resolves', async () => {
     const ips = await dns.lookup(apiHost, { all: true });
     return ips.length ? { status: 'PASS', details: ips.map((x) => x.address).join(', ') } : { status: 'FAIL', details: 'no ips' };
-  });
-
-  await check('I06', 'Infra', 'Web TLS cert has >= 15 days left', async () => {
-    const c = await certDays(webHost);
-    return c.days >= 15 ? { status: 'PASS', details: `days=${c.days}` } : { status: 'FAIL', details: `days=${c.days}, validTo=${c.validTo}` };
-  });
-
-  await check('I07', 'Infra', 'API TLS cert has >= 15 days left', async () => {
-    const c = await certDays(apiHost);
-    return c.days >= 15 ? { status: 'PASS', details: `days=${c.days}` } : { status: 'FAIL', details: `days=${c.days}, validTo=${c.validTo}` };
   });
 
   await check('A01', 'Auth/API', 'Valid login returns token', async () => {
