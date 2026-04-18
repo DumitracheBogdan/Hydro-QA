@@ -6,16 +6,19 @@ Consumes:
   - Per-flow after.png screenshots under <artifacts>/test/screenshots/
   - Per-flow uiautomator XML dumps under <artifacts>/test/ui-dumps/
   - Per-flow maestro logs under <artifacts>/logs/ (or test/logs/)
+  - Per-flow Maestro YAML files under --flows-dir (default: mobile-flows-v2) —
+    the leading `# ...` comment block after the `---` front-matter separator
+    is extracted as a human-readable "What it checks" description column.
 
 Produces a workbook with TWO sheets modeled on generate_detector_excel.py:
 
   Sheet 1 "Summary" — title banner, subtitle, 4 metric cards (Total / Passed /
-  Failed / Skipped), and a per-flow table (Flow | Status | Duration | Error |
-  Detail). The Detail column is a cross-sheet hyperlink to the matching row on
-  the Details sheet.
+  Failed / Skipped), and a per-flow table (Flow | What it checks | Status |
+  Duration | Error | Detail). The Detail column is a cross-sheet hyperlink to
+  the matching row on the Details sheet.
 
   Sheet 2 "Details" — per-flow rich view with the current annotated-screenshot
-  layout (Flow | Status | Error | Print-screen (annotated)).
+  layout (Flow | What it checks | Status | Error | Print-screen (annotated)).
 
 For failed flows, attempts to parse the selector text out of the Maestro error
 line, find a matching node in the uiautomator dump, and draw a red circle +
@@ -143,7 +146,72 @@ def parse_args() -> argparse.Namespace:
     p.add_argument('--output', required=True, help='Output .xlsx path')
     p.add_argument('--title', default='Mobile Regression Report')
     p.add_argument('--subtitle', default='')
+    p.add_argument(
+        '--flows-dir',
+        default='mobile-flows-v2',
+        help='Directory containing the Maestro YAML flows (used to extract the '
+             '"What it checks" description column). Relative to cwd or absolute.',
+    )
     return p.parse_args()
+
+
+def extract_flow_description(flows_dir: Path, flow_id: str) -> str:
+    """Return the leading `#` comment block from a Maestro YAML flow.
+
+    Opens {flows_dir}/{flow_id}.yaml and looks for the `---` front-matter
+    separator. After it, skips blank lines, then reads consecutive `#` comment
+    lines (stripping the leading `# ` / `#`). Lines starting with "Source:"
+    (case-insensitive, after strip) are skipped. The first non-comment line
+    terminates the block. Returns '' if the file is missing, unreadable, or
+    has no usable comment block. Output is truncated at 280 chars with `…`.
+    """
+    path = flows_dir / f'{flow_id}.yaml'
+    try:
+        text = path.read_text(encoding='utf-8', errors='replace')
+    except Exception:
+        return ''
+
+    lines = text.splitlines()
+
+    # Find the --- front-matter separator.
+    sep_idx = -1
+    for i, line in enumerate(lines):
+        if line.strip() == '---':
+            sep_idx = i
+            break
+    if sep_idx < 0:
+        return ''
+
+    # Skip blank lines after the separator.
+    i = sep_idx + 1
+    while i < len(lines) and not lines[i].strip():
+        i += 1
+
+    # Read consecutive `#` comment lines.
+    cleaned: list[str] = []
+    while i < len(lines):
+        raw = lines[i]
+        stripped = raw.lstrip()
+        if not stripped.startswith('#'):
+            break
+        # Strip leading '#' then an optional single space.
+        body = stripped[1:]
+        if body.startswith(' '):
+            body = body[1:]
+        body = body.strip()
+        # Skip doc-reference lines: "Source:", "Source of truth:", etc.
+        if body and not re.match(r'(?i)source\b', body):
+            cleaned.append(body)
+        i += 1
+
+    if not cleaned:
+        return ''
+
+    joined = ' '.join(cleaned)
+    joined = re.sub(r'\s+', ' ', joined).strip()
+    if len(joined) > 280:
+        joined = joined[:279].rstrip() + '\u2026'
+    return joined
 
 
 def load_summary(path: Path) -> dict:
@@ -237,10 +305,18 @@ def _status_colors(status_raw: str) -> tuple[str, str]:
 # Sheet 1: Summary
 # ===================================================================
 
-def build_summary_sheet(ws, summary: dict, title: str, subtitle: str) -> None:
+def build_summary_sheet(
+    ws,
+    summary: dict,
+    title: str,
+    subtitle: str,
+    descriptions: dict[str, str] | None = None,
+) -> None:
     """Title banner + 4 metric cards + per-flow table with cross-sheet links."""
     ws.sheet_view.showGridLines = False
     ws.sheet_view.zoomScale = 90
+
+    descriptions = descriptions or {}
 
     totals = summary.get('totals') or {}
     generated = summary.get('generatedAt', '')
@@ -249,7 +325,7 @@ def build_summary_sheet(ws, summary: dict, title: str, subtitle: str) -> None:
     failed = int(totals.get('fail', 0) or 0)
     skipped = int(totals.get('skip', 0) or 0)
 
-    # Row 1: Title banner
+    # Row 1: Title banner — keep 8-col span (cards still anchor A:H).
     ws.merge_cells('A1:H1')
     ws['A1'].value = title
     ws['A1'].fill = PatternFill('solid', fgColor=PALETTE['navy'])
@@ -282,7 +358,8 @@ def build_summary_sheet(ws, summary: dict, title: str, subtitle: str) -> None:
     ws.row_dimensions[7].height = 8
 
     # Row 8: table headers
-    headers = ['Flow', 'Status', 'Duration', 'Error', 'Detail']
+    # Columns: Flow=1, What it checks=2, Status=3, Duration=4, Error=5, Detail=6
+    headers = ['Flow', 'What it checks', 'Status', 'Duration', 'Error', 'Detail']
     for i, h in enumerate(headers, start=1):
         style_header(ws.cell(row=8, column=i, value=h))
     ws.row_dimensions[8].height = 24
@@ -296,29 +373,35 @@ def build_summary_sheet(ws, summary: dict, title: str, subtitle: str) -> None:
         status_raw = (check.get('status') or '').upper()
         duration = check.get('duration', '') or check.get('durationMs', '') or ''
         details = check.get('details') or ''
+        description = descriptions.get(flow_name, '') or ''
 
         ws.cell(row=row, column=1, value=flow_name)
 
-        sc = ws.cell(row=row, column=2, value=status_raw)
+        what_cell = ws.cell(row=row, column=2, value=description)
+        what_cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+        sc = ws.cell(row=row, column=3, value=status_raw)
         bg, fg = _status_colors(status_raw)
         sc.fill = PatternFill('solid', fgColor=bg)
         sc.font = Font(name='Aptos', bold=True, color=fg)
         sc.alignment = Alignment(horizontal='center', vertical='center')
 
-        ws.cell(row=row, column=3, value=duration if duration != '' else None)
+        ws.cell(row=row, column=4, value=duration if duration != '' else None)
 
-        err_cell = ws.cell(row=row, column=4, value=details[:80])
+        err_cell = ws.cell(row=row, column=5, value=details[:80])
         err_cell.alignment = Alignment(wrap_text=True, vertical='top')
 
-        link_cell = ws.cell(row=row, column=5, value='See Details')
+        link_cell = ws.cell(row=row, column=6, value='See Details')
         details_target_row = 2 + idx  # headers on row 1
         link_cell.hyperlink = f"#'Details'!A{details_target_row}"
         link_cell.font = Font(name='Aptos', color='1D4ED8', underline='single')
         link_cell.alignment = Alignment(horizontal='center', vertical='center')
 
+        ws.row_dimensions[row].height = 60
+
         row += 1
 
-    set_col_widths(ws, [28, 10, 12, 55, 15])
+    set_col_widths(ws, [28, 50, 10, 12, 55, 15])
 
     # Freeze header + left column
     ws.freeze_panes = 'B9'
@@ -333,12 +416,15 @@ def build_details_sheet(
     summary: dict,
     artifacts_dir: Path,
     tmp_dir: Path,
+    descriptions: dict[str, str] | None = None,
 ) -> None:
-    """Per-flow rich view: Flow | Status | Error | Print-screen (annotated)."""
+    """Per-flow rich view: Flow | What it checks | Status | Error | Print-screen (annotated)."""
     ws.sheet_view.showGridLines = False
 
+    descriptions = descriptions or {}
+
     # Row 1: headers (no title banner, Summary sheet already has it)
-    headers = ['Flow', 'Status', 'Error', 'Print-screen (annotated)']
+    headers = ['Flow', 'What it checks', 'Status', 'Error', 'Print-screen (annotated)']
     for i, h in enumerate(headers, start=1):
         style_header(ws.cell(row=1, column=i, value=h))
     ws.row_dimensions[1].height = 24
@@ -353,10 +439,14 @@ def build_details_sheet(
         flow_name = check.get('id') or ''
         status_raw = (check.get('status') or '').upper()
         details = check.get('details') or ''
+        description = descriptions.get(flow_name, '') or ''
 
         ws.cell(row=row, column=1, value=flow_name)
 
-        status_cell = ws.cell(row=row, column=2, value=status_raw)
+        what_cell = ws.cell(row=row, column=2, value=description)
+        what_cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+        status_cell = ws.cell(row=row, column=3, value=status_raw)
         bg, fg = _status_colors(status_raw)
         status_cell.fill = PatternFill('solid', fgColor=bg)
         status_cell.font = Font(name='Aptos', bold=True, color=fg)
@@ -369,7 +459,7 @@ def build_details_sheet(
             if log_line and log_line not in error_text:
                 error_text = (error_text + '  |  ' + log_line).strip(' |')
 
-        err_cell = ws.cell(row=row, column=3, value=error_text[:800])
+        err_cell = ws.cell(row=row, column=4, value=error_text[:800])
         err_cell.alignment = Alignment(wrap_text=True, vertical='top')
 
         screenshot_path = screenshots_dir / f'{flow_name}-after.png'
@@ -413,13 +503,13 @@ def build_details_sheet(
 
         if embed_path is not None:
             try:
-                add_image_scaled(ws, str(embed_path), f'D{row}', max_w=360, max_h=520)
+                add_image_scaled(ws, str(embed_path), f'E{row}', max_w=360, max_h=520)
             except Exception as exc:
                 print(f'WARNING: embed image failed for {flow_name}: {exc}', file=sys.stderr)
 
         row += 1
 
-    set_col_widths(ws, [32, 12, 60, 50])
+    set_col_widths(ws, [32, 50, 12, 60, 50])
     ws.freeze_panes = 'A2'
 
 
@@ -433,8 +523,10 @@ def build_report(
     output: Path,
     title: str,
     subtitle: str,
+    descriptions: dict[str, str] | None = None,
 ) -> None:
     wb = Workbook()
+    descriptions = descriptions or {}
 
     with tempfile.TemporaryDirectory(prefix='mobile_excel_') as tmp_dir_str:
         tmp_dir = Path(tmp_dir_str)
@@ -442,11 +534,11 @@ def build_report(
         # Sheet 1: Summary
         ws_summary = wb.active
         ws_summary.title = 'Summary'
-        build_summary_sheet(ws_summary, summary, title, subtitle)
+        build_summary_sheet(ws_summary, summary, title, subtitle, descriptions)
 
         # Sheet 2: Details
         ws_details = wb.create_sheet(title='Details')
-        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir)
+        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir, descriptions)
 
         output.parent.mkdir(parents=True, exist_ok=True)
         wb.save(str(output))
@@ -457,6 +549,7 @@ def main() -> int:
     summary_path = Path(args.summary_json)
     artifacts_dir = Path(args.artifacts_dir)
     output = Path(args.output)
+    flows_dir = Path(args.flows_dir)
 
     if not HAS_PIL:
         print('WARNING: Pillow not installed — screenshots will be embedded unannotated', file=sys.stderr)
@@ -467,7 +560,14 @@ def main() -> int:
     else:
         summary = load_summary(summary_path)
 
-    build_report(summary, artifacts_dir, output, args.title, args.subtitle)
+    # Pre-compute "What it checks" descriptions once per flow id.
+    descriptions: dict[str, str] = {}
+    for check in summary.get('checks') or []:
+        fid = check.get('id') or ''
+        if fid and fid not in descriptions:
+            descriptions[fid] = extract_flow_description(flows_dir, fid)
+
+    build_report(summary, artifacts_dir, output, args.title, args.subtitle, descriptions)
     print(f'EXCEL_PATH={output}')
     return 0
 
