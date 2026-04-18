@@ -67,6 +67,7 @@ jobs:
 
       - name: Upload mobile V2 artifacts
         if: always()
+        id: upload_bundle
         uses: actions/upload-artifact@v4
         with:
           name: mobile-v2-${{ github.run_id }}
@@ -76,9 +77,73 @@ jobs:
 
       - name: Upload mobile regression Excel
         if: always()
+        id: upload_excel
         uses: actions/upload-artifact@v4
         with:
           name: mobile-regression-excel-${{ github.run_id }}
           path: qa-artifacts/mobile-v2/mobile-regression-report.xlsx
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Publish workflow summary
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          {
+            echo "## Post-Deploy Regression — Mobile (Android Emulator)"
+            echo ""
+            SUMMARY_FILE="qa-artifacts/mobile-v2/test/summary.json"
+            if [[ -f "$SUMMARY_FILE" ]]; then
+              node -e "
+                const s = require('./$SUMMARY_FILE');
+                const t = s.totals || {total:0,pass:0,fail:0,skip:0};
+                const checks = Array.isArray(s.checks) ? s.checks : [];
+                console.log('- **Mode:** ' + (s.mode || 'test'));
+                console.log('- **Generated:** ' + (s.generatedAt || 'n/a'));
+                console.log('- **Runtime emulator:** API 30 x86_64');
+                console.log('');
+                console.log('| Total | Passed | Failed | Skipped |');
+                console.log('|-------|--------|---------|---------|');
+                console.log('| ' + (t.total||0) + ' | ' + (t.pass||0) + ' | ' + (t.fail||0) + ' | ' + (t.skip||0) + ' |');
+                console.log('');
+                if (checks.length > 0) {
+                  console.log('### Flow results');
+                  console.log('');
+                  console.log('| Flow | Status | Details |');
+                  console.log('|------|--------|---------|');
+                  const icon = (st) => st === 'PASS' ? '✅ PASS' : st === 'FAIL' ? '❌ FAIL' : st === 'SKIP' ? '⏭️ SKIP' : st;
+                  for (const c of checks) {
+                    const id = c.id || '(unknown)';
+                    const st = c.status || 'UNKNOWN';
+                    const det = String(c.details || '').replace(/\|/g, '\\\\|').replace(/\r?\n/g, ' ');
+                    console.log('| \`' + id + '\` | ' + icon(st) + ' | ' + det + ' |');
+                  }
+                  const failed = checks.filter(c => c.status === 'FAIL');
+                  if (failed.length > 0) {
+                    console.log('');
+                    console.log('### Failed flows (' + failed.length + ')');
+                    console.log('');
+                    for (const c of failed) {
+                      const id = c.id || '(unknown)';
+                      let det = String(c.details || '').replace(/\r?\n/g, ' ');
+                      if (det.length > 200) det = det.slice(0, 200) + '…';
+                      console.log('- **' + id + '** — ' + det);
+                    }
+                  }
+                } else {
+                  console.log('_No flow checks found in summary._');
+                }
+              " 2>/dev/null || echo "_Summary parse failed._"
+            else
+              echo "_No summary file at $SUMMARY_FILE — the test run may have failed before producing results._"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "**Excel report:** \`mobile-regression-report.xlsx\`"
+            echo ""
+            echo "[Download Excel report](${{ steps.upload_excel.outputs.artifact-url || '#' }})"
+            echo ""
+            echo "[Download full bundle](${{ steps.upload_bundle.outputs.artifact-url || '#' }})"
+          } >> "$GITHUB_STEP_SUMMARY"
