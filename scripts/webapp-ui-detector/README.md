@@ -190,8 +190,11 @@ npm ci
 npx playwright install --with-deps chromium
 
 export HYDROCERT_WEB_BASE=https://dev.gen-cert.com
-export HYDROCERT_QA_EMAIL=qa-admin@example.com
-export HYDROCERT_QA_PASSWORD='***REMOVED***'
+# Replace placeholders below with real values (do NOT commit them).
+# The values live in GitHub Secrets HYDROCERT_QA_EMAIL / HYDROCERT_QA_PASSWORD
+# for CI; locally, copy `.env.example` to `.env` and fill it in.
+export HYDROCERT_QA_EMAIL=your-qa-email@example.com
+export HYDROCERT_QA_PASSWORD='your-password-here'
 
 # Compare against committed baseline (default mode)
 WEBAPP_UI_MODE=compare node scripts/run_webapp_ui_detector.mjs

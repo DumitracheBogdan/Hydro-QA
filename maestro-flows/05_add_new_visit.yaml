@@ -15,10 +15,10 @@ tags:
 - openLink: https://dev.gen-cert.com/login
 - tapOn:
     text: "you@example.com"
-- inputText: "qa-admin@example.com"
+- inputText: ${MAESTRO_APP_EMAIL}
 - tapOn:
     text: "Password"
-- inputText: "***REMOVED***"
+- inputText: ${MAESTRO_APP_PASSWORD}
 - tapOn:
     text: "Sign in"
 

@@ -3,7 +3,7 @@
 **Date Created:** 2026-04-09
 **Application:** Hydrocert
 **URL:** https://dev.gen-cert.com
-**Test Account:** qa-admin@example.com (Admin)
+**Test Account:** Admin account — see GitHub Secret `HYDROCERT_QA_EMAIL` (and `HYDROCERT_QA_PASSWORD`). Locally, export the same vars or use `.env` (see `.env.example`).
 
 ---
 

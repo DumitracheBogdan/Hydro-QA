@@ -37,9 +37,12 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 SCREENSHOTS_DIR = SCRIPT_DIR / "screenshots"
 BASELINE_PATH = SCRIPT_DIR / "baseline.json"
 
-# Credentials: CI uses env vars; local uses these fallbacks
-LOGIN_EMAIL = os.environ.get("MAESTRO_APP_EMAIL", "qa-mobile@example.com")
-LOGIN_PASSWORD = os.environ.get("MAESTRO_APP_PASSWORD", "***REMOVED***")
+# Credentials come exclusively from env vars (no hardcoded fallbacks).
+# CI: GitHub Actions injects MAESTRO_APP_EMAIL / MAESTRO_APP_PASSWORD from
+# repo secrets. Locally: export them in your shell or use a .env file
+# (see .env.example at the repo root).
+LOGIN_EMAIL = os.environ.get("MAESTRO_APP_EMAIL", "")
+LOGIN_PASSWORD = os.environ.get("MAESTRO_APP_PASSWORD", "")
 
 # Screens that require a real device photo to trigger — skip in CI
 CI_SKIP_SCREENS = {"photo_label_dialog"}

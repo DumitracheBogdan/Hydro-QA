@@ -15,13 +15,13 @@ tags:
 # --- Email Input ---
 - tapOn:
     text: "you@example.com"
-- inputText: "qa-admin@example.com"
-- assertVisible: "qa-admin@example.com"
+- inputText: ${MAESTRO_APP_EMAIL}
+- assertVisible: ${MAESTRO_APP_EMAIL}
 
 # --- Password Input ---
 - tapOn:
     text: "Password"
-- inputText: "***REMOVED***"
+- inputText: ${MAESTRO_APP_PASSWORD}
 
 # --- Keep me signed in Checkbox ---
 - tapOn:
