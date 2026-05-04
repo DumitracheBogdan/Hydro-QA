@@ -432,8 +432,8 @@ async function testM10_UserMenu(page) {
   try {
     await ensureLoggedIn(page);
 
-    // Open user menu (click on user name)
-    const userMenu = page.getByText(/Tech Quarter/i).first();
+    // Open user menu — use stable attribute selector, not display-name text (text varies per tenant/user)
+    const userMenu = page.locator('button[aria-haspopup="menu"]').first();
     const userMenuVisible = await assertVisible(page, userMenu);
     if (!userMenuVisible) {
       pushCheck({ id, area: 'Navigation', test: 'User profile menu', status: 'FAIL', details: 'User menu trigger not visible', evidence: [await shot(page, 'M10-no-user-menu')] });
