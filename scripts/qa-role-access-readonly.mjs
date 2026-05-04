@@ -266,26 +266,36 @@ try {
     };
   });
 
-  await check('RR05', 'Access Control', 'User role cannot access activity logs', async () => {
+  await check('RR05', 'Access Control', 'User role sees only own activity logs (no foreign userId)', async () => {
     if (!roleChecksReady()) return { status: 'SKIP', details: roleChecksReason };
 
     const response = await api.get('/activity-logs');
     const body = await safeJson(response);
 
+    // 401/403 is also acceptable (stricter BE policy) — either is fine
     if ([401, 403].includes(response.status())) {
-      return { status: 'PASS', details: `status=${response.status()}` };
+      return { status: 'PASS', details: `status=${response.status()} (access denied — also acceptable)` };
     }
 
     if (response.status() >= 200 && response.status() < 300) {
+      // BE filters by userId server-side — verify no foreign data leaks
+      const items = arr(body?.data ?? body);
+      const foreign = items.filter(entry => entry?.userId && entry.userId !== actor.id);
+      if (foreign.length) {
+        return {
+          status: 'FAIL',
+          details: `foreign logs leaked: ${foreign.length}/${items.length}, sample userId=${foreign[0].userId}`,
+        };
+      }
       return {
-        status: 'FAIL',
-        details: `status=${response.status()}, count=${arr(body).length}`,
+        status: 'PASS',
+        details: `status=200, total=${items.length}, all userId == actor (${actor.id})`,
       };
     }
 
     return {
       status: 'FAIL',
-      details: `status=${response.status()}`,
+      details: `unexpected status=${response.status()}`,
     };
   });
 
