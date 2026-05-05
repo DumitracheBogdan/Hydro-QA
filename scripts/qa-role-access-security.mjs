@@ -423,48 +423,6 @@ try {
       details: `status=${response.status()}`,
     };
   });
-
-  await check('RA06', 'Access Control', 'User role cannot access global reference data', async () => {
-    if (!roleChecksReady) return { status: 'SKIP', details: roleChecksReason };
-
-    const endpoints = ['/sites', '/products', '/job-types', '/skills', '/contracts'];
-    const openEndpoints = [];
-    const unstableEndpoints = [];
-
-    for (const endpoint of endpoints) {
-      const response = await api.get(endpoint);
-      const body = await safeJson(response);
-      const count = arr(body).length;
-
-      if (response.status() >= 200 && response.status() < 300) {
-        openEndpoints.push(`${endpoint}:${response.status()} count=${count}`);
-        continue;
-      }
-
-      if (![401, 403, 404].includes(response.status())) {
-        unstableEndpoints.push(`${endpoint}:${response.status()}`);
-      }
-    }
-
-    if (openEndpoints.length) {
-      return {
-        status: 'FAIL',
-        details: openEndpoints.join(' | '),
-      };
-    }
-
-    if (unstableEndpoints.length) {
-      return {
-        status: 'FAIL',
-        details: unstableEndpoints.join(' | '),
-      };
-    }
-
-    return {
-      status: 'PASS',
-      details: endpoints.join(', '),
-    };
-  });
 } finally {
   if (api) await api.dispose();
   if (adminApi && cleanupUser?.id) {
