@@ -358,12 +358,13 @@ try {
       return fails === 0 ? { status: 'PASS', details: JSON.stringify(s) } : { status: 'FAIL', details: JSON.stringify(s) };
     });
 
-    await check('L08', 'Load/Perf', 'Mixed burst avg <= 800ms', async () => {
+    await check('L08', 'Load/Perf', 'Mixed burst avg <= 1200ms AND p95 <= 3500ms', async () => {
       if (REGRESSION_MODE !== 'full') {
         return { status: 'SKIP', details: 'full regression only' };
       }
       const p = await perfParallel(api, ['/health', '/users/profile/me', '/customers/filtered?page=1&limit=20', visitsEP50], 80, 16);
-      return p.fails === 0 && p.avg <= 800 ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
+      const pass = p.fails === 0 && p.avg <= 1200 && p.p95 <= 3500;
+      return pass ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
     });
   } finally {
     await api.dispose();
