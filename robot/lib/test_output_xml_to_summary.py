@@ -8,25 +8,21 @@ HERE = Path(__file__).parent
 CONVERTER = HERE / "output_xml_to_summary.py"
 
 SAMPLE_XML = """<?xml version="1.0" encoding="UTF-8"?>
-<robot generator="Robot 7.1.1">
+<robot generator="Robot 7.1.1" schemaversion="5">
   <suite id="s1" name="Sanity">
     <test id="s1-t1" name="SAN01 Robot Framework Runs">
-      <tags>
-        <tag>id:SAN01</tag>
-        <tag>area:sanity</tag>
-        <tag>safeOnProd</tag>
-      </tags>
-      <status status="PASS" starttime="20260512 10:00:00.000" endtime="20260512 10:00:00.100"/>
+      <tag>id:SAN01</tag>
+      <tag>area:sanity</tag>
+      <tag>safeOnProd</tag>
+      <status status="PASS" start="2026-05-12T10:00:00.000" elapsed="0.001"/>
     </test>
     <test id="s1-t2" name="SAN02 Variables Resolve">
-      <tags>
-        <tag>id:SAN02</tag>
-        <tag>area:sanity</tag>
-      </tags>
-      <status status="FAIL" starttime="20260512 10:00:00.100" endtime="20260512 10:00:00.200">Boom: x != y</status>
+      <tag>id:SAN02</tag>
+      <tag>area:sanity</tag>
+      <status status="FAIL" start="2026-05-12T10:00:00.100" elapsed="0.001">Boom: x != y</status>
     </test>
     <test id="s1-t3" name="SAN03 No Tags">
-      <status status="SKIP" starttime="20260512 10:00:00.200" endtime="20260512 10:00:00.300"/>
+      <status status="SKIP" start="2026-05-12T10:00:00.200" elapsed="0.001"/>
     </test>
   </suite>
 </robot>

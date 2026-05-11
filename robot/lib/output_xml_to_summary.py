@@ -27,7 +27,7 @@ def parse(xml_path: Path) -> dict:
     root = ET.parse(xml_path).getroot()
     checks = []
     for test in root.iter("test"):
-        tags = [t.text for t in test.findall("./tags/tag") if t.text]
+        tags = [t.text for t in test.findall("./tag") if t.text]
         test_name = test.get("name") or ""
         status_el = test.find("./status")
         if status_el is None:
