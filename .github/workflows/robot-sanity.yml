@@ -1,0 +1,77 @@
+name: Robot Sanity (scaffold)
+run-name: "Robot Sanity - ${{ github.event_name }}"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: robot-sanity
+  cancel-in-progress: false
+
+jobs:
+  sanity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # SAN03 reads this as a string only. No fetch is performed.
+      HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: robot/requirements.txt
+
+      - name: Install Robot Framework
+        run: pip install -r robot/requirements.txt
+
+      - name: Versions (debug)
+        run: |
+          robot --version || true
+          python --version
+
+      - name: Run sanity suite
+        run: |
+          mkdir -p qa-artifacts/robot/sanity
+          robot --outputdir qa-artifacts/robot/sanity \
+                --output output.xml --log log.html --report report.html \
+                robot/suites/sanity/
+
+      - name: Convert output.xml -> summary.json
+        run: |
+          python robot/lib/output_xml_to_summary.py \
+            --input  qa-artifacts/robot/sanity/output.xml \
+            --output qa-artifacts/robot/sanity/summary.json
+          cat qa-artifacts/robot/sanity/summary.json
+
+      - name: Upload Robot artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robot-sanity-${{ github.run_id }}
+          path: qa-artifacts/robot/sanity/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo "# Robot Sanity"
+            echo ""
+            echo "- Suite: robot/suites/sanity/"
+            if [[ -f qa-artifacts/robot/sanity/summary.json ]]; then
+              TOTAL=$(jq -r '.totals.total' qa-artifacts/robot/sanity/summary.json)
+              PASS=$(jq  -r '.totals.pass'  qa-artifacts/robot/sanity/summary.json)
+              FAIL=$(jq  -r '.totals.fail'  qa-artifacts/robot/sanity/summary.json)
+              echo "- Total: $TOTAL | Pass: $PASS | Fail: $FAIL"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
