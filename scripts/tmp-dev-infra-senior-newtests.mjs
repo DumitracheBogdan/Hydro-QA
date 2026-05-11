@@ -576,10 +576,11 @@ try {
       return p.fail === 0 ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
     });
 
-    await runCheck(dpage, 'R43', 'Load/Perf', 'Mixed burst average <= 1200ms AND p95 <= 3500ms (80 req conc16)', async () => {
-      const p = await parPerf(api, ['/health', '/users/profile/me', '/customers/filtered?page=1&limit=20', visits50], 80, 16);
-      const pass = p.fail === 0 && p.avg <= 1200 && p.p95 <= 3500;
-      return pass ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
+    // R43: moved to L08 (scripts/tmp-dev-infra-api-ultra.mjs) — same load profile (80 req conc16),
+    // single source of truth in suite API34. ID kept as SKIP to preserve dashboard references.
+    // Consolidation: 2026-05-12.
+    await runCheck(dpage, 'R43', 'Load/Perf', 'Mixed burst (moved to L08 / API34)', async () => {
+      return { status: 'SKIP', details: 'moved to L08 / API34 — see tmp-dev-infra-api-ultra.mjs' };
     });
 
     await runCheck(dpage, 'R44', 'Load/Perf', 'Sustained key endpoints no failures (20 calls)', async () => {
