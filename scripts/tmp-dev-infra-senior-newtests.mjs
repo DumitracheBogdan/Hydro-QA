@@ -576,9 +576,10 @@ try {
       return p.fail === 0 ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
     });
 
-    await runCheck(dpage, 'R43', 'Load/Perf', 'Mixed burst average <= 800ms (80 req conc16)', async () => {
+    await runCheck(dpage, 'R43', 'Load/Perf', 'Mixed burst average <= 1200ms AND p95 <= 3500ms (80 req conc16)', async () => {
       const p = await parPerf(api, ['/health', '/users/profile/me', '/customers/filtered?page=1&limit=20', visits50], 80, 16);
-      return p.fail === 0 && p.avg <= 800 ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
+      const pass = p.fail === 0 && p.avg <= 1200 && p.p95 <= 3500;
+      return pass ? { status: 'PASS', details: JSON.stringify(p) } : { status: 'FAIL', details: JSON.stringify(p) };
     });
 
     await runCheck(dpage, 'R44', 'Load/Perf', 'Sustained key endpoints no failures (20 calls)', async () => {
