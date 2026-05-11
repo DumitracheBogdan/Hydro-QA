@@ -19,6 +19,17 @@ contract.
 Workflow: `.github/workflows/robot-sanity.yml` (manual-only, `workflow_dispatch`).
 Not attached to nightly or post-deploy.
 
+Trigger via UI: Actions tab -> "Robot Sanity (scaffold)" -> "Run workflow".
+
+Or via gh CLI:
+
+```bash
+gh workflow run robot-sanity.yml --ref main
+gh run watch  # picks the latest run
+```
+
+First validated run: `25701295560` (2026-05-12, 12s, 3/3 PASS).
+
 ## Run locally (Windows PowerShell)
 
 ```powershell
