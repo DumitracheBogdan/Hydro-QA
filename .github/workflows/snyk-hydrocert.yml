@@ -1,0 +1,114 @@
+name: Snyk Scan - Hydrocert
+run-name: "Snyk Scan - ${{ inputs.target_repo }} (${{ inputs.ref }})"
+
+# Scans Hydrocert repos for vulnerabilities WITHOUT touching them.
+# Workflow lives in Hydro-QA. Checks out hydrocert-* into the runner via PAT
+# and runs `snyk test` + `snyk monitor`. Zero changes to hydrocert-web/services.
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_repo:
+        description: Hydrocert repo to scan
+        required: true
+        type: choice
+        default: hydrocert/hydrocert-web
+        options:
+          - hydrocert/hydrocert-web
+      ref:
+        description: Branch/tag/SHA to scan
+        required: true
+        type: string
+        default: main
+      severity_threshold:
+        description: Fail on issues at or above this severity
+        required: true
+        type: choice
+        default: high
+        options:
+          - low
+          - medium
+          - high
+          - critical
+      monitor:
+        description: Upload snapshot to Snyk dashboard (continuous tracking)
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snyk-${{ inputs.target_repo }}
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout target repo (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.target_repo }}
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.HYDROCERT_READ_PAT }}
+          path: target
+
+      - name: Setup Node (for npm install if needed)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (best-effort)
+        working-directory: target
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --ignore-scripts || npm install --ignore-scripts --legacy-peer-deps
+          elif [ -f package.json ]; then
+            npm install --ignore-scripts --legacy-peer-deps
+          fi
+        continue-on-error: true
+
+      - name: Setup Snyk CLI
+        uses: snyk/actions/setup@master
+
+      - name: Snyk auth
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk test (open-source deps)
+        working-directory: target
+        run: |
+          snyk test \
+            --all-projects \
+            --severity-threshold=${{ inputs.severity_threshold }} \
+            --sarif-file-output=../snyk-deps.sarif
+        continue-on-error: true
+
+      - name: Snyk code test (SAST)
+        working-directory: target
+        run: |
+          snyk code test \
+            --severity-threshold=${{ inputs.severity_threshold }} \
+            --sarif-file-output=../snyk-code.sarif
+        continue-on-error: true
+
+      - name: Snyk monitor (upload to dashboard)
+        if: ${{ inputs.monitor }}
+        working-directory: target
+        run: |
+          snyk monitor \
+            --all-projects \
+            --project-name="${{ inputs.target_repo }}@${{ inputs.ref }}" \
+            --target-reference=${{ inputs.ref }}
+        continue-on-error: true
+
+      - name: Upload SARIF artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-sarif-${{ github.run_id }}
+          path: snyk-*.sarif
+          if-no-files-found: ignore
+          retention-days: 30
