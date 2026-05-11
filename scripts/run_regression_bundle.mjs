@@ -84,6 +84,15 @@ const SUITES = {
     script: path.join('scripts', 'qa-maestro-web-smoke.mjs'),
     tests: 10,
   },
+  // NOTE: dormant - not present in selectedSuiteKeys(). Activated manually
+  // when a real Robot suite is ready. See docs/superpowers/specs/2026-05-12-robot-framework-scaffold-design.md
+  robotsanity: {
+    key: 'robotsanity',
+    id: 'ROBOTSAN03',
+    label: 'Robot Sanity (scaffold)',
+    script: path.join('robot', 'runner', 'run_robot_suite.mjs'),
+    tests: 3,
+  },
   // Mobile V2 is NOT run inside the regression bundle any more.
   // It runs in its own emulator step in nightly-regression.yml,
   // producing qa-artifacts/mobile-v2/test/summary.json directly.
