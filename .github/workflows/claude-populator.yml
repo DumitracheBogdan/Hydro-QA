@@ -1,0 +1,214 @@
+name: Hydrocert Claude Populator (daily)
+run-name: "Claude Populator - ${{ github.event_name }}"
+
+# This workflow replaces the disabled Claude Code remote routines
+# (trig_01W28rPdHbP2tekhzPsULbDY + trig_01HYqKP92QgPudQ39sjZWCti).
+# Anthropic's remote-routine egress allowlist blocks the Hydrocert dev API,
+# so we run Claude Code here in a GitHub Actions runner which has full
+# outbound network access.
+
+on:
+  schedule:
+    # Daily at 03:00 UTC (06:00 RO summer / 05:00 RO winter)
+    # 1h after ServiceTracker daily import (~01:05 UTC), 2h before field hours
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      window_days:
+        description: Backward window in days
+        required: false
+        type: string
+        default: "3"
+      dry_run:
+        description: Dry run (no PATCH)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write    # commit log files
+  issues: write      # open populator-run Issues
+
+concurrency:
+  group: claude-populator-daily
+  cancel-in-progress: false
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: Development
+
+    env:
+      HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+      HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+      WINDOW_DAYS: ${{ inputs.window_days || '3' }}
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git for commits
+        run: |
+          git config user.email "claude-populator@hydrocert"
+          git config user.name "Claude Populator (GH Actions)"
+
+      - name: Run Claude Code populator
+        # Anthropic's official action: https://github.com/anthropics/claude-code-base-action
+        # Uses MAX 20x subscription OAuth token (no API key needed).
+        # Token generated via `claude /setup-token` on user's local Claude Code.
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: claude-opus-4-7
+          timeout_minutes: "45"
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep,WebFetch"
+          prompt: |
+            # Hydrocert Inspection Populator (Claude-driven daily run via GH Actions)
+
+            You run the daily Hydrocert inspection sample population on the **dev** environment.
+
+            ## ENVIRONMENT (env vars from GH secrets/vars)
+            - HC dev API base: `${{ vars.HYDROCERT_DEV_API_BASE }}` (also in env `HYDROCERT_API_BASE`)
+            - HC dev FE: `${{ vars.HYDROCERT_DEV_WEB_BASE }}` (for deep links)
+            - Auth: `POST ${HYDROCERT_API_BASE}/auth/login` body `{"email": process.env.HYDROCERT_QA_EMAIL, "password": process.env.HYDROCERT_QA_PASSWORD}` → `body.tokens.accessToken`
+            - Window: last ${{ env.WINDOW_DAYS }} days + today
+            - Dry run: ${{ env.DRY_RUN }} (if "true", skip PATCH; just simulate)
+            - **NEVER** touch prod (`hydrocert-prod-api.azurewebsites.net`)
+
+            ## Reporting
+            - Open Issue in `DumitracheBogdan/Hydro-QA` repo with `gh issue create` (label `populator-run`)
+            - Commit log file `claude-populator-runs/YYYY-MM-DD.md` and push to main
+
+            ## L1 AUTOHEALING
+            - Carry-forward: `gh issue list -R DumitracheBogdan/Hydro-QA --label populator-run --state all --limit 3 --json title,body,createdAt`. Extract visit IDs from prior `errors[]` + transient `unresolved[]`. Merge into today's window.
+            - Retry exponential backoff on HTTP 5xx (3 tries, 500ms/1s/2s)
+            - Respect Retry-After on 429
+            - Per-inspection independence: catch+continue
+            - Graceful degrade: file write fails → stdout; gh fails → continue
+
+            ## L3 CATALOG GAP DETECTION
+            After loading `/sample-types`, validate that these names exist (case-insensitive): Chem Basic+NH3, Chem Basic+Glycol, Bsria Validation, Chem Remote Full, Rapid Chem Basic, Rapid Chem Remote Full, Rapid Chem Remote Basic, Chem Validation, Greywater, Legionella, Potable, Potable/Domestic, Bsria Bacti, Cooling TVC. Missing → add to `catalogGaps[]` in Issue body. Fallback to base type (NH3 → Chem Basic, etc.) and log in `decisions[]`.
+
+            ## INSPECTION SAMPLE RULES
+
+            **Decision flow per placeholder inspection (`laboratorySamples.length === 0`):**
+
+            1. **If `jobType.requiresWaterSample === false` → SKIP.** Catches: OT, TI/CWST, CT/CF, TMV, SH, Water Meter Reading, Corrosion Coupon, Softener Servicing, LUO Flushing, H2O2/ClO2 on-site, Spa/Pool on-site chem, Service Reports, Risk Assessments. Trust the catalog flag, NOT a hardcoded list.
+
+            2. **Otherwise route by jobType.name:**
+
+            ### Domestic Sample
+            Precedence on itemLocation/itemReference/itemDetail (Greywater MUST beat Micro):
+            - `\bGREY\b` / `Greywater` / `Grey water` → **Greywater**
+            - `\bLP\b` / `Legionella` / `Pre Flush` / `POST FLUSH` → **Legionella**
+            - `Potable` / `POT sample` / `\bDOM\b` / `DOMESTIC Micro` → **Potable**
+            - `\bMICRO\b` / `Micro Sample` / `Outlet Sampling - Micro` → **Potable/Domestic**
+
+            **Generic DS placeholders:** all DS rows have `"Sample location"` placeholder, no token. Read notes' DS line, count `N x LP / N x Micro / N x POTABLE / N x GREY`, allocate by index.
+
+            **Domestic Resample:** itemDetail = `"Outlet Resampling - Resample Location"`. Default `[Legionella, Potable/Domestic]`. Flag for review.
+
+            ### Closed system - main circ sample
+            Read WHOLE notes section for visit's month (multi-line until next month label or blank):
+            - `CHEM BASIC + NH3` → Chem Basic+NH3 (else Chem Basic + log gap)
+            - `CHEM BASIC + GLYCOL` → Chem Basic+Glycol (else Chem Basic)
+            - `CHEM BASIC + AZOLES`/`+ AZOLE` → Chem Basic (or +Azoles variant)
+            - `CHEM BASIC + NH4`/`+ AMMONIUM` → Chem Basic
+            - `CHEM VALIDATION` → Chem Validation
+            - `RAPID CHEM BASIC` → Rapid Chem Basic
+            - `BSRIA VALIDATION` → Bsria Validation
+            - `BSRIA BACTI`/`BSRIA` → Bsria Bacti
+            - `POST DOSE` → Chem Basic
+            - Default → **[Chem Basic, Bsria Bacti]**
+
+            ### Closed system - Remote sample
+            Read BOTH main-circ line AND Remote Sampling continuation:
+            - `CHEM REMOTE FULL` → Chem Remote Full
+            - `RAPID CHEM REMOTE FULL` → Rapid Chem Remote Full
+            - `RAPID CHEM REMOTE BASIC` → Rapid Chem Remote Basic
+            - `CHEM REMOTE BASIC` → Chem Remote Basic
+            - `BSRIA` on Remote line → Bsria Bacti (paired)
+            - `BSRIA VALIDATION` on Remote line → Bsria Validation (paired)
+            - Default → **[Chem Remote Basic, Bsria Bacti]**
+
+            ### Closed System On-Site chem testing
+            **ALWAYS SKIP.** No lab sample. NEVER assign `[Cooling TVC, Legionella]` (documented bug).
+
+            ### Cooling
+            - `Cooling System on-site chem testing` → Cooling TVC
+            - `Cooling System Feed on-site chem testing` → Cooling TVC
+
+            ### Pool/Spa
+            - `Pool/Spa Micro/LP Only Sampling` + `LPFILTERED`/`LP` → Legionella
+            - `Pool/Spa Micro/LP Only Sampling` + `POOL`/`SPA`/`Micro` → Potable/Domestic
+            - `Spa/Pool - on-site testing` → SKIP
+
+            ### Specialty
+            - `Legionella Risk Assessment` → SKIP
+            - `Steam boiler` → unresolved unless catalog has steam types
+            - `Closed System Chemical Dosing` → SKIP
+
+            ## CLOSEST-MONTH FALLBACK
+            If visit month not in notes as exact `Mon - FREQ - …`:
+            - Pick closest by circular distance (Jan↔Dec=1)
+            - Tie-break: earlier calendar month
+            - If no month line at all → per-inspection itemLocation regex
+
+            ## ANTI-PATTERNS (NEVER)
+            1. Stop reading notes at first `\n` — multi-line continuations critical
+            2. Assign `[Cooling TVC, Legionella]` to CS On-Site
+            3. Modify any field other than `samples` (notes/itemLocation/etc. NEVER)
+            4. Use sampleTypeId not in `/sample-types` catalog
+            5. Apply to prod
+            6. Overwrite existing samples (`laboratorySamples.length > 0` → skip)
+            7. Patch visits with `visitStatus === "complete"`
+            8. Patch pre-sync visits (max(inspection.createdAt) < 2026-04-15T10:29:25Z)
+
+            ## STEPS
+            1. Bootstrap: auth with retry
+            2. Load catalogs (job-types + sample-types). Build catalogGaps[].
+            3. Carry-forward: gh issue list (last 3 populator-run), extract failed visits
+            4. List visits (calendar-filter ${{ env.WINDOW_DAYS }}d back), paginate, merge carryForward, dedupe
+            5. Per visit: pre-checks, find notes, route per rules, PATCH with retry, catch errors
+            6. Track stats: visitsScanned, visitsPatched, totalPatched, carryForward*, skipped*, unresolved[], errors[], decisions[], catalogGaps[]
+            7. Write log `claude-populator-runs/$(date -u +%Y-%m-%d).md`
+            8. Commit + push to main (`git push origin main`)
+            9. Open Issue with `gh issue create` (title `[ATTN] prefix if errors>3 or unresolved>10`, label `populator-run`)
+            10. Exit cleanly
+
+            ## GUARDRAILS
+            - Wall-clock 45 min, dump state + exit if exceeded
+            - 200ms between PATCH calls
+            - 3 consecutive 5xx → abort with `[ATTN]`
+            - Idempotent: 2nd run same day = 0 new patches
+
+            ## START NOW
+            Begin. Report progress to stdout.
+
+      - name: Capture run logs
+        if: always()
+        run: |
+          echo "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Upload artifacts (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-populator-logs-${{ github.run_id }}
+          path: |
+            claude-populator-runs/*.md
+            *.log
+          retention-days: 7
+          if-no-files-found: ignore
