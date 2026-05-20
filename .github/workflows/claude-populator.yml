@@ -67,7 +67,10 @@ jobs:
       - name: Run Claude Code populator
         # Anthropic's official action: https://github.com/anthropics/claude-code-base-action
         # Uses MAX 20x subscription OAuth token (no API key needed).
-        # Token generated via `claude /setup-token` on user's local Claude Code.
+        # Token generated via `claude setup-token` on user's local Claude Code.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: anthropics/claude-code-base-action@beta
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -105,9 +108,22 @@ jobs:
 
             **Decision flow per placeholder inspection (`laboratorySamples.length === 0`):**
 
-            1. **If `jobType.requiresWaterSample === false` → SKIP.** Catches: OT, TI/CWST, CT/CF, TMV, SH, Water Meter Reading, Corrosion Coupon, Softener Servicing, LUO Flushing, H2O2/ClO2 on-site, Spa/Pool on-site chem, Service Reports, Risk Assessments. Trust the catalog flag, NOT a hardcoded list.
+            1. **If `jobType.requiresWaterSample === false` → SKIP.** Trust the catalog flag.
 
-            2. **Otherwise route by jobType.name:**
+            2. **Explicit NO-SAMPLE jobType OVERRIDE LIST** (skip these even if `requiresWaterSample === true` in catalog — known HC catalog inconsistencies confirmed by Kayle):
+            - `Cold Water Storage Tank inspection` (visual inspection, no lab sample)
+            - `Calorifier/Water Heater temperatures` (temperature reading only)
+            - `Calorifier/Water Heater drain Flush` (flushing action, no sample)
+            - `Outlet Temperature monitoring` (temperature reading only)
+            - `Showerhead descaling` (cleaning action, no sample)
+            - `TMV Servicing` (service action, no sample)
+            - `Water feature - On site chem testing form` (on-site chem only, no lab)
+            - `Spa/Pool - on-site testing` (on-site chem only, no lab)
+            - `Closed System On-Site chem testing` (on-site only, no lab)
+            - `Cold water storage tank - Clean and Spray disinfection form` (cleaning action)
+            - Any `Water Meter Reading`, `Corrosion Coupon`, `Softener Servicing`, `Little used outlet flushing`, `Service Reports`, `Risk Assessments`, `H2O2`/`Hydrogen Peroxide`, `ClO2`/`Chlorine Dioxide`, `Legionella Risk Assessment`, `Closed System Chemical Dosing` — also skip.
+
+            3. **Otherwise route by jobType.name:**
 
             ### Domestic Sample
             Precedence on itemLocation/itemReference/itemDetail (Greywater MUST beat Micro):
