@@ -134,7 +134,12 @@ jobs:
 
             **Generic DS placeholders:** all DS rows have `"Sample location"` placeholder, no token. Read notes' DS line, count `N x LP / N x Micro / N x POTABLE / N x GREY`, allocate by index.
 
-            **Domestic Resample:** itemDetail = `"Outlet Resampling - Resample Location"`. Default `[Legionella, Potable/Domestic]`. Flag for review.
+            **Domestic Resample (CRITICAL — READ NOTES FIRST):** itemDetail = `"Outlet Resampling - Resample Location"`. Resample visits are one-off and the visit's OWN notes are SOLE source of truth. **NEVER default to dual `[Legionella, Potable/Domestic]`.** Apply these rules in order:
+            1. Notes contain "X x LP" (or title "Legionella Resampling"/"Legionella Resamples") AND no Micro/POTABLE/Domestic mention → **Legionella ONLY** on each inspection
+            2. Notes contain "X x Micro" (or title "Microbiological Resampling"/"Microbiological Sample") AND no LP/Legionella mention → **Potable/Domestic ONLY** on each inspection
+            3. Notes contain BOTH "X x LP" AND "Y x Micro" → split by index across inspections (first X → Legionella, next Y → Potable/Domestic)
+            4. Notes contain "X x GREY"/"Greywater" → **Greywater** only
+            5. Notes empty/generic → flag as `unresolved_resample_no_notes`. Annual calendar from sibling regular visits is IRRELEVANT for resamples.
 
             ### Closed system - main circ sample
             Read WHOLE notes section for visit's month (multi-line until next month label or blank):
