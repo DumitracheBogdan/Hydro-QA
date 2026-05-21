@@ -1,0 +1,148 @@
+name: Claude Populator Watchdog
+run-name: "Watchdog - ${{ github.event_name }}"
+
+on:
+  schedule:
+    # Daily 06:00 UTC (3h after populator cron 03:00 UTC, allows wall-clock + retries)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  actions: write  # needed to trigger claude-populator.yml on transient failures
+
+concurrency:
+  group: claude-populator-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude watchdog
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: claude-sonnet-4-6
+          timeout_minutes: "10"
+          allowed_tools: "Bash,Read,Glob,Grep"
+          prompt: |
+            # Hydrocert Claude Populator WATCHDOG (L2 — observability + auto-recovery)
+
+            You are the watchdog for the daily Claude Populator GitHub Actions workflow. Verify today's run completed healthy. Auto-rerun on transient failures.
+
+            ## Today's date
+            ```bash
+            TODAY=$(date -u +%Y-%m-%d)
+            echo "Checking populator status for UTC date: $TODAY"
+            ```
+
+            ## Step 1 — Check today's populator-run Issue
+
+            ```bash
+            gh issue list -R DumitracheBogdan/Hydro-QA \
+              --label populator-run --state all \
+              --search "created:>=$TODAY" \
+              --json number,title,body,createdAt \
+              --limit 10
+            ```
+
+            Also check existing watchdog alerts today (avoid duplicate alerts):
+            ```bash
+            gh issue list -R DumitracheBogdan/Hydro-QA \
+              --label watchdog-alert --state open \
+              --search "created:>=$TODAY" \
+              --json number,title,createdAt
+            ```
+
+            ## Step 2 — Classify and act
+
+            **Case A — No `populator-run` Issue from today:**
+            Populator either didn't fire or silently failed.
+            - Open Issue:
+              - Title: `[WATCHDOG] populator silent — no Issue logged for $TODAY`
+              - Label: `watchdog-alert`
+              - Body: timestamp, expected schedule, link to workflow, suggested manual rerun
+            - Trigger auto-rerun (max 1 per day — check if WATCHDOG-AUTORETRY exists for today first):
+              ```bash
+              gh workflow run claude-populator.yml -R DumitracheBogdan/Hydro-QA
+              ```
+            - Comment on the alert Issue: "Auto-rerun triggered at $(date -u)"
+
+            **Case B — Issue exists with `[ATTN]` prefix or errors > 3:**
+            Categorize the failure by scanning Issue body:
+            - **TRANSIENT** (auto-recoverable): HTTP 5xx, `host_not_allowed`, `timeout`, `endpoint not found`, `404 Not Found`, `getaddrinfo ENOTFOUND`, `network`, `gateway`
+            - **AUTH** (persistent): HTTP 401, HTTP 403 (NOT from gateway), `Auth failed`, `credentials`, `Bearer`, `Unauthorized`
+            - **SCALE** (persistent): `Wall-clock exceeded`, `timeout after 45`, `budget`
+            - **SCHEMA** (persistent): HTTP 400 patterns, `validation`, `unprocessable`, `Bad Request`
+            - **UNKNOWN** (treat as persistent for safety)
+
+            For **TRANSIENT** failures:
+            - Check if an existing `[WATCHDOG-AUTORETRY]` Issue exists for today (limit 1 auto-rerun/day)
+            - If none → trigger `gh workflow run claude-populator.yml -R DumitracheBogdan/Hydro-QA`
+            - Open `[WATCHDOG-AUTORETRY] Auto-rerun triggered after transient ATTN — see #<original>` (label `watchdog-alert`)
+            - If retry already triggered today → comment on existing AUTORETRY issue with "second transient failure detected — manual investigation needed"
+
+            For **PERSISTENT** failures (AUTH/SCALE/SCHEMA/UNKNOWN):
+            - NO auto-rerun (would just fail again)
+            - Open `[WATCHDOG-ATTN-PERSISTENT] <category>: <short> — see #<original>` (label `watchdog-alert`)
+            - Body: full error category + recommendation (e.g., auth → "regenerate CLAUDE_CODE_OAUTH_TOKEN secret; current token may have expired")
+
+            **Case C — Healthy Issue (no `[ATTN]`, errors ≤ 3, unresolved ≤ 10):**
+            Just log to stdout: `Watchdog OK — populator ran healthy for $TODAY`. No action.
+
+            ## Step 3 — Weekly trend check (only on Mondays UTC)
+
+            ```bash
+            if [ "$(date -u +%u)" = "1" ]; then
+              echo "Monday — running 7-day trend check"
+            fi
+            ```
+
+            Last 7 days Issues:
+            ```bash
+            gh issue list -R DumitracheBogdan/Hydro-QA \
+              --label populator-run --state all \
+              --search "created:>=$(date -u -d '7 days ago' +%Y-%m-%d)" \
+              --json number,title,body,createdAt --limit 20
+            ```
+
+            Compute totals:
+            - Sum unresolved counts
+            - Sum errors counts
+            - Compare to previous 7d window
+
+            If 7d totals > 3× previous 7d → open `[WATCHDOG-TREND] populator quality degrading — see chart` Issue with ASCII trend.
+
+            ## Step 4 — Catalog gap aggregation
+
+            Scan last 7 days `populator-run` Issues for `catalogGaps:` sections. If a sample type name appears in ≥3 different days' gaps:
+            - Open `[WATCHDOG-CATALOG] sample type 'XYZ' consistently missing from /sample-types — should Calin add it?` Issue
+            - Body: list of dates + Issue links where it was reported
+
+            ## Constraints
+
+            - **NEVER PATCH Hydrocert API.** Pure observability + GitHub actions only.
+            - **NEVER trigger auto-rerun more than 1× per day.** Check Issue history first.
+            - **NEVER auto-rerun on persistent failures.** Would just fail again.
+            - **NEVER close populator-run Issues.** Read-only on those.
+            - Use `gh` CLI for everything (GH_TOKEN available in env).
+
+            ## Exit
+            Print one-line summary to stdout:
+            `Watchdog: <healthy|transient-retry|persistent-alert|silent-no-run>. Alerts opened: <N>. Auto-reruns triggered: <0|1>.`
+
+            ## Start now
+            Begin execution. Be concise in stdout output.
