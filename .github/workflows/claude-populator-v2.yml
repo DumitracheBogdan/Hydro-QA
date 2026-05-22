@@ -1,0 +1,210 @@
+name: Hydrocert Populator v2 (Autonomous)
+run-name: "Populator v2 - ${{ github.event_name }}"
+
+on:
+  # Cron disabled until v2 validated. After acceptance, swap with v1.
+  # schedule:
+  #   - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      window_days:
+        description: Backward window in days
+        required: false
+        type: string
+        default: "3"
+      dry_run:
+        description: Dry run (no PATCH)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: claude-populator-v2
+  cancel-in-progress: false
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: Development
+
+    env:
+      HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+      HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+      WINDOW_DAYS: ${{ inputs.window_days || '3' }}
+      DRY_RUN: ${{ inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git for commits
+        run: |
+          git config user.email "claude-populator@hydrocert"
+          git config user.name "Claude Populator v2"
+
+      - name: Bootstrap (preflight + discovery + batching)
+        run: node scripts/populator-bootstrap.mjs
+
+      - name: Run Claude Code orchestrator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: claude-opus-4-7
+          timeout_minutes: "50"
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep,Task"
+          prompt: |
+            # Hydrocert Populator v2 — Autonomous Orchestrator
+
+            You orchestrate a 5-worker + 1-manager populator with a self-correcting loop. Reasoning-first, not rules.
+
+            ## Hard constraints
+            - DEV ONLY. Never touch prod. If HYDROCERT_API_BASE contains "prod" → abort immediately.
+            - ONLY modify `laboratorySamples` field via PATCH /inspections + DELETE /laboratory-samples. NEVER edit visits, inspections, notes, itemLocation, jobTypes.
+            - No inspection exists → SKIP. Never create inspections.
+            - Notes empty/null + no booker-encoded itemLocation token → mark unresolved. Never invent.
+
+            ## Files already prepared by bootstrap (read these first)
+            - `scripts/runtime/preflight.json` — auth + catalog status (must have authOk: true)
+            - `scripts/runtime/sample-types-catalog.json` — name → UUID
+            - `scripts/runtime/batch-1.json` ... `batch-5.json` — 5 batches of eligible visits
+
+            ## Sources of truth (load and consult)
+            - `hydrocert-tokens.csv` — Kayle signed-off 111-token catalog. ALWAYS consult before deciding.
+            - `docs/populator/few-shot-examples.md` — 10 curated past cases. Use as exemplars.
+            - `docs/populator/past-resolutions.jsonl` — human-confirmed prior resolutions (read all lines, treat as additional examples)
+
+            ## Decision priority (in this order, NOT mechanical rules)
+            1. Read the visit's notes RAW
+            2. Consult Kayle CSV to decode tokens
+            3. Booker-encoded itemLocation labels (e.g., "LP Sample 3", "WF Monthly", "Well Sample 1", "H - Micro Sample 2") = PRIMARY signal
+            4. Build visit-wide PLAN: list every sample needed by notes, sum-check totals
+            5. Map plan to inspections using all signals
+            6. Reasoning-only fallback: when ambiguous, mark unresolved with `reasonClass`
+
+            ## Plan-then-validate per worker
+            For each visit:
+            - First produce a structured plan: total samples per type called for by notes
+            - Validate: plan total per type === notes total per type (sum-check)
+            - If plan exceeds budget on any type → reduce; if budget unfilled → mark remaining inspections unresolved
+            - Confidence per decision: HIGH (notes explicit + booker label match) / MED (one clear signal) / LOW (inference required)
+
+            ## Sample-type catalog gap policy
+            If notes call for a variant not in catalog (e.g., "CHEM BASIC+GLYCOL" missing):
+            - Fall back to base type ("Chem Basic")
+            - Tag the decision with confidence: LOW and reasoning: "catalog gap: requested X, used Y"
+            - Add to `catalogGaps[]` for the Issue body
+
+            ## Reason classes (use exact strings)
+            - `unresolved_no_notes` / `unresolved_resample_no_notes` / `unresolved_slot_count_mismatch` / `unresolved_chem_on_ds_jobtype` / `unresolved_catalog_gap` / `unresolved_unknown_jobtype` / `unresolved_ambiguous_intent` / `unresolved_other`
+
+            ## Workflow
+
+            ### Step 1: Bootstrap check
+            Read `scripts/runtime/preflight.json`. If `authOk !== true` or `error` field present → abort, open Issue `[ATTN-PREFLIGHT]`.
+
+            ### Step 2: Dispatch 5 worker subagents in PARALLEL via Task tool
+            Each worker subagent receives this prompt (adapt N=1..5):
+
+            > You are populator worker N. Read scripts/runtime/batch-N.json + hydrocert-tokens.csv + docs/populator/few-shot-examples.md + docs/populator/past-resolutions.jsonl + scripts/runtime/sample-types-catalog.json.
+            >
+            > For each visit, follow the Decision priority + Plan-then-validate above. Write your output to scripts/runtime/plan-batch-N.json as an array of:
+            > ```
+            > { "visitRef": "...", "uuid": "...", "decisions": [
+            >   { "inspectionId": "...", "inspectionRef": "I...", "jobType": "...", "itemLocation": "...",
+            >     "samples": [{"sampleTypeId": "<uuid>", "sampleTypeName": "...", "quantity": 1}],
+            >     "confidence": "HIGH|MED|LOW",
+            >     "reasoning": "Notes line X: ...; CSV token Y → ...; matches inspection because ...",
+            >     "unresolved": false }
+            >   /* OR unresolved=true with reasonClass and no samples */
+            >   /* OR skip=true for jobType skip overrides */
+            > ] }
+            > ```
+            >
+            > Then run: `node scripts/populator-executor.mjs N` and return its stdout + per-visit summary table.
+
+            ### Step 3: Wait all 5 workers done. Read all report-batch-*.json files.
+
+            ### Step 4: Dispatch 1 super-manager subagent via Task tool
+
+            > You are populator super-manager. Read all 5 report-batch-*.json + corresponding plan-batch-*.json + the 5 batch-*.json (original notes) + hydrocert-tokens.csv.
+            >
+            > For each visit, verify:
+            > - Was the patched sample correct per notes intent?
+            > - Sample-budget reconciliation: sum of patched samples per type === notes' total per type?
+            > - Was an unresolved decision really right? Could a smarter reading have salvaged it?
+            > - Confidence levels honest?
+            >
+            > Output to scripts/runtime/manager-report.json:
+            > ```
+            > { "errors": [{ "batchNum": N, "visitRef": "...", "inspectionId": "...", "issue": "...", "fix": { "deleteSampleIds": [...], "samples": [...] } }],
+            >   "lowConfidenceReview": [{ "visitRef": "...", "inspectionId": "...", "summary": "..." }],
+            >   "approvedPatches": <count>, "totalReviewed": <count> }
+            > ```
+
+            ### Step 5: Fix loop (max 3 iterations TOTAL across workers+manager)
+            If manager-report.json.errors.length > 0:
+            - Group errors by batchNum
+            - For each affected batch, write a fix-plan-batch-N.json with the deleteSampleIds + samples-to-add per the manager's instructions
+            - Re-dispatch ONLY the affected worker(s) with the fix-plan to execute via `node scripts/populator-executor.mjs N` (executor handles DELETE-then-PATCH)
+            - After fix run, re-dispatch the manager with updated reports
+            - Increment iteration counter
+            - Stop when manager.errors.length === 0 OR iterations === 3
+
+            ### Step 6: Reporting
+
+            Build `claude-populator-runs/$(date -u +%Y-%m-%d)-report.md` with:
+            - Run summary (visits processed, patched, unresolved by reasonClass, errors, fix-loop iterations used)
+            - Catalog gaps encountered
+            - Low-confidence patches for human review (with link to FE per visit)
+            - Per-batch tables
+
+            Commit + push to main:
+            ```
+            git add claude-populator-runs/
+            git commit -m "chore: populator v2 run $(date -u +%Y-%m-%d) — <stats>"
+            git push origin main
+            ```
+
+            Open Issue:
+            ```
+            gh issue create --repo DumitracheBogdan/Hydro-QA --label populator-run --title "[POPULATOR-V2] $(date -u +%Y-%m-%d): <P patched / U unresolved / L low-confidence>" --body-file claude-populator-runs/$(date -u +%Y-%m-%d)-report.md
+            ```
+
+            Use `[ATTN]` title prefix if any of: errors > 3, unresolved > 10, fix-loop hit 3-iter limit with remaining errors.
+
+            ## START NOW
+            Begin Step 1. Report progress to stdout.
+
+      - name: Capture run logs (always)
+        if: always()
+        run: |
+          echo "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Upload artifacts (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: populator-v2-${{ github.run_id }}
+          path: |
+            claude-populator-runs/
+            scripts/runtime/
+          retention-days: 7
+          if-no-files-found: ignore
