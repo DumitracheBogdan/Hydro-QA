@@ -185,7 +185,16 @@ jobs:
             If visit month not in notes as exact `Mon - FREQ - …`:
             - Pick closest by circular distance (Jan↔Dec=1)
             - Tie-break: earlier calendar month
-            - If no month line at all → per-inspection itemLocation regex
+            - If no month line at all AND visit is NOT recurring → **DO NOT PATCH ANYTHING**. Mark all inspections as `unresolved_no_notes`. Do NOT fallback to mechanical itemLocation pattern matching. We only patch when notes give explicit intent.
+
+            ## REASONING-ONLY POLICY (no regex fallback)
+            You are an LLM. **DO NOT** use regex matching on itemLocation/itemReference/itemDetail as a mechanical fallback when notes are missing. Instead:
+            - Read the visit's notes holistically. Understand booking-person's intent.
+            - If notes don't give clear sample-type signal for an inspection → mark `unresolved`. Better unresolved than wrong.
+            - The patterns listed in tables above (LP/Micro/Grey/etc.) are **guidance for semantic understanding**, not regex to apply blindly.
+            - Per-inspection itemLocation is CONTEXT, not a primary signal. Use it only to confirm/disambiguate what notes already said.
+
+            **TU DECIZI TOT — use reasoning, not patterns.**
 
             ## ANTI-PATTERNS (NEVER)
             1. Stop reading notes at first `\n` — multi-line continuations critical
