@@ -1,0 +1,64 @@
+name: Hydrocert Populator Rollback
+run-name: "Rollback ${{ inputs.target_date }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: Date to roll back (YYYY-MM-DD)
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: claude-populator-rollback
+  cancel-in-progress: false
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: Development
+
+    env:
+      HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git
+        run: |
+          git config user.email "claude-populator@hydrocert"
+          git config user.name "Claude Populator Rollback"
+
+      - name: Run rollback
+        run: |
+          node scripts/populator-rollback.mjs "${{ inputs.target_date }}"
+
+      - name: Commit rollback report + push
+        run: |
+          git add claude-populator-runs/${{ inputs.target_date }}-rollback-report.md
+          git commit -m "chore: rollback report for ${{ inputs.target_date }}"
+          git push origin main
+
+      - name: Open issue with rollback summary
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create --repo DumitracheBogdan/Hydro-QA --label populator-rollback \
+            --title "[ROLLBACK] populator ${{ inputs.target_date }}" \
+            --body-file claude-populator-runs/${{ inputs.target_date }}-rollback-report.md
