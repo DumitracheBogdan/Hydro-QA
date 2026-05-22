@@ -31,3 +31,4 @@ inspection-*.png
 
 .DS_Store
 Thumbs.db
+scripts/runtime/
