@@ -77,9 +77,10 @@ async function main() {
   const calendarItems = cal.body?.items || cal.body?.data || [];
   preflight.calendarCount = calendarItems.length;
 
-  // Visit-count guard
-  if (calendarItems.length > 200) {
-    preflight.error = `import storm: ${calendarItems.length} visits > 200 cap`;
+  // Import-storm guard: catches abnormal ServiceTracker sync spikes (e.g., 2000+ visits).
+  // Dev environment normally has ~300-400 calendar items in a 3-day window. Cap of 1000 leaves headroom.
+  if (calendarItems.length > 1000) {
+    preflight.error = `import storm: ${calendarItems.length} visits > 1000 cap`;
     fs.writeFileSync(path.join(RUNTIME, 'preflight.json'), JSON.stringify(preflight, null, 2));
     process.exit(4);
   }
