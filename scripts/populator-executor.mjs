@@ -77,6 +77,14 @@ async function main() {
     const vr = { visitRef: v.visitRef, uuid: v.uuid, decisions: [] };
 
     for (const d of (v.decisions || [])) {
+      // Schema validator: reject legacy singular-field schema before silent drop.
+      // Legacy worker output sometimes uses sampleType / sampleUuid (singular) instead of samples[] array.
+      if ((d.sampleType || d.sampleUuid) && !Array.isArray(d.samples)) {
+        vr.decisions.push({ ...d, status: 'schema-error' });
+        report.totals.errors++;
+        appendAudit({ action: 'SCHEMA_ERROR', batchNum, visitRef: v.visitRef, inspectionId: d.inspectionId, reason: 'legacy singular sampleType/sampleUuid — expected samples[] array', raw: { sampleType: d.sampleType, sampleUuid: d.sampleUuid } });
+        continue;
+      }
       // Unresolved
       if (d.unresolved) {
         vr.decisions.push({ ...d, status: 'unresolved' });

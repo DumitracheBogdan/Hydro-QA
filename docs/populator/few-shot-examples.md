@@ -131,3 +131,44 @@ Domestic Sample (8 inspections):
 - 2 × **Cold Water Storage Tank inspection** / "CWST", "CWST 2" → **skip=true** (NOT samples)
 
 **Reasoning:** CWST inspection = visual jobType in SKIP-OVERRIDE list. Even though the notes describe sampling activity at this site, the lab samples live in the 8 separate DS slots — the 2 CWST inspections are just visual tank checks. Always `skip: true` on CWST.
+
+## Example 13: Pool/Spa Micro vs Legionella separator
+
+**Visit:** generic Pool/Spa sampling
+**Notes:** "Pool & Spa quarterly sampling: 1 x Pool Micro + 1 x Spa Micro + 1 x Pool LP + 1 x Spa LP"
+**Inspections (4 × Pool/Spa Micro/LP Only Sampling):**
+- itemLocation `Pool Micro` → Potable/Domestic (or Pool/Spa Micro if catalog has it)
+- itemLocation `Spa Micro` → Potable/Domestic
+- itemLocation `Pool LP` / `LPFILTERED` → Legionella
+- itemLocation `Spa LP` / `LPFILTERED` → Legionella
+
+**Reasoning:** Pool/Spa is jobType for water amenities. Distinguish:
+- `LP` / `LPFILTERED` / `Legionella` tokens in itemLocation → Legionella
+- `Micro` / `POOL` / `SPA` (without LP) → Potable/Domestic (general microbiological)
+- `On-site testing` jobType → SKIP (no lab sample)
+
+## Example 14: Multi-month annual visit with quarterly schedule
+
+**Visit:** annual Q1 sampling (covers Jan, Feb, Mar)
+**Notes:** "Jan - M - 1pt - OT / Feb - Q - 4pts - OT, DS - 2 x Micro + 2 x LP / Mar - M - 1pt - OT"
+**Visit's actual month:** February (visit date = Feb 15)
+**Inspections (4 DS in Feb visit):** all generic `Sample Location`
+
+**Reasoning:**
+- Find current month section: "Feb - Q - 4pts - OT, DS - 2 x Micro + 2 x LP" matches
+- Jan + Mar lines are NOT for this visit (separate visits)
+- Allocate by index: first 2 DS → Potable/Domestic (Micro), next 2 → Legionella (LP)
+- Confidence: MED (index allocation when no booker labels)
+- Do NOT merge counts across months. Each visit has its own month section.
+
+## Example 15: WELL building — chem analytics on Domestic Sample jobType (booker error)
+
+**Visit:** V186717 (WELL Standard testing)
+**Notes:** "4 x Disinfection chemical testing - Basic (pH, Conductivity, Free/Total Disinfectant, Pb, Cu)"
+**Inspections (8):**
+- 4 × Domestic Sample / generic `Sample Location` → first 4 (DS)
+- 4 × Domestic Sample / chem-analytics intent → cannot map (jobType=DS, notes=chem tests)
+
+**Decision:** First 4 → Potable/Domestic (if notes also describe DS micro). Last 4 → `unresolved_chem_on_ds_jobtype` with reasoning "chem analytics on Domestic Sample slots = booker created wrong jobType; should be Chem Validation slots".
+
+**Reasoning:** Chemical analytics (Pb/Cu/conductivity) are NOT standard sample types. They belong in Chem Validation or specialty slots, not Domestic Sample. When notes call for chem on DS jobType — flag the mismatch, do NOT use unrelated catalog fallback. Booker must correct the jobType assignment.

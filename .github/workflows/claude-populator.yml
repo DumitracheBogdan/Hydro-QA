@@ -8,10 +8,10 @@ run-name: "Claude Populator - ${{ github.event_name }}"
 # outbound network access.
 
 on:
-  schedule:
-    # Daily at 03:00 UTC (06:00 RO summer / 05:00 RO winter)
-    # 1h after ServiceTracker daily import (~01:05 UTC), 2h before field hours
-    - cron: '0 3 * * *'
+  # DEPRECATED v1: cron disabled 2026-05-23 after migration to claude-populator-v2.yml.
+  # Kept available for manual workflow_dispatch as emergency fallback only.
+  # schedule:
+  #   - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       window_days:

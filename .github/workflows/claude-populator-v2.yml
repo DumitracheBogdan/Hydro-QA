@@ -1,10 +1,14 @@
 name: Hydrocert Populator v2 (Autonomous)
 run-name: "Populator v2 - ${{ github.event_name }}"
 
+# Schedule timing:
+# Cron expression is in UTC (GH Actions default). '0 3 * * *' = 03:00 UTC daily.
+# RO local: 06:00 EEST (summer) / 05:00 EET (winter).
+# Rationale: 1h after ServiceTracker daily import (~01:05 UTC), 2h before UK field hours.
+
 on:
-  # Cron disabled until v2 validated. After acceptance, swap with v1.
-  # schedule:
-  #   - cron: '0 3 * * *'
+  schedule:
+    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       window_days:
@@ -74,6 +78,9 @@ jobs:
             # Hydrocert Populator v2 — Autonomous Orchestrator
 
             You orchestrate a 5-worker + 1-manager populator with a self-correcting loop. Reasoning-first, not rules.
+
+            ## Time context (run `date -u` FIRST)
+            Before anything else, run `Bash: date -u +%Y-%m-%d` and store as $TODAY. Use $TODAY for log filenames, commit messages, Issue titles, and to determine the visit window (last 3 days back from $TODAY). All dates in this system are UTC. The cron fires at 03:00 UTC daily.
 
             ## Hard constraints
             - DEV ONLY. Never touch prod. If HYDROCERT_API_BASE contains "prod" → abort immediately.
