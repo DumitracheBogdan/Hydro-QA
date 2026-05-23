@@ -99,6 +99,38 @@ jobs:
             5. Map plan to inspections using all signals
             6. Reasoning-only fallback: when ambiguous, mark unresolved with `reasonClass`
 
+            ## SKIP-OVERRIDE list (these jobTypes ALWAYS skip=true, NEVER patch or unresolved)
+            These jobTypes are visual inspections, temperature readings, on-site tests, or actions. They NEVER hold lab samples regardless of notes:
+            - Cold Water Storage Tank inspection (visual)
+            - Calorifier/Water Heater temperatures (temp reading)
+            - Calorifier/Water Heater drain Flush (action)
+            - Outlet Temperature monitoring (temp reading)
+            - Spa/Pool - on-site testing (on-site only)
+            - Water feature - On site chem testing form (on-site only)
+            - Closed System On-Site chem testing (on-site only)
+            - Closed System Chemical Dosing (action, not sampling)
+            - Cold water storage tank - Clean and Spray disinfection form
+            - Showerhead descaling / TMV Servicing
+            - Water Meter Reading / Corrosion Coupon / Softener Servicing
+            - Little used outlet flushing
+            - Hydrogen Peroxide / Chlorine Dioxide dosing system testing
+            - Legionella Risk Assessment / Risk Assessments / Service Reports
+            - Disinfection – System disinfection of domestic H&C outlets
+            - Dissolved Oxygen Testing (field probe, no lab)
+
+            CRITICAL: emit `skip: true` for these CONSISTENTLY across ALL batches. DO NOT mark `unresolved`. DO NOT plan samples. Even if notes mention "samples" — the lab samples live in SEPARATE Domestic Sample slots, not in these jobTypes.
+
+            ## Pre-existing samples awareness (budget reconciliation)
+            Each visit in batch JSON has TWO arrays:
+            - `emptyInspections[]` — you decide samples here
+            - `filledInspections[]` — already have samples. DO NOT TOUCH. But READ them for budget context.
+
+            Example: notes say "4 x LP + 4 x Micro". `filledInspections` shows 4 Legionella already → LP budget SATISFIED. Plan only the 4 Micro for empty slots. Do NOT add more Legionella.
+
+            ## Catalog gap policy (when notes ask for missing sample type)
+            - SAFE fallback: requested variant of a base in catalog (e.g., "Chem Basic+Glycol" missing → use base "Chem Basic"). Tag as LOW confidence + `catalogGaps[]`.
+            - UNSAFE fallback: unrelated sample type (e.g., notes ask "Lead" → DO NOT use "Greywater"). Instead → `unresolved_catalog_gap` with reasoning "no Lead in catalog, no safe fallback".
+
             ## Plan-then-validate per worker
             For each visit:
             - First produce a structured plan: total samples per type called for by notes
@@ -124,6 +156,10 @@ jobs:
             Each worker subagent receives this prompt (adapt N=1..5):
 
             > You are populator worker N. Read scripts/runtime/batch-N.json + hydrocert-tokens.csv + docs/populator/few-shot-examples.md + docs/populator/past-resolutions.jsonl + scripts/runtime/sample-types-catalog.json.
+            >
+            > CRITICAL: Each visit in batch-N.json has BOTH `emptyInspections[]` (you decide on these) AND `filledInspections[]` (already have samples, DO NOT TOUCH, USE for budget reconciliation). If filledInspections already covers part of the notes budget, plan only the rest.
+            >
+            > For any inspection whose jobType is in the SKIP-OVERRIDE list above → emit `skip: true`. NEVER `unresolved` for those. NEVER patch.
             >
             > For each visit, follow the Decision priority + Plan-then-validate above. Write your output to scripts/runtime/plan-batch-N.json as an array of:
             > ```

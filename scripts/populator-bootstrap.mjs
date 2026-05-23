@@ -96,11 +96,17 @@ async function main() {
     const maxInsp = v.inspections.reduce((m, i) => Math.max(m, new Date(i.createdAt || 0).getTime()), 0);
     if (maxInsp && maxInsp < new Date(PRE_SYNC_CUTOFF).getTime()) continue;
 
-    const emptyInsp = v.inspections.filter(i => (i.laboratorySamples || []).length === 0).map(i => ({
-      id: i.id, inspectionRef: i.inspectionReference,
-      jobType: i.jobType?.name, itemLocation: i.itemLocation, itemDetail: i.itemDetail,
+    const allInsp = (v.inspections || []).map(i => ({
+      id: i.id,
+      inspectionRef: i.inspectionReference,
+      jobType: i.jobType?.name,
+      itemLocation: i.itemLocation,
+      itemDetail: i.itemDetail,
       createdAt: i.createdAt,
+      currentSamples: (i.laboratorySamples || []).map(s => s.sampleType?.name).filter(Boolean),
     }));
+    const emptyInsp = allInsp.filter(i => i.currentSamples.length === 0);
+    const filledInsp = allInsp.filter(i => i.currentSamples.length > 0);
     if (emptyInsp.length === 0) continue;
 
     const visitDate = v.visitDate || v.originalDate || v.scheduledAt;
@@ -112,6 +118,7 @@ async function main() {
       monthShort: dt ? dt.toLocaleString('en-US', { month: 'short' }) : null,
       notes: v.notes,
       emptyInspections: emptyInsp,
+      filledInspections: filledInsp,
     });
   }
   preflight.eligibleCount = eligible.length;

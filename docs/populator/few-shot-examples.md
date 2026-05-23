@@ -99,3 +99,35 @@ Domestic Sample (8 inspections):
 - Last 4 → Legionella (4 x LP)
 
 **Reasoning:** CRITICAL — sample-budget reconciliation. Notes call for exactly 2 BSRIA total, not "1 per CS inspection". Plan must sum to budget. Allocate first, validate sum equals notes budget, then execute. If budget exhausted, mark remaining unresolved.
+
+## Example 11: Pre-existing samples (budget reconciliation across runs)
+
+**Visit:** V186768 — 53 Onslow Gardens (One-off Lead + Legionella)
+**Notes:** "2 x Lead (Suite: LEAD) + 2 x LEGIONELLA PRE FLUSH + 2 x LEGIONELLA POST FLUSH" = 6 samples total budgeted
+**filledInspections:** 4 × Domestic Sample / "Sample Location" already have Legionella (from a prior run — 4 of the 4 LP budget satisfied)
+**emptyInspections:** 2 × Domestic Sample / "Sample Location" still empty (these need decision)
+
+**WRONG decision** (caught in audit): add 1 more Legionella + 1 Greywater fallback for Lead.
+- Over-budget on LP: 4 already + 1 more = 5, notes call for 4.
+- Greywater is wastewater, NOT Lead. Catalog has no Lead. Unrelated fallback is unsafe.
+
+**CORRECT decision:**
+- Check `filledInspections`: 4 Legionella present → LP budget (4) FULLY satisfied.
+- Remaining 2 empty inspections must hold the 2 Lead samples per notes.
+- Catalog has NO `Lead` sample type → mark BOTH empty as `unresolved_catalog_gap` with reasoning: "Notes call for 2 x Lead. No Lead sample type in catalog. DO NOT use unrelated fallback (Greywater)."
+
+**Lessons:**
+1. Always use `filledInspections` for budget reconciliation BEFORE planning new samples.
+2. When catalog lacks the specific type, prefer `unresolved_catalog_gap` over an unrelated-type fallback.
+3. Acceptable fallback: same-base variant (e.g., "Chem Basic+Glycol" missing → use base "Chem Basic", tag LOW). Unacceptable fallback: unrelated type (Lead → Greywater).
+
+## Example 12: CWST inspection always skipped
+
+**Visit:** V186752 — 30 Broadwick Street
+**Notes:** "May – A – 4pts – TI, DS – 4 x LP and 4 x Micro"
+**emptyInspections (10):**
+- 4 × Domestic Sample / "Micro Sample 1..4" → Potable/Domestic ✓
+- 4 × Domestic Sample / "LP Sample 1..4" → Legionella ✓
+- 2 × **Cold Water Storage Tank inspection** / "CWST", "CWST 2" → **skip=true** (NOT samples)
+
+**Reasoning:** CWST inspection = visual jobType in SKIP-OVERRIDE list. Even though the notes describe sampling activity at this site, the lab samples live in the 8 separate DS slots — the 2 CWST inspections are just visual tank checks. Always `skip: true` on CWST.
