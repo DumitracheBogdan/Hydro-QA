@@ -1,0 +1,188 @@
+name: Hydrocert Populator v2 - PROD LIMITED TEST
+run-name: "Populator PROD - ${{ inputs.dry_run && 'DRY' || 'LIVE' }} - ${{ github.event_name }}"
+
+# LIMITED PRODUCTION TEST WORKFLOW
+# Scope: Garikai Stanley + Justin Williams only, 25-29 May 2026
+# NO cron — workflow_dispatch only
+# Default dry_run=true (must explicitly toggle for LIVE)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run (true = no PATCH, false = LIVE PATCH on PROD)
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: claude-populator-v2-prod
+  cancel-in-progress: false
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: Production
+
+    env:
+      HYDROCERT_API_BASE: https://hydrocert-prod-api.azurewebsites.net
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_PROD_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_PROD_PASSWORD }}
+      ALLOW_PROD: 'true'
+      ENV_NAME: 'prod'
+      START_DATE: '2026-05-25'
+      END_DATE: '2026-05-29'
+      ENGINEER_FILTER: '91e1ff91-7347-4c0e-ab54-ce4a2fa3a559,c626d2ad-8c24-4d1b-929a-01b3af4377b8'
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git for commits
+        run: |
+          git config user.email "claude-populator-prod@hydrocert"
+          git config user.name "Claude Populator PROD"
+
+      - name: Bootstrap (preflight + discovery + batching with engineer filter)
+        run: node scripts/populator-bootstrap.mjs
+
+      - name: Run Claude Code orchestrator
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: claude-opus-4-7
+          timeout_minutes: "50"
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep,Task"
+          prompt: |
+            # Hydrocert Populator v2 PROD — Limited Test Orchestrator
+
+            You orchestrate a 5-worker + 1-manager populator on PRODUCTION with strict limits.
+
+            ## PRODUCTION SAFETY (highest priority)
+            - This is PROD: hydrocert-prod-api.azurewebsites.net
+            - ENV_NAME=prod, ALLOW_PROD=true is explicitly set — proceed
+            - Scope is HARD-LIMITED to: 25-29 May 2026, engineers Garikai Stanley + Justin Williams ONLY
+            - Bootstrap has already filtered visits via ENGINEER_FILTER + START_DATE/END_DATE — trust its output
+            - ONLY modify `laboratorySamples` field via PATCH /inspections + DELETE /laboratory-samples. NEVER edit visits, inspections, notes, itemLocation, jobTypes.
+            - No inspection exists → SKIP. Never create inspections.
+            - Notes empty/null + no booker-encoded itemLocation token → mark unresolved. Never invent.
+
+            ## Time context (run `date -u` FIRST)
+            Before anything else, run `Bash: date -u +%Y-%m-%d` and store as $TODAY. Use $TODAY for log filenames, commit messages, Issue titles.
+
+            ## Files already prepared by bootstrap
+            - `scripts/runtime-prod/preflight.json` — auth + catalog status (must have authOk: true)
+            - `scripts/runtime-prod/sample-types-catalog.json` — name → UUID
+            - `scripts/runtime-prod/batch-1.json` ... `batch-5.json` — filtered batches
+
+            ## Sources of truth (load and consult)
+            - `hydrocert-tokens.csv` — Kayle signed-off 111-token catalog
+            - `docs/populator/few-shot-examples.md` — curated past cases
+            - `docs/populator/past-resolutions.jsonl` — human-confirmed prior resolutions
+
+            ## Decision priority (reasoning-first, NOT mechanical rules)
+            1. Read visit notes RAW
+            2. Consult Kayle CSV to decode tokens
+            3. Booker-encoded itemLocation labels = PRIMARY signal
+            4. Build visit-wide PLAN with sum-check vs notes budget
+            5. Reasoning-only fallback: ambiguous → mark unresolved with reasonClass
+
+            ## SKIP-OVERRIDE list (these jobTypes ALWAYS skip=true)
+            Cold Water Storage Tank inspection, Calorifier/Water Heater temperatures, Calorifier/Water Heater drain Flush, Outlet Temperature monitoring, Spa/Pool - on-site testing, Water feature - On site chem testing form, Closed System On-Site chem testing, Closed System Chemical Dosing, Cold water storage tank - Clean and Spray disinfection form, Showerhead descaling, TMV Servicing, Water Meter Reading, Corrosion Coupon, Softener Servicing, Little used outlet flushing, Hydrogen Peroxide / Chlorine Dioxide dosing system testing, Legionella Risk Assessment, Risk Assessments, Service Reports, Disinfection – System disinfection of domestic H&C outlets, Dissolved Oxygen Testing.
+
+            ## Pre-existing samples awareness
+            Each visit in batch has `emptyInspections[]` (decide) and `filledInspections[]` (DO NOT TOUCH, USE for budget reconciliation).
+
+            ## Catalog gap policy
+            - SAFE fallback: same-base variant (e.g., Chem Basic+Glycol missing → Chem Basic). LOW confidence + catalogGaps[].
+            - UNSAFE: unrelated type fallback. Notes ask Lead, no Lead → unresolved_catalog_gap. DO NOT use Greywater.
+
+            ## Reason classes (exact strings)
+            unresolved_no_notes / unresolved_resample_no_notes / unresolved_slot_count_mismatch / unresolved_chem_on_ds_jobtype / unresolved_catalog_gap / unresolved_unknown_jobtype / unresolved_ambiguous_intent / unresolved_other
+
+            ## Workflow Steps
+
+            ### Step 1: Bootstrap check
+            Read `scripts/runtime-prod/preflight.json`. If `authOk !== true` or `error` field present → abort, open Issue `[ATTN-PREFLIGHT-PROD]`.
+
+            ### Step 2: Dispatch 5 worker subagents in PARALLEL via Task tool
+            Each worker N reads scripts/runtime-prod/batch-N.json + Kayle CSV + examples + past-resolutions + catalog. Outputs scripts/runtime-prod/plan-batch-N.json. Runs `node scripts/populator-executor.mjs N`.
+
+            Worker output schema:
+            ```
+            { "visitRef": "...", "uuid": "...", "decisions": [
+              { "inspectionId": "...", "inspectionRef": "...", "jobType": "...", "itemLocation": "...",
+                "samples": [{"sampleTypeId": "<uuid>", "sampleTypeName": "...", "quantity": 1}],
+                "confidence": "HIGH|MED|LOW",
+                "reasoning": "...",
+                "unresolved": false }
+              /* OR unresolved=true with reasonClass and no samples */
+              /* OR skip=true for jobType skip overrides */
+            ] }
+            ```
+
+            ### Step 3: Wait all 5 workers done. Read all scripts/runtime-prod/report-batch-*.json files.
+
+            ### Step 4: Dispatch 1 super-manager subagent via Task tool
+            Verify each patched inspection per notes + sum-check budget + low-confidence flag.
+            Output scripts/runtime-prod/manager-report.json with errors[], lowConfidenceReview[], approvedPatches.
+
+            ### Step 5: Fix loop (max 3 iterations)
+            Same as dev: re-dispatch affected worker with deleteSampleIds + samples-to-add. Stop at 0 errors or 3 iter.
+
+            ### Step 6: Reporting
+            Build `claude-populator-runs/$TODAY-prod-report.md` with:
+            - PROD scope confirmation (engineers + dates)
+            - Patched / unresolved / skipped per engineer
+            - Low-confidence list with FE prod links
+            - Catalog gaps
+
+            Commit + push to main:
+            ```
+            git add claude-populator-runs/$TODAY-prod-*
+            git commit -m "chore: populator PROD test run $TODAY"
+            git push origin main
+            ```
+
+            Open Issue (PROD-tagged):
+            ```
+            gh issue create --repo DumitracheBogdan/Hydro-QA --label populator-prod --title "[POPULATOR-PROD-TEST] $TODAY: <P patched / U unresolved>" --body-file claude-populator-runs/$TODAY-prod-report.md
+            ```
+
+            Use `[ATTN-PROD]` prefix if errors > 0, unresolved > 10, or fix-loop hit 3-iter limit.
+
+            ## START NOW
+            Begin Step 1.
+
+      - name: Capture run logs (always)
+        if: always()
+        run: |
+          echo "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Upload artifacts (debug)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: populator-v2-prod-${{ github.run_id }}
+          path: |
+            claude-populator-runs/
+            scripts/runtime-prod/
+          retention-days: 14
+          if-no-files-found: ignore

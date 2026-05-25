@@ -11,10 +11,15 @@ const API_BASE = process.env.HYDROCERT_API_BASE;
 const EMAIL = process.env.HYDROCERT_QA_EMAIL;
 const PASSWORD = process.env.HYDROCERT_QA_PASSWORD;
 const WINDOW_DAYS = parseInt(process.env.WINDOW_DAYS || '3', 10);
-const PRE_SYNC_CUTOFF = '2026-04-15T10:29:25Z';
+const PRE_SYNC_CUTOFF = process.env.SYNC_CUTOFF || '2026-04-15T10:29:25Z';
+const ALLOW_PROD = process.env.ALLOW_PROD === 'true';
+const ENV_NAME = process.env.ENV_NAME || 'dev';
+const START_DATE = process.env.START_DATE; // YYYY-MM-DD optional
+const END_DATE = process.env.END_DATE;     // YYYY-MM-DD optional
+const ENGINEER_FILTER = (process.env.ENGINEER_FILTER || '').split(',').map(s => s.trim()).filter(Boolean);
 
-if (!API_BASE || /prod/i.test(API_BASE)) {
-  console.error('FATAL: API_BASE missing or contains "prod" — dev only.');
+if (!API_BASE || (!ALLOW_PROD && /prod/i.test(API_BASE))) {
+  console.error('FATAL: prod blocked. Set ALLOW_PROD=true to authorize prod.');
   process.exit(2);
 }
 if (!EMAIL || !PASSWORD) {
@@ -22,8 +27,9 @@ if (!EMAIL || !PASSWORD) {
   process.exit(2);
 }
 
-const RUNTIME = path.resolve('scripts/runtime');
+const RUNTIME = path.resolve(`scripts/runtime-${ENV_NAME}`);
 fs.mkdirSync(RUNTIME, { recursive: true });
+console.log(`Bootstrap env=${ENV_NAME} runtime=${RUNTIME}`);
 
 function req(method, urlPath, { token, body } = {}) {
   return new Promise((res, rej) => {
@@ -65,11 +71,19 @@ async function main() {
   fs.writeFileSync(path.join(RUNTIME, 'sample-types-catalog.json'), JSON.stringify(catalog, null, 2));
   preflight.catalogSize = items.length;
 
-  // 3. Calendar window
-  const to = new Date();
-  const from = new Date(to.getTime() - WINDOW_DAYS * 24 * 3600 * 1000);
-  const startDate = from.toISOString();
-  const endDate = to.toISOString();
+  // 3. Calendar window — absolute (START_DATE/END_DATE) overrides relative (WINDOW_DAYS)
+  let startDate, endDate;
+  if (START_DATE && END_DATE) {
+    startDate = `${START_DATE}T00:00:00Z`;
+    endDate = `${END_DATE}T23:59:59Z`;
+    preflight.windowMode = 'absolute';
+  } else {
+    const to = new Date();
+    const from = new Date(to.getTime() - WINDOW_DAYS * 24 * 3600 * 1000);
+    startDate = from.toISOString();
+    endDate = to.toISOString();
+    preflight.windowMode = 'relative';
+  }
   preflight.window = { startDate, endDate };
 
   const cal = await req('GET', `/visits/calendar-filter?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`, { token });
@@ -85,11 +99,19 @@ async function main() {
     process.exit(4);
   }
 
-  // 4. Per-visit detail + eligibility filter
+  // 4. Per-visit detail + eligibility filter (incl. ENGINEER_FILTER)
   const eligible = [];
+  preflight.engineerFilter = ENGINEER_FILTER.length ? ENGINEER_FILTER : null;
+  let filteredOutByEngineer = 0;
   for (const c of calendarItems) {
     const uuid = c.id || c.visitId;
     if (!uuid) continue;
+    // Engineer filter: check calendar-item visitEngineers[] BEFORE fetching full visit
+    if (ENGINEER_FILTER.length > 0) {
+      const vEngs = (c.visitEngineers || []).map(e => e.engineerId || e.id).filter(Boolean);
+      const matches = vEngs.some(eid => ENGINEER_FILTER.includes(eid));
+      if (!matches) { filteredOutByEngineer++; continue; }
+    }
     const v = (await req('GET', `/visits/${uuid}`, { token })).body;
     if (!v?.inspections) continue;
     if (v.visitStatus === 'complete') continue;
@@ -122,6 +144,7 @@ async function main() {
     });
   }
   preflight.eligibleCount = eligible.length;
+  preflight.filteredOutByEngineer = filteredOutByEngineer;
 
   // 5. Split into 5 batches
   const batches = [[], [], [], [], []];

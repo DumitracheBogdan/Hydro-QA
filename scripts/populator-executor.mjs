@@ -12,12 +12,14 @@ const API_BASE = process.env.HYDROCERT_API_BASE;
 const EMAIL = process.env.HYDROCERT_QA_EMAIL;
 const PASSWORD = process.env.HYDROCERT_QA_PASSWORD;
 const DRY_RUN = process.env.DRY_RUN === 'true';
+const ALLOW_PROD = process.env.ALLOW_PROD === 'true';
+const ENV_NAME = process.env.ENV_NAME || 'dev';
 const batchNum = process.argv[2];
 
-if (!API_BASE || /prod/i.test(API_BASE)) { console.error('FATAL: dev only'); process.exit(2); }
+if (!API_BASE || (!ALLOW_PROD && /prod/i.test(API_BASE))) { console.error('FATAL: prod blocked. Set ALLOW_PROD=true.'); process.exit(2); }
 if (!batchNum) { console.error('Usage: node populator-executor.mjs <batch-num>'); process.exit(2); }
 
-const RUNTIME = path.resolve('scripts/runtime');
+const RUNTIME = path.resolve(`scripts/runtime-${ENV_NAME}`);
 const planPath = path.join(RUNTIME, `plan-batch-${batchNum}.json`);
 if (!fs.existsSync(planPath)) { console.error(`Plan not found: ${planPath}`); process.exit(2); }
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
@@ -25,7 +27,7 @@ const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const today = new Date().toISOString().slice(0, 10);
 const auditDir = path.resolve('claude-populator-runs');
 fs.mkdirSync(auditDir, { recursive: true });
-const auditPath = path.join(auditDir, `${today}-actions.jsonl`);
+const auditPath = path.join(auditDir, `${today}-${ENV_NAME}-actions.jsonl`);
 
 function appendAudit(entry) {
   fs.appendFileSync(auditPath, JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n');
