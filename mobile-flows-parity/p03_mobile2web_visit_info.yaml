@@ -2,18 +2,7 @@ appId: com.hydrocert.app
 name: "PARITY p03 - mobile-to-web visit info"
 tags: [parity, mobile2web]
 ---
-- runFlow: _shared/open_tagged_visit.yaml
-- tapOn:
-    text: "Inspections.*"
-- scrollUntilVisible:
-    element: { text: "Start Inspection" }
-    direction: DOWN
-    timeout: 20000
-- tapOn: "Start Inspection"
-- scrollUntilVisible:
-    element: { text: "Visit Information" }
-    direction: DOWN
-    timeout: 20000
+- runFlow: _shared/open_inspection.yaml
 - tapOn: "Visit Information"
 - extendedWaitUntil:
     visible: "Assisting 1"
@@ -34,11 +23,12 @@ tags: [parity, mobile2web]
     below: { text: "Works being carried out" }
 - inputText: "PARITY-${RUN_ID} Works"
 - hideKeyboard
+- tapOn: "Works being carried out"
 - scrollUntilVisible:
     element: { text: "^Save$" }
     direction: DOWN
-    timeout: 25000
-    speed: 40
+    timeout: 30000
+    speed: 30
 - tapOn: "^Save$"
 - scrollUntilVisible:
     element: { text: "Visit Information" }

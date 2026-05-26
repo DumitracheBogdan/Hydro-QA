@@ -1,0 +1,17 @@
+appId: com.hydrocert.app
+name: "Parity Shared - Open the inspection (handles Start or View)"
+tags: [shared, navigation]
+---
+- runFlow: open_tagged_visit.yaml
+- tapOn:
+    text: "Inspections.*"
+- scrollUntilVisible:
+    element:
+      text: "(Start|View) Inspection"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    text: "(Start|View) Inspection"
+- extendedWaitUntil:
+    visible: "Visit Information"
+    timeout: 25000
