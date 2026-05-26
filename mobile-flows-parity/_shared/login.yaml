@@ -1,13 +1,11 @@
 appId: com.hydrocert.app
-name: "Parity Shared - Login"
+name: "Parity Shared - Login (debug build defaults to DEV)"
 tags: [shared, login]
 ---
-- launchApp:
-    clearState: true
 - extendedWaitUntil:
     visible:
       text: "Forgot.*"
-    timeout: 45000
+    timeout: 60000
 - tapOn:
     text: "^Email$"
 - inputText: ${MAESTRO_APP_EMAIL}

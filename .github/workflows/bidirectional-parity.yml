@@ -55,13 +55,14 @@ jobs:
           VISIT_REF: ${{ github.event.inputs.visit_ref }}
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
           HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
-          # admin user is an engineer -> used for API creation, engineer assignment, AND mobile login
+          # admin (engineer) creates the visit via API; the dedicated parity engineer logs into mobile
+          # and is the assigned engineer (its password has no special chars -> types cleanly via Maestro).
           API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
           API_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
-          MOBILE_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
-          MOBILE_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
-          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
-          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
+          MOBILE_EMAIL: ${{ secrets.HYDROCERT_PARITY_MOBILE_EMAIL }}
+          MOBILE_PASSWORD: ${{ secrets.HYDROCERT_PARITY_MOBILE_PASSWORD }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_PARITY_MOBILE_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_PARITY_MOBILE_PASSWORD }}
 
       - name: Upload artifacts
         if: always()
