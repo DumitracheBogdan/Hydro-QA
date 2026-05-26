@@ -55,8 +55,11 @@ Lookup helper: `inspectionForms.find(f=>f.formName==='Visit Information').formFi
 - **Mobile login user:** dedicated engineer `parity.bot@hydrocert.com` / `ParityBot2026` (created via admin, `isEngineer:true`, GH secrets `HYDROCERT_PARITY_MOBILE_EMAIL/PASSWORD`). Password is alphanumeric on purpose — Maestro `inputText` mistypes special chars like `!`, which caused false "Invalid Credentials".
 - **Navigate to the run's visit:** Visits Home search box ("Type to search...") + the visit reference (`VISIT_REF`) → "View Visit Details". Search finds future-dated visits (the fresh visit is scheduled +24h).
 
+## FINDING (confirmed 2026-05-26): inspection actions don't render on mobile
+Inspection-level actions created via the API (`POST /actions` with `inspectionId`) are **confirmed present in the backend** (`GET /actions?inspectionId=` returns all 3) but **do NOT render** in the mobile inspection's "Actions" ExpandableCard (`TankInspectionScreen.kt:727`). When expanded, the card shows only its header + the next "Missing inspection" toggle — no action rows. Visit-level actions (same call with `visitId`) DO render correctly on the visit-detail Actions card. This is a real web↔mobile parity gap — candidate for a QA bug (`/qa-case`). The parity suite therefore verifies check 2c via API (`checkInspectionActions`) and does not assert it on the mobile UI; re-add the mobile assertion (p01c) once the app renders these.
+
 ## Mobile surfaces (from source map)
-- Inspection-level Actions DO exist on mobile (`TankInspectionScreen.kt:727` ExpandableCard "Actions") → 2c can be mobile-asserted.
+- Inspection "Actions" ExpandableCard exists (`TankInspectionScreen.kt:727`) but renders empty for API-created actions (see FINDING above).
 - Zero `testTag` in the app → all Maestro selectors use `text` or `contentDescription`.
 
 ## Fixtures summary (`scripts/parity/fixtures.dev.json` + runtime resolution)

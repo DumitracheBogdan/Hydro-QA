@@ -33,3 +33,11 @@ inspection-*.png
 Thumbs.db
 scripts/runtime/
 scripts/runtime-prod/
+
+# parity local/CI scratch
+_cirun*/
+parity-context.json
+parity-mobile-results.json
+summary.json
+report.html
+qa-artifacts/
