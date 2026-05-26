@@ -11,9 +11,13 @@ tags: [parity, mobile2web]
     timeout: 20000
 - tapOn: "Start Inspection"
 - scrollUntilVisible:
-    element: { text: "Assisting 1" }
+    element: { text: "Visit Information" }
     direction: DOWN
-    timeout: 25000
+    timeout: 20000
+- tapOn: "Visit Information"
+- extendedWaitUntil:
+    visible: "Assisting 1"
+    timeout: 12000
 - tapOn:
     below: { text: "Assisting 1" }
 - inputText: "PARITY-${RUN_ID} Inspector 1"
@@ -37,7 +41,7 @@ tags: [parity, mobile2web]
     speed: 40
 - tapOn: "^Save$"
 - scrollUntilVisible:
-    element: { text: "Assisting 1" }
+    element: { text: "Visit Information" }
     direction: UP
-    timeout: 10000
+    timeout: 12000
     speed: 40
