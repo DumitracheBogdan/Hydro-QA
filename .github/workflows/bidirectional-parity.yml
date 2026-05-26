@@ -1,0 +1,85 @@
+name: Bidirectional Parity (dev)
+run-name: "Bidirectional Parity - ${{ github.event_name }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      visit_ref:
+        description: "Reuse an existing visit ref (skip create). Leave blank for a fresh visit."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bidirectional-parity-dev
+  cancel-in-progress: false
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    environment: Development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Unit tests (parity API scripts)
+        run: node --test scripts/parity/*.test.mjs
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run bidirectional parity (Android emulator)
+        id: parity
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-parity-test.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+          VISIT_REF: ${{ github.event.inputs.visit_ref }}
+          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+          # admin user is an engineer -> used for API creation, engineer assignment, AND mobile login
+          API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
+          API_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
+          MOBILE_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
+          MOBILE_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-report
+          path: |
+            qa-artifacts/parity/**
+            summary.json
+            report.html
+          retention-days: 14
+
+      - name: Job summary
+        if: always()
+        run: |
+          echo "## Bidirectional Parity" >> $GITHUB_STEP_SUMMARY
+          if [ -f summary.json ]; then
+            node -e "const s=require('./summary.json');console.log('**'+s.passed+'/'+s.total+' PASS** — visit '+s.visitRef)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No summary produced (early failure — see logs/artifacts)." >> $GITHUB_STEP_SUMMARY
+          fi
