@@ -1,0 +1,17 @@
+appId: com.hydrocert.app
+name: "Parity Shared - Open tagged visit by reference"
+tags: [shared, navigation]
+---
+- runFlow: login.yaml
+# Search for the run's visit by reference (VISIT_REF), then open it.
+- tapOn:
+    text: "Type to search.*"
+- inputText: ${VISIT_REF}
+- hideKeyboard
+- extendedWaitUntil:
+    visible: "View Visit Details"
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 20000

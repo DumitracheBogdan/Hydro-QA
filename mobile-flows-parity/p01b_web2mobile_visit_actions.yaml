@@ -1,0 +1,17 @@
+appId: com.hydrocert.app
+name: "PARITY p01b - web->mobile visit actions"
+tags: [parity, web2mobile]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn:
+    text: "Visit Details"
+- scrollUntilVisible:
+    element:
+      text: "^Actions$"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    text: "^Actions$"
+- assertVisible: ".*PARITY-${RUN_ID} Hi.*"
+- assertVisible: ".*PARITY-${RUN_ID} Med.*"
+- assertVisible: ".*PARITY-${RUN_ID} Lo.*"

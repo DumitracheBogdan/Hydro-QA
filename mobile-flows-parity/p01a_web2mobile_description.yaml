@@ -1,0 +1,13 @@
+appId: com.hydrocert.app
+name: "PARITY p01a - web->mobile description"
+tags: [parity, web2mobile]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn:
+    text: "Visit Details"
+- scrollUntilVisible:
+    element:
+      text: ".*PARITY-${RUN_ID} description.*"
+    direction: DOWN
+    timeout: 20000
+- assertVisible: ".*PARITY-${RUN_ID} description.*"

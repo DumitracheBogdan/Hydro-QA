@@ -1,0 +1,31 @@
+appId: com.hydrocert.app
+name: "PARITY p04 - mobile->web risk assessment"
+tags: [parity, mobile2web]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn:
+    text: "Inspections.*"
+- scrollUntilVisible:
+    element: { text: "Start Inspection" }
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Start Inspection"
+- scrollUntilVisible:
+    element: { text: "Accessing Area/Lone Working- Comments" }
+    direction: DOWN
+    timeout: 25000
+- tapOn:
+    below: { text: "Accessing Area/Lone Working- Comments" }
+- inputText: "PARITY-${RUN_ID} risk comment"
+- hideKeyboard
+- scrollUntilVisible:
+    element: { text: "^Save$" }
+    direction: DOWN
+    timeout: 25000
+    speed: 40
+- tapOn: "^Save$"
+- scrollUntilVisible:
+    element: { text: "Accessing Area/Lone Working- Comments" }
+    direction: UP
+    timeout: 10000
+    speed: 40

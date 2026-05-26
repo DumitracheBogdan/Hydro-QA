@@ -1,0 +1,40 @@
+appId: com.hydrocert.app
+name: "PARITY p02 - mobile->web signature"
+tags: [parity, mobile2web]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn:
+    text: "Visit Details"
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Client Signature"
+# draw signature strokes on the canvas
+- swipe:
+    start: "20%, 62%"
+    end: "80%, 62%"
+- swipe:
+    start: "30%, 58%"
+    end: "70%, 66%"
+# Client Name field + Submit (refine coords live)
+- tapOn:
+    below:
+      text: "Client Name.*"
+- inputText: "PARITY-${RUN_ID} Client"
+- hideKeyboard
+- tapOn: "Submit"
+- scrollUntilVisible:
+    element:
+      text: "^Save$"
+    direction: DOWN
+    timeout: 25000
+    speed: 40
+- tapOn: "^Save$"
+- scrollUntilVisible:
+    element:
+      text: "Visit Details"
+    direction: UP
+    timeout: 10000
+    speed: 40
