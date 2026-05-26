@@ -5,13 +5,22 @@ tags: [parity, web2mobile]
 - runFlow: _shared/open_tagged_visit.yaml
 - tapOn:
     text: "Visit Details"
+# Actions card is expanded by default; scroll to each tagged action and assert.
 - scrollUntilVisible:
     element:
-      text: "^Actions$"
+      text: ".*PARITY-${RUN_ID} Hi.*"
     direction: DOWN
     timeout: 20000
-- tapOn:
-    text: "^Actions$"
 - assertVisible: ".*PARITY-${RUN_ID} Hi.*"
+- scrollUntilVisible:
+    element:
+      text: ".*PARITY-${RUN_ID} Med.*"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: ".*PARITY-${RUN_ID} Med.*"
+- scrollUntilVisible:
+    element:
+      text: ".*PARITY-${RUN_ID} Lo.*"
+    direction: DOWN
+    timeout: 10000
 - assertVisible: ".*PARITY-${RUN_ID} Lo.*"
