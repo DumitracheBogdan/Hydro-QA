@@ -8,9 +8,12 @@ tags: [shared, navigation]
     text: "Type to search.*"
 - inputText: ${VISIT_REF}
 - hideKeyboard
-- extendedWaitUntil:
-    visible: "View Visit Details"
-    timeout: 20000
+# "View Visit Details" sits below the fold on smaller CI emulators -> scroll to it.
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 25000
 - tapOn: "View Visit Details"
 - extendedWaitUntil:
     visible: "Inspections.*"
