@@ -1,0 +1,194 @@
+name: Hydrocert Populator v2 - PROD James-Watch (TEMPORARY)
+run-name: "James-Watch ${{ github.event_name }}"
+
+# ⚠ TEMPORARY WORKFLOW — DISABLE AFTER 29 MAY 2026 EOD
+# Purpose: Watch for James Gomm to create a test visit on PROD this week (25-29 May).
+# Runs every 10 min. If James has 0 eligible visits → exits cheap (bootstrap only, no Claude call).
+# If James has eligible visit(s) → triggers the full populator orchestrator.
+# Scope:
+#   - Engineer filter: James Gomm ONLY (172f3b22-a5d7-41da-af69-0ddda54a77b0)
+#   - Date window: 25-29 May 2026 (absolute)
+#   - LIVE (no dry-run — James wants the samples patched for real testing)
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 min
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Dry run (manual override only)
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: claude-populator-v2-prod-james-watch
+  cancel-in-progress: false
+
+jobs:
+  watch-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    environment: Production
+
+    env:
+      HYDROCERT_API_BASE: https://hydrocert-prod-api.azurewebsites.net
+      HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_PROD_EMAIL }}
+      HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_PROD_PASSWORD }}
+      ALLOW_PROD: 'true'
+      ENV_NAME: 'prod'
+      START_DATE: '2026-05-25'
+      END_DATE: '2026-05-29'
+      ENGINEER_FILTER: '172f3b22-a5d7-41da-af69-0ddda54a77b0'
+      DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure git for commits
+        run: |
+          git config user.email "claude-populator-prod-james@hydrocert"
+          git config user.name "Claude Populator PROD James-Watch"
+
+      - name: Bootstrap (preflight + filter)
+        run: node scripts/populator-bootstrap.mjs
+
+      - name: Check if James has eligible visits
+        id: check
+        run: |
+          ELIGIBLE=$(node -e "const p = require('./scripts/runtime-prod/preflight.json'); console.log(p.eligibleCount || 0);")
+          echo "eligible=$ELIGIBLE" >> $GITHUB_OUTPUT
+          echo "James has $ELIGIBLE eligible visit(s)"
+          if [ "$ELIGIBLE" -eq 0 ]; then
+            echo "No work for James — exit cheap, no Claude session triggered."
+          fi
+
+      - name: Run Claude Code orchestrator (only if James has visits)
+        if: steps.check.outputs.eligible != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: anthropics/claude-code-base-action@beta
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          model: claude-opus-4-7
+          timeout_minutes: "40"
+          allowed_tools: "Bash,Read,Write,Edit,Glob,Grep,Task"
+          prompt: |
+            # Hydrocert Populator v2 PROD James-Watch — Orchestrator
+
+            You orchestrate populator on PRODUCTION for James Gomm's test visit(s).
+
+            ## PRODUCTION SAFETY (highest priority)
+            - PROD: hydrocert-prod-api.azurewebsites.net
+            - Scope HARD-LIMITED: 25-29 May 2026, James Gomm (172f3b22-...) ONLY
+            - Bootstrap already filtered — trust scripts/runtime-prod/batch-*.json
+            - ONLY modify `laboratorySamples`. NEVER edit visits/inspections/notes/itemLocation/jobTypes.
+            - No inspection exists → SKIP. Never create.
+            - Notes empty + no booker-encoded label → unresolved. Never invent.
+
+            ## Time context
+            Run `Bash: date -u +%Y-%m-%d` first, store $TODAY.
+
+            ## Files prepared by bootstrap
+            - scripts/runtime-prod/preflight.json
+            - scripts/runtime-prod/sample-types-catalog.json
+            - scripts/runtime-prod/batch-1..5.json
+
+            ## Sources of truth
+            - hydrocert-tokens.csv (Kayle 111 tokens)
+            - docs/populator/few-shot-examples.md
+            - docs/populator/past-resolutions.jsonl
+
+            ## Decision priority (reasoning-first)
+            1. Read notes RAW
+            2. Consult Kayle CSV
+            3. Booker-encoded itemLocation labels = PRIMARY signal
+            4. Build visit-wide PLAN with sum-check
+            5. Ambiguous → unresolved with reasonClass
+
+            ## SKIP-OVERRIDE list (always skip=true)
+            Cold Water Storage Tank inspection, Calorifier/Water Heater temperatures, Calorifier/Water Heater drain Flush, Outlet Temperature monitoring, Spa/Pool on-site testing, Water feature On-site testing form, Closed System On-Site chem testing, Closed System Chemical Dosing, Cold water storage tank Clean and Spray disinfection form, Showerhead descaling, TMV Servicing, Water Meter Reading, Corrosion Coupon, Softener Servicing, Little used outlet flushing, H2O2/ClO2 dosing system testing, Legionella Risk Assessment, Risk Assessments, Service Reports, Disinfection – System disinfection of domestic H&C outlets, Dissolved Oxygen Testing.
+
+            ## Pre-existing samples
+            Each visit has emptyInspections[] (decide) and filledInspections[] (DO NOT TOUCH, use for budget reconciliation).
+
+            ## Catalog gap policy
+            - SAFE: same-base variant fallback (Chem Basic+Glycol → Chem Basic), LOW confidence + catalogGaps[]
+            - UNSAFE: unrelated type fallback → unresolved_catalog_gap
+
+            ## Reason classes (exact strings)
+            unresolved_no_notes / unresolved_resample_no_notes / unresolved_slot_count_mismatch / unresolved_chem_on_ds_jobtype / unresolved_catalog_gap / unresolved_unknown_jobtype / unresolved_ambiguous_intent / unresolved_other
+
+            ## Steps
+
+            ### Step 1: Bootstrap check
+            Read scripts/runtime-prod/preflight.json. authOk must be true.
+
+            ### Step 2: Dispatch 5 workers in PARALLEL via Task tool
+            Each worker N reads batch-N.json + CSV + examples + catalog. Writes plan-batch-N.json. Runs `node scripts/populator-executor.mjs N`.
+
+            Worker schema:
+            ```
+            { "visitRef": "...", "uuid": "...", "decisions": [
+              { "inspectionId": "...", "inspectionRef": "...", "jobType": "...", "itemLocation": "...",
+                "samples": [{"sampleTypeId": "<uuid>", "sampleTypeName": "...", "quantity": 1}],
+                "confidence": "HIGH|MED|LOW",
+                "reasoning": "...",
+                "unresolved": false }
+            ] }
+            ```
+
+            ### Step 3: Wait all workers. Read report-batch-*.json.
+
+            ### Step 4: Dispatch super-manager via Task tool
+            Verify patches + budget + low-confidence. Output manager-report.json.
+
+            ### Step 5: Fix loop (max 3 iter)
+            Re-dispatch workers with deleteSampleIds + samples-to-add per manager. Stop at 0 errors or 3 iter.
+
+            ### Step 6: Reporting
+            Build claude-populator-runs/$TODAY-prod-james-report.md.
+            Commit + push:
+            ```
+            git add claude-populator-runs/$TODAY-prod-*
+            git commit -m "chore: populator PROD James-Watch run $TODAY"
+            git push origin main
+            ```
+            Open Issue:
+            ```
+            gh issue create --repo DumitracheBogdan/Hydro-QA --label populator-prod --title "[POPULATOR-PROD-JAMES] $TODAY: <P patched / U unresolved>" --body-file claude-populator-runs/$TODAY-prod-james-report.md
+            ```
+
+            ## START NOW
+
+      - name: Capture run logs (always)
+        if: always()
+        run: |
+          ELIGIBLE=${{ steps.check.outputs.eligible }}
+          echo "Workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "James eligible visits this run: $ELIGIBLE"
+
+      - name: Upload artifacts (only when work was done)
+        if: steps.check.outputs.eligible != '0' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: populator-prod-james-${{ github.run_id }}
+          path: |
+            claude-populator-runs/
+            scripts/runtime-prod/
+          retention-days: 14
+          if-no-files-found: ignore
