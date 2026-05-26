@@ -162,6 +162,9 @@ jobs:
 
             ### Step 6: Reporting
             Build claude-populator-runs/$TODAY-prod-james-report.md.
+
+            **APPEND the ownership legend at the end of the report**: read `docs/populator/issue-legend.md` and concatenate its full content as the final section of the report.md file. This ensures every Issue includes the who-acts-on-what table for booker/Calin/Kayle.
+
             Commit + push:
             ```
             git add claude-populator-runs/$TODAY-prod-*

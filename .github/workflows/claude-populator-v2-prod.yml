@@ -154,6 +154,8 @@ jobs:
             - Low-confidence list with FE prod links
             - Catalog gaps
 
+            **APPEND the ownership legend at the end of the report**: read `docs/populator/issue-legend.md` and concatenate its full content as the final section of the report.md file. This ensures every Issue includes the who-acts-on-what table for booker/Calin/Kayle.
+
             Commit + push to main:
             ```
             git add claude-populator-runs/$TODAY-prod-*
