@@ -1,0 +1,6 @@
+{
+  "jobTypeId": "658f27c1-9306-42a2-81a6-ad249d7eaef3",
+  "_jobTypeIdNote": "Health and Safty Risk Assessment — yields Visit Information + Risk Assessment forms (verified 2026-05-26)",
+  "bookingPersonIdFallback": "a5521817-8791-4a6d-9e5e-8f6028a8d28a",
+  "_resolvedAtRuntime": ["engineerId (login as mobile QA user)", "siteId (first visit with non-null siteId or GET /sites)", "bookingPersonId (sample visit, else fallback)"]
+}
