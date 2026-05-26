@@ -10,26 +10,25 @@ tags: [parity, mobile2web]
     direction: DOWN
     timeout: 20000
 - tapOn: "Client Signature"
-- extendedWaitUntil:
-    visible: "Client name"
-    timeout: 12000
+- scrollUntilVisible:
+    element: { text: "Client name" }
+    direction: DOWN
+    timeout: 15000
 - tapOn:
     below: { text: "Client name" }
 - eraseText
 - inputText: "PARITY-${RUN_ID} Client"
 - hideKeyboard
 - tapOn: "Client name"
-# open the signature dialog by tapping the "Tap to sign" preview
 - scrollUntilVisible:
     element: { text: "Tap to sign" }
     direction: DOWN
-    timeout: 12000
+    timeout: 15000
 - tapOn:
     text: "Tap to sign"
 - extendedWaitUntil:
     visible: "Submit"
-    timeout: 10000
-# draw strokes inside the dialog's DrawingCanvas (modal center)
+    timeout: 12000
 - swipe:
     start: "30%, 45%"
     end: "70%, 50%"
