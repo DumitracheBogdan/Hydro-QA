@@ -1,5 +1,5 @@
 appId: com.hydrocert.app
-name: "PARITY p04 - mobile->web risk assessment"
+name: "PARITY p04 - mobile-to-web risk assessment"
 tags: [parity, mobile2web]
 ---
 - runFlow: _shared/open_tagged_visit.yaml

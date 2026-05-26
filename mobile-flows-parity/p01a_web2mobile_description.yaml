@@ -1,5 +1,5 @@
 appId: com.hydrocert.app
-name: "PARITY p01a - web->mobile description"
+name: "PARITY p01a - web-to-mobile description"
 tags: [parity, web2mobile]
 ---
 - runFlow: _shared/open_tagged_visit.yaml
