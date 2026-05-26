@@ -6,35 +6,48 @@ tags: [parity, mobile2web]
 - tapOn:
     text: "Visit Details"
 - scrollUntilVisible:
-    element:
-      text: "Client Signature"
+    element: { text: "Client Signature" }
     direction: DOWN
     timeout: 20000
 - tapOn: "Client Signature"
-# draw signature strokes on the canvas
-- swipe:
-    start: "20%, 62%"
-    end: "80%, 62%"
-- swipe:
-    start: "30%, 58%"
-    end: "70%, 66%"
-# Client Name field + Submit (refine coords live)
+- extendedWaitUntil:
+    visible: "Client name"
+    timeout: 12000
 - tapOn:
-    below:
-      text: "Client Name.*"
+    below: { text: "Client name" }
+- eraseText
 - inputText: "PARITY-${RUN_ID} Client"
 - hideKeyboard
+- tapOn: "Client name"
+# open the signature dialog by tapping the "Tap to sign" preview
+- scrollUntilVisible:
+    element: { text: "Tap to sign" }
+    direction: DOWN
+    timeout: 12000
+- tapOn:
+    text: "Tap to sign"
+- extendedWaitUntil:
+    visible: "Submit"
+    timeout: 10000
+# draw strokes inside the dialog's DrawingCanvas (modal center)
+- swipe:
+    start: "30%, 45%"
+    end: "70%, 50%"
+- swipe:
+    start: "40%, 42%"
+    end: "60%, 55%"
+- swipe:
+    start: "58%, 43%"
+    end: "42%, 54%"
 - tapOn: "Submit"
 - scrollUntilVisible:
-    element:
-      text: "^Save$"
+    element: { text: "^Save$" }
     direction: DOWN
     timeout: 25000
     speed: 40
 - tapOn: "^Save$"
 - scrollUntilVisible:
-    element:
-      text: "Visit Details"
+    element: { text: "Client Signature" }
     direction: UP
-    timeout: 10000
+    timeout: 12000
     speed: 40
