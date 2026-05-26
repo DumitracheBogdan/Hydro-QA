@@ -48,6 +48,13 @@ Lookup helper: `inspectionForms.find(f=>f.formName==='Visit Information').formFi
 ## Signature (3a)
 - `GET /visits/{id}` returns `signature` and `signatureName`. Fresh visit: `signatureName: null`. After mobile signs → `signatureName` = entered name, `signature` = image data. Check both.
 
+## Mobile build & launch (CRITICAL — verified 2026-05-26)
+- **Must use the DEBUG apk** (`app-debug.apk` from release `mobile-apk-v1`, package `com.hydrocert.app`). The user-provided `app-release.apk` is **hardwired to PROD**: release defaults to PROD (`getDefaultEnvironment()` returns PROD when `!BuildConfig.DEBUG`) AND the env switcher (triple-tap logo) is gated behind `if (BuildConfig.DEBUG)` — so release cannot target dev at all. Debug defaults to dev.
+- **Maestro 2.4 `launchApp` does not reliably foreground this build.** Launch via adb instead: `adb shell pm clear com.hydrocert.app && adb shell am start -n com.hydrocert.app/.MainActivity`. The flow's login.yaml does NOT launch — it drives the already-open login screen.
+- **Debug build cold-starts slowly and can ANR.** Settle ~20s after launch, then dismiss the "Hydrocert isn't responding" dialog (tap "Wait") before running Maestro. `run-parity-test.sh` `launch_login`/`dismiss_anr` handle this.
+- **Mobile login user:** dedicated engineer `parity.bot@hydrocert.com` / `ParityBot2026` (created via admin, `isEngineer:true`, GH secrets `HYDROCERT_PARITY_MOBILE_EMAIL/PASSWORD`). Password is alphanumeric on purpose — Maestro `inputText` mistypes special chars like `!`, which caused false "Invalid Credentials".
+- **Navigate to the run's visit:** Visits Home search box ("Type to search...") + the visit reference (`VISIT_REF`) → "View Visit Details". Search finds future-dated visits (the fresh visit is scheduled +24h).
+
 ## Mobile surfaces (from source map)
 - Inspection-level Actions DO exist on mobile (`TankInspectionScreen.kt:727` ExpandableCard "Actions") → 2c can be mobile-asserted.
 - Zero `testTag` in the app → all Maestro selectors use `text` or `contentDescription`.
