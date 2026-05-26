@@ -67,3 +67,30 @@ Inspection-level actions created via the API (`POST /actions` with `inspectionId
 - `engineerId`: resolve at runtime = login as mobile QA user → `user.id`.
 - `bookingPersonId`: e.g. `a5521817-8791-4a6d-9e5e-8f6028a8d28a` (or resolve at runtime from a sample visit).
 - `siteId`: resolve at runtime (first visit with non-null `siteId`, or `GET /sites`).
+
+## Full-coverage extension (verified 2026-05-27)
+The suite now scores **9 checks** across both directions:
+
+| Check | Dir | Flow | Field(s) |
+|---|---|---|---|
+| 2a-description | web→mobile | p01a | `visit.notes` → read-only "Description" card |
+| 2b-visit-actions | web→mobile | p01b | 3 visit actions Hi/Med/Lo |
+| 2c-inspection-actions | web→mobile (API) | — | 3 inspection actions (API-only; mobile render gap, F-01) |
+| 2d-visit-text | web→mobile | p01d | `visit.waterSystemDescription` (API PATCH) → "Description & Reference" field |
+| 3a-signature | mobile→web | p02 | `signature` + `signatureName` |
+| 3b-visit-info | mobile→web | p03 | Assisting 1/2/**3** + Works being carried out |
+| 3c-risk | mobile→web | p04 | **all 18** Risk Assessment "- Comments" fields |
+| 3d-visit-text | mobile→web | p05 | waterSystemDescription / workDetails / samplingDetails (Visit Details card) |
+| 3e-site-induction | mobile→web | p03b | "Site Induction required & Completed" dropdown |
+
+- **`PATCH /visits/{id}` ACCEPTS `waterSystemDescription`** (→ 200, persists) even though `CreateVisitDto` rejects it. `UpdateVisitDto` is a different, permissive DTO. This is the web→mobile path for 2d.
+- **`waterSystemDescription` ≠ `notes`.** `notes` shows in the read-only "Description" card (2a). `waterSystemDescription` shows in the editable "Description & Reference" field inside the expandable "Visit Details" card (2d / 3d). Two different widgets.
+- **Mobile "Visit Details" card field labels** (expandable card on the visit screen, NOT the tab): `Description & Reference`→`waterSystemDescription`, `Work Details`→`workDetails`, `Water Sampling Details`→`samplingDetails`. Save = the visit-level "Save" button at the bottom.
+- **"Visit Details" is ambiguous** — it is both a TAB (above the read-only "Description" notes card) and the editable CARD (below it). Maestro `tapOn "Visit Details"` hits the tab (a no-op). Disambiguate with a relative selector: `tapOn: { text: "Visit Details", below: { text: "Description" } }` → selects the card and expands it.
+- **Site Induction dropdown options** (Visit Information form, jobType 658f27c1): `No Induction required`, `Yes - Induction completed`, `Yes - Induction not completed (see "other comments"...)`. p03b selects `Yes - Induction completed` (anchored `^...$` so it does not also match the "not completed" option). label === value, so the stored value equals the option text.
+- **18 Risk Assessment "- Comments" fields** — p04 is generated from `RISK_COMMENT_FIELDS` in `setup-data.mjs` by `scripts/parity/gen-p04.mjs` (single source of truth). RA is the LAST card → after the final field, scroll DOWN to "Save" directly (collapsing by scrolling UP to the header is unreliable from the bottom of the long card).
+
+## Emulator launch — cold-start ANR (debug build)
+- The debug build ANRs repeatedly on cold start. **Set `adb shell settings put global hide_error_dialogs 1`** so the system "isn't responding" dialog never overlays the login screen (the dialog blocks Maestro, which cannot dismiss it). CI emulators benefit from the same.
+- `uiautomator dump` returns **empty** for this Compose UI — do not poll it to detect screen readiness. Poll window focus (`dumpsys window | grep mCurrentFocus` → `com.hydrocert.app/.MainActivity`) instead.
+- Local helper `runflow.sh` reads `runId` via `require('C:/Users/.../parity-context.json')` — must be a **Windows** path (`C:/...`), not a Git-Bash path (`/c/...`), or node throws and falls back to a stale RUN_ID, mistagging all typed values.

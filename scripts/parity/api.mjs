@@ -36,5 +36,13 @@ export function makeClient(baseUrl, fetchImpl = fetch) {
       });
       return parse(res, "POST", path);
     },
+    async patch(path, body) {
+      const res = await fetchImpl(`${base}${path}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      return parse(res, "PATCH", path);
+    },
   };
 }

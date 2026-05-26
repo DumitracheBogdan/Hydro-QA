@@ -5,6 +5,28 @@ import { makeClient } from "./api.mjs";
 
 export function makeTitle(runId) { return `PARITY-${runId}`; }
 
+// All free-text "- Comments" fields of the Risk Assessment form (jobType 658f27c1), exact backend fieldName.
+export const RISK_COMMENT_FIELDS = [
+  "Accessing Area/Lone Working- Comments",
+  "Asbestos/Exposure - Comments",
+  "Accessing High Areas - Comments",
+  "Rodent, Bird, Insect - Comments",
+  "Working Around Machinery - Comments",
+  "Working In Plant Room - Comments",
+  "Slipping on Water - Comments",
+  "Drowning in Water - Comments",
+  "Entering Confined Space - Comments",
+  "Cleaning Tanks, Towers etc - Comments",
+  "Electrical Equip/Water - Comments",
+  "Opening Valves/Hatches - Comments",
+  "Releasing Aerosols - Comments",
+  "Hot Water Scalding - Comments",
+  "Manual Handling - Comments",
+  "Dosing Equipment - Comments",
+  "Handling Chemicals - Comments",
+  "Disinfecting Systems - Comments",
+];
+
 export function buildExpected(runId) {
   const tag = makeTitle(runId);
   const visitActs = [
@@ -28,10 +50,26 @@ export function buildExpected(runId) {
     visitInfo: {
       "Assisting 1": `${tag} Inspector 1`,
       "Assisting 2": `${tag} Inspector 2`,
+      "Assisting 3": `${tag} Inspector 3`,
       "Works being carried out": `${tag} Works`,
     },
-    riskAssessment: {
-      "Accessing Area/Lone Working- Comments": `${tag} risk comment`,
+    // every Risk Assessment free-text comment field gets the same tagged value
+    riskAssessment: Object.fromEntries(RISK_COMMENT_FIELDS.map((f) => [f, `${tag} rc`])),
+    // visit-level free-text fields set on the mobile Visit Details card -> persisted to the visit
+    visitText: {
+      waterSystemDescription: `${tag} watersys`,
+      workDetails: `${tag} workdetails`,
+      samplingDetails: `${tag} sampling`,
+    },
+    // web->mobile: PATCHed onto the visit via API in phase 0, asserted on the mobile
+    // "Description & Reference" field in phase 1 (p01d). p05 later overwrites it in phase 2.
+    webPatch: {
+      waterSystemDescription: `${tag} wsd-web`,
+    },
+    // mobile->web dropdown (p03b): a fixed option (not run-tagged — it is a fixed-choice field).
+    // Verified against the Visit Information form's fieldOptions on jobType 658f27c1.
+    siteInduction: {
+      "Site Induction required & Completed": "Yes - Induction completed",
     },
   };
 }
@@ -98,6 +136,7 @@ async function main() {
     if (!visit) throw new Error(`setup: supplied VISIT_REF ${suppliedRef} not found`);
     const fx = await resolveFixtures(c, mobileClient).catch(() => ({ jobTypeId: JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url))).jobTypeId }));
     const insp = visit.inspections?.[0] || (await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId }));
+    await c.patch(`/visits/${visit.id}`, { waterSystemDescription: expected.webPatch.waterSystemDescription }).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
     writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected, reused: true }, null, 2));
     console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id}`);
     return;
@@ -110,6 +149,9 @@ async function main() {
 
   const inspection = await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId });
   if (!inspection?.id) throw new Error("setup: inspection creation returned no id");
+
+  // web->mobile: seed waterSystemDescription so the mobile "Description & Reference" field shows it (p01d / check 2d)
+  await c.patch(`/visits/${visit.id}`, { waterSystemDescription: expected.webPatch.waterSystemDescription });
 
   for (const a of expected.visitActions) await c.post("/actions", { siteId: fx.siteId, visitId: visit.id, name: a.name, priority: a.priority });
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });

@@ -1,0 +1,20 @@
+appId: com.hydrocert.app
+name: "PARITY p01d - web-to-mobile visit text (waterSystemDescription)"
+tags: [parity, web2mobile]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+# The waterSystemDescription was PATCHed via API in phase 0. Expand the "Visit Details" card
+# (the one BELOW the read-only "Description" notes card, not the identically-named tab) and
+# assert the seeded value shows in the "Description & Reference" field.
+- scrollUntilVisible:
+    element: { text: "Description" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "Visit Details"
+    below: { text: "Description" }
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} wsd-web.*" }
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*PARITY-${RUN_ID} wsd-web.*"

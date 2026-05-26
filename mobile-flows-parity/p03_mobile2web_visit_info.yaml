@@ -16,6 +16,15 @@ tags: [parity, mobile2web]
 - inputText: "PARITY-${RUN_ID} Inspector 2"
 - hideKeyboard
 - scrollUntilVisible:
+    element: { text: "Assisting 3" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    below: { text: "Assisting 3" }
+- inputText: "PARITY-${RUN_ID} Inspector 3"
+- hideKeyboard
+- tapOn: "Assisting 3"
+- scrollUntilVisible:
     element: { text: "Works being carried out" }
     direction: DOWN
     timeout: 15000

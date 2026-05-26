@@ -1,0 +1,26 @@
+appId: com.hydrocert.app
+name: "PARITY p03b - mobile-to-web Site Induction dropdown"
+tags: [parity, mobile2web]
+---
+- runFlow: _shared/open_inspection.yaml
+- tapOn: "Visit Information"
+- scrollUntilVisible:
+    element: { text: "Site Induction required & Completed" }
+    direction: DOWN
+    timeout: 15000
+# Open the ExposedDropdownMenu and pick a fixed option (anchored so it does not also match
+# "Yes - Induction not completed ...").
+- tapOn:
+    below: { text: "Site Induction required & Completed" }
+- extendedWaitUntil:
+    visible: "^Yes - Induction completed$"
+    timeout: 8000
+- tapOn: "^Yes - Induction completed$"
+- scrollUntilVisible:
+    element: { text: "^Save$" }
+    direction: DOWN
+    timeout: 30000
+    speed: 40
+- tapOn: "^Save$"
+- waitForAnimationToEnd:
+    timeout: 5000

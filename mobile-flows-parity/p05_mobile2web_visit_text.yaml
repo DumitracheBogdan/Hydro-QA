@@ -1,0 +1,53 @@
+appId: com.hydrocert.app
+name: "PARITY p05 - mobile-to-web visit-detail text"
+tags: [parity, mobile2web]
+---
+- runFlow: _shared/open_tagged_visit.yaml
+# "Visit Details" exists twice: the TAB (above the read-only "Description" notes card) and the
+# expandable CARD (below it). Disambiguate by position — tap the one BELOW "Description" — so we
+# expand the card (tapping the tab is a no-op) and reveal the editable text fields.
+- scrollUntilVisible:
+    element: { text: "Description" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "Visit Details"
+    below: { text: "Description" }
+- scrollUntilVisible:
+    element: { text: "Description & Reference" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    below: { text: "Description & Reference" }
+- eraseText
+- inputText: "PARITY-${RUN_ID} watersys"
+- hideKeyboard
+- tapOn: "Description & Reference"
+- scrollUntilVisible:
+    element: { text: "Work Details" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    below: { text: "Work Details" }
+- eraseText
+- inputText: "PARITY-${RUN_ID} workdetails"
+- hideKeyboard
+- tapOn: "Work Details"
+- scrollUntilVisible:
+    element: { text: "Water Sampling Details" }
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    below: { text: "Water Sampling Details" }
+- eraseText
+- inputText: "PARITY-${RUN_ID} sampling"
+- hideKeyboard
+- tapOn: "Water Sampling Details"
+- scrollUntilVisible:
+    element: { text: "^Save$" }
+    direction: DOWN
+    timeout: 25000
+    speed: 40
+- tapOn: "^Save$"
+- waitForAnimationToEnd:
+    timeout: 5000

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildVisitPayload, buildExpected, makeTitle } from "./setup-data.mjs";
+import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS } from "./setup-data.mjs";
 
 test("makeTitle tags with run id", () => {
   assert.equal(makeTitle("RUN42"), "PARITY-RUN42");
@@ -27,6 +27,32 @@ test("buildExpected lists 6 datapoints with the run tag and exact field labels",
   assert.deepEqual(e.visitActions.map((a) => a.priority).sort(), ["high", "low", "medium"]);
   assert.match(e.signatureName, /PARITY-RUN42/);
   assert.ok("Assisting 1" in e.visitInfo);
+  assert.ok("Assisting 3" in e.visitInfo); // extended: 3rd assisting inspector
   assert.ok("Works being carried out" in e.visitInfo);
   assert.ok("Accessing Area/Lone Working- Comments" in e.riskAssessment);
+});
+
+test("buildExpected covers all 18 risk comment fields with the tagged value", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(RISK_COMMENT_FIELDS.length, 18);
+  assert.equal(Object.keys(e.riskAssessment).length, 18);
+  for (const f of RISK_COMMENT_FIELDS) assert.equal(e.riskAssessment[f], "PARITY-RUN42 rc");
+});
+
+test("buildExpected exposes the 3 visit-level text fields (p05)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.visitText.waterSystemDescription, "PARITY-RUN42 watersys");
+  assert.equal(e.visitText.workDetails, "PARITY-RUN42 workdetails");
+  assert.equal(e.visitText.samplingDetails, "PARITY-RUN42 sampling");
+});
+
+test("buildExpected exposes the web->mobile PATCH value, distinct from the p05 value", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.webPatch.waterSystemDescription, "PARITY-RUN42 wsd-web");
+  assert.notEqual(e.webPatch.waterSystemDescription, e.visitText.waterSystemDescription);
+});
+
+test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.siteInduction["Site Induction required & Completed"], "Yes - Induction completed");
 });

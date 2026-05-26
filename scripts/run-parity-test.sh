@@ -36,6 +36,10 @@ dismiss_anr () {
   done
 }
 
+# Suppress the system "isn't responding" dialog so a cold-start ANR never overlays (and blocks
+# Maestro on) the login screen. Set once; harmless to repeat.
+adb shell settings put global hide_error_dialogs 1 >/dev/null 2>&1
+
 launch_login () {
   # Maestro 2.4 launchApp does not reliably foreground this build, so we clear + launch
   # via adb (explicit activity) and let the flow drive the login screen. The debug build
@@ -48,12 +52,20 @@ launch_login () {
 
 run_flow () { # $1 = flow file
   local f="$1" name; name=$(basename "$f" .yaml)
-  launch_login
-  adb exec-out screencap -p > "$SHOTS/${name}-before.png" 2>/dev/null
-  maestro test \
-    -e MAESTRO_APP_EMAIL="$MAESTRO_APP_EMAIL" -e MAESTRO_APP_PASSWORD="$MAESTRO_APP_PASSWORD" \
-    -e VISIT_REF="$VISIT_REF" -e RUN_ID="$RUN_ID" "$f" 2>&1 | tee "$LOGS/${name}.log"
-  local code=${PIPESTATUS[0]}
+  local code=1
+  # Retry once: cold-start ANR can occasionally keep the login screen from composing within
+  # Maestro's window. All parity flows are idempotent (they set the same values), so a clean
+  # relaunch + retry is safe and removes the flake.
+  for attempt in 1 2; do
+    launch_login
+    [ "$attempt" -eq 1 ] && adb exec-out screencap -p > "$SHOTS/${name}-before.png" 2>/dev/null
+    maestro test \
+      -e MAESTRO_APP_EMAIL="$MAESTRO_APP_EMAIL" -e MAESTRO_APP_PASSWORD="$MAESTRO_APP_PASSWORD" \
+      -e VISIT_REF="$VISIT_REF" -e RUN_ID="$RUN_ID" "$f" 2>&1 | tee "$LOGS/${name}.log"
+    code=${PIPESTATUS[0]}
+    [ "$code" -eq 0 ] && break
+    echo "::warning::$name attempt $attempt failed (code $code); retrying"
+  done
   adb exec-out screencap -p > "$SHOTS/${name}-after.png" 2>/dev/null
   return $code
 }
@@ -69,21 +81,32 @@ export VISIT_REF; echo "visitRef=$VISIT_REF"
 echo "=== Phase 1: web->mobile ==="
 run_flow mobile-flows-parity/p01a_web2mobile_description.yaml; A=$?
 run_flow mobile-flows-parity/p01b_web2mobile_visit_actions.yaml; B=$?
+run_flow mobile-flows-parity/p01d_web2mobile_visit_text.yaml; D=$?
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)
 fi
 node -e "const fs=require('fs');const checks=[
- {id:'2a-description',direction:'Web->Mobile',status:'$(st $A)',details:'p01a'},
- {id:'2b-visit-actions',direction:'Web->Mobile',status:'$(st $B)',details:'p01b'}];
+ {id:'2a-description',direction:'Web->Mobile',status:'$(st $A)',details:'p01a notes->Description card'},
+ {id:'2b-visit-actions',direction:'Web->Mobile',status:'$(st $B)',details:'p01b'},
+ {id:'2d-visit-text',direction:'Web->Mobile',status:'$(st $D)',details:'p01d waterSystemDescription->Description & Reference'}];
  if('$C2C'!=='SKIP')checks.push({id:'2c-inspection-actions',direction:'Web->Mobile',status:'$C2C',details:'p01c'});
  fs.writeFileSync('parity-mobile-results.json',JSON.stringify({checks}))"
 
-# ---- Phase 2: mobile -> web (input + save) ----
+# ---- Phase 1.5: clear web-seeded text via API so phase-2 mobile typing starts from an empty
+#      field. Mobile eraseText is cursor-position-fragile on a prefilled multiline field (it
+#      backspaces from the tap point and leaves a tail), so we clear server-side instead. ----
+echo "=== Phase 1.5: clear web-seeded fields ==="
+node -e "(async()=>{const{makeClient}=await import('./scripts/parity/api.mjs');const ctx=require('./parity-context.json');const c=makeClient(process.env.HYDROCERT_API_BASE);await c.login(process.env.API_EMAIL,process.env.API_PASSWORD);await c.patch('/visits/'+ctx.visitId,{waterSystemDescription:''});console.log('cleared waterSystemDescription')})().catch(e=>{console.error('WARN clear failed:',e.message)})"
+
+# ---- Phase 2: mobile -> web (input + save). p05 now types into the cleared Description &
+#      Reference field plus the (empty) Work Details / Water Sampling Details fields (3d). ----
 echo "=== Phase 2: mobile->web ==="
 run_flow mobile-flows-parity/p02_mobile2web_signature.yaml
 run_flow mobile-flows-parity/p03_mobile2web_visit_info.yaml
+run_flow mobile-flows-parity/p03b_mobile2web_site_induction.yaml
 run_flow mobile-flows-parity/p04_mobile2web_risk_assessment.yaml
+run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml
 
 # ---- Phase 3: verify (API) + report ----
 echo "=== Phase 3: verify + report ==="

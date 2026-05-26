@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, extractFormValue } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, extractFormValue } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -42,4 +42,20 @@ test("checkInspectionActions passes when all expected names present", () => {
   const acts = [{ name: "PARITY-R Hi" }, { name: "PARITY-R Med" }, { name: "PARITY-R Lo" }];
   const r = checkInspectionActions(acts, [{ name: "PARITY-R Hi" }, { name: "PARITY-R Med" }, { name: "PARITY-R Lo" }]);
   assert.equal(r.status, "PASS");
+});
+
+test("checkVisitText passes when all visit-level text fields match", () => {
+  const want = { waterSystemDescription: "PARITY-R watersys", workDetails: "PARITY-R workdetails", samplingDetails: "PARITY-R sampling" };
+  const r = checkVisitText({ ...want }, want);
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "3d-visit-text");
+});
+
+test("checkVisitText fails and reports per-field when one differs", () => {
+  const want = { waterSystemDescription: "PARITY-R watersys", workDetails: "PARITY-R workdetails", samplingDetails: "PARITY-R sampling" };
+  const r = checkVisitText({ waterSystemDescription: "PARITY-R watersys", workDetails: "WRONG", samplingDetails: null }, want);
+  assert.equal(r.status, "FAIL");
+  assert.equal(r.fields.waterSystemDescription, true);
+  assert.equal(r.fields.workDetails, false);
+  assert.equal(r.fields.samplingDetails, false);
 });

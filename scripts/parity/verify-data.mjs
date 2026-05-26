@@ -25,6 +25,13 @@ export function checkFields(id, direction, inspection, formName, expectedFields)
   return { id, direction, status: ok ? "PASS" : "FAIL", fields, details: JSON.stringify(fields) };
 }
 
+export function checkVisitText(visit, expectedText) {
+  const fields = {};
+  for (const [k, want] of Object.entries(expectedText)) fields[k] = (visit[k] ?? "") === want;
+  const ok = Object.values(fields).every(Boolean);
+  return { id: "3d-visit-text", direction: "Mobile->Web", status: ok ? "PASS" : "FAIL", fields, details: JSON.stringify(fields) };
+}
+
 export function checkInspectionActions(actions, expected) {
   const names = new Set((actions || []).map((a) => a.name));
   const present = expected.filter((a) => names.has(a.name));
@@ -46,6 +53,11 @@ async function main() {
     checkFields("3b-visit-info", "Mobile->Web", inspection, "Visit Information", ctx.expected.visitInfo),
     checkFields("3c-risk", "Mobile->Web", inspection, "Risk Assessment", ctx.expected.riskAssessment),
   ];
+  // 3d — visit-level free-text fields set on the mobile Visit Details card (p05).
+  if (ctx.expected.visitText) apiChecks.push(checkVisitText(visit, ctx.expected.visitText));
+  // 3e — Site Induction single-select dropdown set on mobile (p03b).
+  if (ctx.expected.siteInduction)
+    apiChecks.push(checkFields("3e-site-induction", "Mobile->Web", inspection, "Visit Information", ctx.expected.siteInduction));
 
   let mobileChecks = [];
   try { mobileChecks = JSON.parse(readFileSync("parity-mobile-results.json")).checks || []; } catch { /* may be absent */ }
