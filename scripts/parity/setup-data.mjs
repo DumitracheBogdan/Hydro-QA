@@ -7,16 +7,22 @@ export function makeTitle(runId) { return `PARITY-${runId}`; }
 
 export function buildExpected(runId) {
   const tag = makeTitle(runId);
-  const acts = [
+  const visitActs = [
     { name: `${tag} Hi`, priority: "high" },
     { name: `${tag} Med`, priority: "medium" },
     { name: `${tag} Lo`, priority: "low" },
   ];
+  // Distinct names so visit-level vs inspection-level actions are unambiguous across platforms.
+  const inspActs = [
+    { name: `${tag} Insp Hi`, priority: "high" },
+    { name: `${tag} Insp Med`, priority: "medium" },
+    { name: `${tag} Insp Lo`, priority: "low" },
+  ];
   return {
     tag,
     description: `${tag} description`,
-    visitActions: acts,
-    inspectionActions: acts,
+    visitActions: visitActs,
+    inspectionActions: inspActs,
     signatureName: `${tag} Client`,
     // field labels are the EXACT backend fieldName values (verified against dev)
     visitInfo: {
