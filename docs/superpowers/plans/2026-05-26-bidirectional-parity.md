@@ -293,24 +293,34 @@ This is an interactive/one-off script run by a human against dev to obtain real 
 
 ```js
 // scripts/parity/discover-fixtures.mjs
-// Usage: HYDROCERT_API_BASE=... API_EMAIL=... API_PASSWORD=... QA_EMAIL=... node scripts/parity/discover-fixtures.mjs
+// Usage: HYDROCERT_API_BASE=... API_EMAIL=... API_PASSWORD=... QA_EMAIL=... QA_PASSWORD=... node scripts/parity/discover-fixtures.mjs
 import { makeClient } from './api.mjs';
 
 const base = process.env.HYDROCERT_API_BASE;
+
+// PRIMARY: the engineer id is simply the QA mobile user's own id — log in as them.
+let engineerId = 'RESOLVE_MANUALLY';
+try {
+  const qa = makeClient(base);
+  const qaUser = await qa.login(process.env.QA_EMAIL, process.env.QA_PASSWORD);
+  engineerId = qaUser.id;
+} catch (e) {
+  // FALLBACK: look the user up via the admin API (adjust path per API-MAP-BE.md)
+  const admin = makeClient(base);
+  await admin.login(process.env.API_EMAIL, process.env.API_PASSWORD);
+  const users = await admin.get(`/users?search=${encodeURIComponent(process.env.QA_EMAIL)}`).catch(() => null);
+  const list = users?.items ?? users ?? [];
+  engineerId = (Array.isArray(list) ? list.find(u => u.email === process.env.QA_EMAIL) : null)?.id ?? 'RESOLVE_MANUALLY';
+}
+
+// A usable site + jobType + booking person from the first detailed visit (as admin/booking user)
 const c = makeClient(base);
 await c.login(process.env.API_EMAIL, process.env.API_PASSWORD);
-
-// Engineer (mobile QA user) id — adjust path per API-MAP-BE.md if needed
-const users = await c.get(`/users?search=${encodeURIComponent(process.env.QA_EMAIL)}`).catch(() => null);
-const engineer = Array.isArray(users?.items ? users.items : users)
-  ? (users.items ?? users).find(u => u.email === process.env.QA_EMAIL) : null;
-
-// A usable site + jobType + booking person from the first detailed visit
 const detailed = await c.get('/visits/detailed?page=1&limit=5');
 const sample = detailed.items?.[0] ?? {};
 
 console.log(JSON.stringify({
-  engineerId: engineer?.id ?? 'RESOLVE_MANUALLY',
+  engineerId,
   bookingPersonId: sample.bookingPerson?.id ?? 'RESOLVE_MANUALLY',
   siteId: sample.site?.id ?? 'RESOLVE_MANUALLY',
   jobTypeId: sample.inspections?.[0]?.jobTypeId ?? 'RESOLVE_MANUALLY',
@@ -319,7 +329,7 @@ console.log(JSON.stringify({
 
 - [ ] **Step 2: Run against dev and capture real IDs**
 
-Run (PowerShell): `$env:HYDROCERT_API_BASE=...; $env:API_EMAIL=...; $env:API_PASSWORD=...; $env:QA_EMAIL=...; node scripts/parity/discover-fixtures.mjs`
+Run (PowerShell): `$env:HYDROCERT_API_BASE=...; $env:API_EMAIL=...; $env:API_PASSWORD=...; $env:QA_EMAIL=...; $env:QA_PASSWORD=...; node scripts/parity/discover-fixtures.mjs`
 Expected: JSON with four real UUIDs and no `RESOLVE_MANUALLY`. If any is `RESOLVE_MANUALLY`, consult `API-MAP-BE.md` for the correct list endpoint and re-run.
 
 - [ ] **Step 3: Write the resolved IDs to `scripts/parity/fixtures.dev.json`**
@@ -352,17 +362,26 @@ git -c commit.gpgsign=false commit -m "feat(parity): dev fixture discovery + pin
 // scripts/parity/setup-data.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildVisitPayload, buildExpected } from './setup-data.mjs';
+import { buildVisitPayload, buildExpected, makeVisitRef } from './setup-data.mjs';
 
-test('buildVisitPayload tags the title and assigns the engineer', () => {
+test('makeVisitRef defaults to a tagged, filterable reference', () => {
+  assert.equal(makeVisitRef('RUN42', false), 'PARITY-RUN42');
+});
+
+test('makeVisitRef can produce a VN######-format ref when the BE enforces it', () => {
+  const r = makeVisitRef('1234567890', true);
+  assert.match(r, /^VN\d{6}$/);
+});
+
+test('buildVisitPayload tags the title, sets our reference, assigns the engineer', () => {
   const fx = { engineerId: 'E1', bookingPersonId: 'B1', siteId: 'S1', jobTypeId: 'J1' };
-  const p = buildVisitPayload('RUN42', fx, new Date('2026-05-26T10:00:00Z'));
+  const p = buildVisitPayload('RUN42', fx, new Date('2026-05-26T10:00:00Z'), false);
   assert.equal(p.title, 'PARITY-RUN42');
+  assert.equal(p.visitReference, 'PARITY-RUN42'); // WE set it so GET /visits/filter can retrieve the id (POST returns empty 201)
   assert.deepEqual(p.engineerIds, ['E1']);
   assert.equal(p.bookingPersonId, 'B1');
   assert.equal(p.siteId, 'S1');
   assert.ok(p.from && p.to && new Date(p.to) > new Date(p.from));
-  assert.equal('visitReference' in p, false); // server auto-generates
 });
 
 test('buildExpected lists the 6 parity datapoints with the run tag', () => {
@@ -387,11 +406,19 @@ Expected: FAIL — exports not found.
 import { writeFileSync, readFileSync } from 'node:fs';
 import { makeClient } from './api.mjs';
 
-export function buildVisitPayload(runId, fx, now = new Date()) {
+// We choose the reference ourselves because POST /visits returns an empty 201 body —
+// the only reliable way to retrieve the new visit id is GET /visits/filter?visitReference=<ours>.
+export function makeVisitRef(runId, vnFormat = false) {
+  if (vnFormat) return 'VN' + String(runId).replace(/\D/g, '').slice(-6).padStart(6, '0');
+  return `PARITY-${runId}`;
+}
+
+export function buildVisitPayload(runId, fx, now = new Date(), vnFormat = false) {
   const from = new Date(now.getTime() + 24 * 3600 * 1000);
   const to = new Date(from.getTime() + 2 * 3600 * 1000);
   return {
     title: `PARITY-${runId}`,
+    visitReference: makeVisitRef(runId, vnFormat),
     from: from.toISOString(),
     to: to.toISOString(),
     engineerIds: [fx.engineerId],
@@ -418,23 +445,41 @@ export function buildExpected(runId) {
   };
 }
 
+async function findVisitByRef(c, ref) {
+  const res = await c.get(`/visits/filter?visitReference=${encodeURIComponent(ref)}`).catch(() => []);
+  const list = Array.isArray(res) ? res : (res?.items ?? []);
+  return list.find(v => v.visitReference === ref) || list[0] || null;
+}
+
 async function main() {
   const runId = process.env.RUN_ID || String(Date.now());
   const base = process.env.HYDROCERT_API_BASE;
+  const vnFormat = process.env.VN_FORMAT === '1';
   const fx = JSON.parse(readFileSync(new URL('./fixtures.dev.json', import.meta.url)));
   const c = makeClient(base);
   await c.login(process.env.API_EMAIL, process.env.API_PASSWORD);
 
   const expected = buildExpected(runId);
-  const visitPayload = { ...buildVisitPayload(runId, fx), notes: expected.description };
+
+  // Reuse path: if VISIT_REF was supplied (workflow debug input), skip creation and just resolve ids.
+  const supplied = (process.env.VISIT_REF || '').trim();
+  if (supplied) {
+    const visit = await findVisitByRef(c, supplied);
+    if (!visit) throw new Error(`setup: supplied VISIT_REF ${supplied} not found`);
+    const insp = (visit.inspections && visit.inspections[0]) || await c.post('/inspections', { visitId: visit.id, jobTypeId: fx.jobTypeId });
+    const ctx = { runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected, reused: true };
+    writeFileSync('parity-context.json', JSON.stringify(ctx, null, 2));
+    console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id}`);
+    return;
+  }
+
+  // Fresh visit: WE set the reference so we can retrieve the id (POST returns empty 201).
+  const ref = makeVisitRef(runId, vnFormat);
+  const visitPayload = { ...buildVisitPayload(runId, fx, new Date(), vnFormat), notes: expected.description };
   await c.post('/visits', visitPayload);
 
-  // Server auto-generates the reference; find our visit by the tagged title via filter, newest first.
-  const matches = await c.get(`/visits/filter?visitReference=PARITY`).catch(() => []);
-  // Fallback: list detailed and match by title (filter is by reference; title match is the reliable key).
-  const detailed = await c.get('/visits/detailed?page=1&limit=25');
-  const visit = (detailed.items || []).find(v => v.title === expected.tag);
-  if (!visit) throw new Error(`setup: created visit titled ${expected.tag} not found`);
+  const visit = await findVisitByRef(c, ref);
+  if (!visit) throw new Error(`setup: created visit ref ${ref} not found via /visits/filter`);
 
   const inspection = await c.post('/inspections', { visitId: visit.id, jobTypeId: fx.jobTypeId });
 
@@ -454,10 +499,14 @@ if (import.meta.url === `file://${process.argv[1]}`) main().catch(e => { console
 Run: `node --test scripts/parity/setup-data.test.mjs`
 Expected: PASS (2 tests).
 
-- [ ] **Step 5: Dry-run against dev** (integration)
+- [ ] **Step 5: Dry-run against dev** (integration) + decide reference format
 
 Run (PowerShell): `$env:RUN_ID='LOCAL1'; $env:HYDROCERT_API_BASE=...; $env:API_EMAIL=...; $env:API_PASSWORD=...; node scripts/parity/setup-data.mjs`
-Expected: prints `SETUP OK visitRef=VN... visitId=... inspectionId=...`; `parity-context.json` written. Open the visit in the dev webapp and confirm the 6 actions + description exist.
+Expected: prints `SETUP OK visitRef=PARITY-LOCAL1 visitId=... inspectionId=...`; `parity-context.json` written. Open the visit in the dev webapp and confirm the 6 actions + the description exist.
+
+**If the POST is rejected because the BE enforces a `VN\d{6}` reference format**, re-run with `$env:VN_FORMAT='1'` (the script then generates a `VN######` ref). Record the working mode — the workflow (Task F1) must pass the same `VN_FORMAT` if needed.
+
+**Confirm the description field:** verify that the value sent in `notes` is what renders in the mobile "Description & Reference" field (open the visit on the emulator, or check `create-visit.dto.ts` / `visit.dto.ts`). If the mobile description maps to a different field than `notes`, change the `notes:` key in `main()` accordingly.
 
 - [ ] **Step 6: Commit**
 
@@ -532,6 +581,15 @@ export function checkRisk(actual, expected) {
     details: `comments match=${ok}` };
 }
 
+// 2c fallback: when D0 found no mobile inspection-actions surface, verify via API instead.
+export function checkInspectionActions(actions, expected) {
+  const names = new Set((actions || []).map(a => a.name));
+  const present = expected.map(a => a.name).filter(n => names.has(n));
+  const ok = present.length === expected.length;
+  return { id: '2c-inspection-actions', direction: 'Web→Mobile (API)', status: ok ? 'PASS' : 'FAIL',
+    details: `${present.length}/${expected.length} inspection actions present via API` };
+}
+
 // Extraction: map the inspection form response to flat visitInfo/risk objects.
 // Confirm these field paths against inspection.dto.ts before relying on them.
 export function extractInspectionFields(inspection) {
@@ -561,6 +619,12 @@ async function main() {
   // Web→Mobile checks (2a/2b/2c) come from the Maestro phase result file.
   let mobileChecks = [];
   try { mobileChecks = JSON.parse(readFileSync('parity-mobile-results.json')).checks || []; } catch { /* may be absent on early failure */ }
+
+  // If 2c was not asserted on mobile (no mobile surface — see D0), verify it via API.
+  if (!mobileChecks.some(c => c.id === '2c-inspection-actions')) {
+    const actions = await c.get(`/actions?inspectionId=${ctx.inspectionId}`).catch(() => []);
+    checks.unshift(checkInspectionActions(Array.isArray(actions) ? actions : (actions?.items ?? []), ctx.expected.inspectionActions));
+  }
 
   const all = [...mobileChecks, ...checks];
   const passed = all.filter(c => c.status === 'PASS').length;
@@ -667,6 +731,19 @@ git -c commit.gpgsign=false commit -m "feat(parity): HTML report generator"
 
 Author against the running local emulator first (`adb devices` should show the API35 device), then in CI. Pass the run's visit via `-e VISIT_REF`. Selectors come from `PARITY-CONTRACT.md` / `BUTTON-MAP-MOBILE.md`. Reuse the proven async-save pattern from `mobile-flows-v2/38_e2e_save_flow.yaml` (scroll UP after Save before navigating back).
 
+**Local Maestro caveat:** the "verify locally" steps assume the Maestro CLI is installed on the dev box (Git Bash/WSL: `curl -Ls https://get.maestro.mobile.dev | bash`) with the emulator running. If Maestro is not available locally, do NOT skip silently — mark that step as "deferred to first CI run (Task F2)" and rely on CI screenshots/logs to iterate.
+
+### Task D0: Confirm mobile parity surfaces from source (research)
+
+**Files:** none (findings feed D1–D5 + may amend `verify-data.mjs`)
+
+- [ ] **Step 1: Confirm three uncertain surfaces** in `tmp-hydrocert-android` source (and/or the live emulator):
+  1. **Visit-level Actions panel** — how the "Actions" section under Visit Details is opened and how action rows render (label text). 
+  2. **Inspection-level Actions** — whether the inspection form exposes a distinct Actions surface on mobile at all. The mobile baseline registry does NOT document one. If it does not exist as a mobile UI surface, **check 2c is verified via API only** (the action was created with `inspectionId`; assert it through `GET /actions?inspectionId=` in `verify-data.mjs` and drop the mobile assertion).
+  3. **Description field** — the exact label/route of the "Description & Reference" field and which API field populates it.
+
+- [ ] **Step 2: Record the decision** for check 2c (mobile-asserted vs API-only) in `docs/PARITY-CONTRACT.md`, and adjust D2c / `verify-data.mjs` accordingly. If API-only, add an inspection-actions check to `verify-data.mjs` and remove the p01c mobile flow.
+
 ### Task D1: Shared helpers
 
 **Files:**
@@ -733,50 +810,77 @@ git add mobile-flows-parity/_shared
 git -c commit.gpgsign=false commit -m "feat(parity): Maestro login + open-tagged-visit helpers"
 ```
 
-### Task D2: `p01_web2mobile_verify.yaml` (checks 2a/2b/2c)
+### Task D2: web→mobile verification — three independent flows (checks 2a/2b/2c)
+
+Split into one flow per check so a flaky tap on one does not fail the others (each flow's exit code maps to exactly one check id in the orchestrator).
 
 **Files:**
-- Create: `mobile-flows-parity/p01_web2mobile_verify.yaml`
+- Create: `mobile-flows-parity/p01a_web2mobile_description.yaml`
+- Create: `mobile-flows-parity/p01b_web2mobile_visit_actions.yaml`
+- Create: `mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml` (only if D0 decided 2c is mobile-asserted; otherwise omit and verify 2c via API in `verify-data.mjs`)
 
-- [ ] **Step 1: Write the flow**
+- [ ] **Step 1: Write `p01a` (2a — description)**
 
 ```yaml
 appId: com.hydrocert.app
-name: "PARITY p01 - web->mobile (description + actions)"
+name: "PARITY p01a - web->mobile description"
 tags: [parity, web2mobile]
 ---
 - runFlow: _shared/login.yaml
 - runFlow: _shared/open_tagged_visit.yaml
-
-# 2a description
 - tapOn: "Visit Details"
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} description.*" }
+    direction: DOWN
+    timeout: 15000
 - assertVisible: ".*PARITY-${RUN_ID} description.*"
+```
 
-# 2b visit-level actions
+- [ ] **Step 2: Write `p01b` (2b — visit-level actions)**
+
+```yaml
+appId: com.hydrocert.app
+name: "PARITY p01b - web->mobile visit actions"
+tags: [parity, web2mobile]
+---
+- runFlow: _shared/login.yaml
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn: "Visit Details"
+- scrollUntilVisible:
+    element: { text: "Actions" }
+    direction: DOWN
+    timeout: 15000
 - tapOn: "Actions"
 - assertVisible: ".*PARITY-${RUN_ID} Hi.*"
 - assertVisible: ".*PARITY-${RUN_ID} Med.*"
 - assertVisible: ".*PARITY-${RUN_ID} Lo.*"
+```
 
-# 2c inspection-level actions
+- [ ] **Step 3: Write `p01c` (2c — inspection-level actions)** — only if D0 confirmed a mobile surface
+
+```yaml
+appId: com.hydrocert.app
+name: "PARITY p01c - web->mobile inspection actions"
+tags: [parity, web2mobile]
+---
+- runFlow: _shared/login.yaml
+- runFlow: _shared/open_tagged_visit.yaml
 - tapOn: "Inspections.*"
 - tapOn: "Start Inspection"
-- tapOn:
-    text: "Actions"
-    optional: true
+- tapOn: { text: "Actions", optional: true }
 - assertVisible: ".*PARITY-${RUN_ID} Hi.*"
 ```
 
-- [ ] **Step 2: Verify locally against the visit from the C3 dry-run**
+- [ ] **Step 4: Verify locally** against the visit from the C3 dry-run (Maestro caveat above applies)
 
-Run: `maestro test -e MAESTRO_APP_EMAIL=$QA_EMAIL -e MAESTRO_APP_PASSWORD=$QA_PW -e VISIT_REF=$VN -e RUN_ID=LOCAL1 mobile-flows-parity/p01_web2mobile_verify.yaml`
-Expected: PASS. If an `assertVisible` fails, fix the navigation/selector using `BUTTON-MAP-MOBILE.md` (actions panel labels, inspection entry).
+Run each: `maestro test -e MAESTRO_APP_EMAIL=$QA_EMAIL -e MAESTRO_APP_PASSWORD=$QA_PW -e VISIT_REF=$VN -e RUN_ID=LOCAL1 mobile-flows-parity/p01a_web2mobile_description.yaml` (then p01b, p01c).
+Expected: each PASS independently. Fix per-flow selectors via `BUTTON-MAP-MOBILE.md`.
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add mobile-flows-parity/p01_web2mobile_verify.yaml
-git -c commit.gpgsign=false commit -m "feat(parity): web->mobile verification flow"
+git add mobile-flows-parity/p01a_web2mobile_description.yaml mobile-flows-parity/p01b_web2mobile_visit_actions.yaml mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml
+git -c commit.gpgsign=false commit -m "feat(parity): web->mobile verification flows (split per check)"
 ```
 
 ### Task D3: `p02_mobile2web_signature.yaml` (check 3a)
@@ -960,13 +1064,22 @@ VISIT_REF=$(node -e "console.log(require('./parity-context.json').visitRef)")
 export VISIT_REF
 echo "visitRef=$VISIT_REF"
 
-# Phase 1 — web -> mobile
+# Phase 1 — web -> mobile (one flow per check; each exit code = one check)
 echo "=== Phase 1: web->mobile ==="
-run_flow mobile-flows-parity/p01_web2mobile_verify.yaml "web2mobile"; P1=$?
-node -e "const fs=require('fs');const ok=$P1===0;fs.writeFileSync('parity-mobile-results.json',JSON.stringify({checks:[
- {id:'2a-description',direction:'Web→Mobile',status:ok?'PASS':'FAIL',details:'see p01 log'},
- {id:'2b-visit-actions',direction:'Web→Mobile',status:ok?'PASS':'FAIL',details:'see p01 log'},
- {id:'2c-inspection-actions',direction:'Web→Mobile',status:ok?'PASS':'FAIL',details:'see p01 log'}]}))"
+run_flow mobile-flows-parity/p01a_web2mobile_description.yaml "2a"; A=$?
+run_flow mobile-flows-parity/p01b_web2mobile_visit_actions.yaml "2b"; B=$?
+C2C='SKIP'
+if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
+  run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml "2c"; C=$?
+  C2C=$([ $C -eq 0 ] && echo PASS || echo FAIL)
+fi
+st () { [ "$1" -eq 0 ] && echo PASS || echo FAIL; }
+# Emit per-check results. 2c omitted here when verified via API (verify-data.mjs adds it).
+node -e "const fs=require('fs');const checks=[
+ {id:'2a-description',direction:'Web→Mobile',status:'$(st $A)',details:'p01a'},
+ {id:'2b-visit-actions',direction:'Web→Mobile',status:'$(st $B)',details:'p01b'}];
+ if('$C2C'!=='SKIP')checks.push({id:'2c-inspection-actions',direction:'Web→Mobile',status:'$C2C',details:'p01c'});
+ fs.writeFileSync('parity-mobile-results.json',JSON.stringify({checks}))"
 
 # Phase 2 — mobile -> web (input)
 echo "=== Phase 2: mobile->web ==="
@@ -1065,6 +1178,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.run_id }}
           VISIT_REF: ${{ github.event.inputs.visit_ref }}
+          VN_FORMAT: ${{ vars.PARITY_VN_FORMAT }}   # set repo var to "1" only if the BE rejects PARITY-<id> references (decided in Task C3)
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
           HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
           API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL || secrets.HYDROCERT_MOBILE_QA_EMAIL }}
@@ -1143,6 +1257,14 @@ git add -A && git -c commit.gpgsign=false commit -m "fix(parity): stabilize flow
 - §10 workflow interface (dispatch, `visit_ref`, secrets/vars, artifacts) → F1. ✓
 - §11 file list → all created across phases. ✓
 - §13 risks (APK freshness, fixtures, sparse selectors, release build) → surfaced in B1/C2/D/F2 iteration. ✓
+
+**Advisor fixes applied (post-review):**
+- `POST /visits` returns an empty 201 body → we now SET `visitReference` ourselves (`makeVisitRef`) and retrieve the id via `GET /visits/filter?visitReference=<ours>` (C3), removing the fragile title/page-1 search. `VN_FORMAT` toggle + C3 step-5 decision handle BE format enforcement.
+- p01 split into independent `p01a/p01b/p01c` (D2) so one flaky check doesn't fail the others; orchestrator (E1) maps each exit code to one check id.
+- 2c inspection-actions mobile surface is uncertain → D0 confirms it; if absent, `verify-data.mjs` asserts it via `GET /actions?inspectionId=` (`checkInspectionActions`).
+- `discover-fixtures.mjs` primary engineer-id path = log in as the QA user → `user.id` (C2).
+- `notes` vs mobile "Description & Reference" field confirmed in C3 step 5.
+- Local Maestro availability caveat added to Phase D intro.
 
 **Placeholder scan:** Fixture UUIDs in `fixtures.dev.json` are filled by the real output of C2 step 2 (a command, not a placeholder). `extractInspectionFields` keys flagged for confirmation against `inspection.dto.ts` in C4 step 5. Maestro modal Y-coordinate (830,1500) flagged for runtime confirmation in D3. No `TODO`/`TBD` left.
 
