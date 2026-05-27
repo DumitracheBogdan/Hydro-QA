@@ -6,9 +6,9 @@
 ## Automation status (implemented 2026-05-27)
 The `bidirectional-parity` suite now scores **9 checks** (was 6). Implemented:
 - **2a** description (`visit.notes`) · **2b** visit actions · **2c** inspection actions (API-only, F-01 gap) · **2d** `waterSystemDescription` (web→mobile API PATCH) — web→mobile
-- **3a** signature · **3b** Visit Information (Assisting 1/2/3 + Works) · **3c** all 18 Risk Assessment "- Comments" · **3d** visit text (waterSystemDescription/workDetails/samplingDetails) · **3e** Site Induction dropdown — mobile→web
+- **3a** signature · **3b** Visit Information (Assisting 1/2/3 + Works) · **3c** Risk Assessment "- Comments" (1 field automated on CI; full 18 validated locally — see note) · **3d** visit text (waterSystemDescription/workDetails/samplingDetails) · **3e** Site Induction dropdown — mobile→web
 
-Flows: `p01a/b/d` (web→mobile), `p02/p03/p03b/p04/p05` (mobile→web). p04 generated from `RISK_COMMENT_FIELDS` via `scripts/parity/gen-p04.mjs`. See `docs/PARITY-FACTS.md` for the full check table and mobile-UI gotchas.
+Flows: `p01a/b/d` (web→mobile), `p02/p03/p03b/p04/p05` (mobile→web). p04 generated from `RISK_COMMENT_FIELDS_AUTOMATED` via `scripts/parity/gen-p04.mjs`. The full 18-field RA flow types + saves correctly on a local emulator but is CI-deferred (the CI emulator's smaller viewport puts the 2nd+ field's input below the fold; `tapOn below label` then misses it). See `docs/PARITY-FACTS.md` for the full check table, the 18-field diagnosis, and mobile-UI gotchas.
 
 ---
 
