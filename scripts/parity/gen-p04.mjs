@@ -9,11 +9,15 @@ const VALUE = "PARITY-${RUN_ID} rc"; // must equal buildExpected().riskAssessmen
 
 function fieldSteps(label) {
   // scroll the long RA form to each label, type, defocus (tap label) so onBlur commits.
+  // centerElement keeps the label mid-screen so its input field (rendered just below it) is
+  // on-screen for the "below" tap — without it, scrollUntilVisible can land the label at the
+  // bottom edge with the input off-screen (fails on the smaller/slower CI emulator viewport).
   return [
     `- scrollUntilVisible:`,
     `    element: { text: ${JSON.stringify(label)} }`,
     `    direction: DOWN`,
-    `    timeout: 15000`,
+    `    timeout: 20000`,
+    `    centerElement: true`,
     `- tapOn:`,
     `    below: { text: ${JSON.stringify(label)} }`,
     `- inputText: ${JSON.stringify(VALUE)}`,
