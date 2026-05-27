@@ -16,6 +16,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Accessing Area/Lone Working- Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Accessing Area/Lone Working- Comments"
@@ -26,6 +28,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Asbestos/Exposure - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Asbestos/Exposure - Comments"
@@ -36,6 +40,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Accessing High Areas - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Accessing High Areas - Comments"
@@ -46,6 +52,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Rodent, Bird, Insect - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Rodent, Bird, Insect - Comments"
@@ -56,6 +64,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Working Around Machinery - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Working Around Machinery - Comments"
@@ -66,6 +76,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Working In Plant Room - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Working In Plant Room - Comments"
@@ -76,6 +88,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Slipping on Water - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Slipping on Water - Comments"
@@ -86,6 +100,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Drowning in Water - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Drowning in Water - Comments"
@@ -96,6 +112,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Entering Confined Space - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Entering Confined Space - Comments"
@@ -106,6 +124,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Cleaning Tanks, Towers etc - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Cleaning Tanks, Towers etc - Comments"
@@ -116,6 +136,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Electrical Equip/Water - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Electrical Equip/Water - Comments"
@@ -126,6 +148,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Opening Valves/Hatches - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Opening Valves/Hatches - Comments"
@@ -136,6 +160,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Releasing Aerosols - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Releasing Aerosols - Comments"
@@ -146,6 +172,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Hot Water Scalding - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Hot Water Scalding - Comments"
@@ -156,6 +184,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Manual Handling - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Manual Handling - Comments"
@@ -166,6 +196,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Dosing Equipment - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Dosing Equipment - Comments"
@@ -176,6 +208,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Handling Chemicals - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Handling Chemicals - Comments"
@@ -186,6 +220,8 @@ tags: [parity, mobile2web]
     centerElement: true
 - tapOn:
     below: { text: "Disinfecting Systems - Comments" }
+- waitForAnimationToEnd:
+    timeout: 800
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
 - tapOn: "Disinfecting Systems - Comments"

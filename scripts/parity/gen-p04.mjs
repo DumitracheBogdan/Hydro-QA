@@ -20,6 +20,8 @@ function fieldSteps(label) {
     `    centerElement: true`,
     `- tapOn:`,
     `    below: { text: ${JSON.stringify(label)} }`,
+    `- waitForAnimationToEnd:`,
+    `    timeout: 800`,
     `- inputText: ${JSON.stringify(VALUE)}`,
     `- hideKeyboard`,
     `- tapOn: ${JSON.stringify(label)}`,
