@@ -75,7 +75,12 @@ export function buildExpected(runId) {
 }
 
 export function buildVisitPayload(runId, fx, now = new Date()) {
-  const from = new Date(now.getTime() + 24 * 3600 * 1000);
+  // Schedule for TODAY (near-future), NOT +24h. The mobile Visits Home search/list reliably
+  // surfaces TODAY's visits in its default scope; +24h ("Tomorrow") visits intermittently do
+  // NOT appear in the list at all, so the search ("Type to search...") finds nothing and every
+  // mobile flow fails at "View Visit Details". Verified 2026-05-27: a today-dated visit is found
+  // immediately; the same visit dated +24h is absent from the list.
+  const from = new Date(now.getTime() + 2 * 3600 * 1000);
   const to = new Date(from.getTime() + 2 * 3600 * 1000);
   return {
     title: makeTitle(runId),
