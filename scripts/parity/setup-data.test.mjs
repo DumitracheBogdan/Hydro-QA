@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED } from "./setup-data.mjs";
+import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit } from "./setup-data.mjs";
 
 test("makeTitle tags with run id", () => {
   assert.equal(makeTitle("RUN42"), "PARITY-RUN42");
@@ -60,4 +60,21 @@ test("buildExpected exposes the web->mobile PATCH value, distinct from the p05 v
 test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {
   const e = buildExpected("RUN42");
   assert.equal(e.siteInduction["Site Induction required & Completed"], "Yes - Induction completed");
+});
+
+// --- M3: reuse path must derive the run id from the existing visit title ---
+test("deriveRunId extracts the run id from a PARITY-tagged title, else null (M3)", () => {
+  assert.equal(deriveRunId("PARITY-RUN42"), "RUN42");
+  assert.equal(deriveRunId("PARITY-123456789"), "123456789");
+  assert.equal(deriveRunId("Some other visit"), null);
+  assert.equal(deriveRunId(undefined), null);
+});
+
+// --- M2: never bind an arbitrary visit via || list[0] ---
+test("pickExactVisit returns null when no exact match (never falls back to list[0]) (M2)", () => {
+  const list = [{ visitReference: "VN999PARTIAL" }, { visitReference: "VN888" }];
+  assert.equal(pickExactVisit(list, "visitReference", "VN111"), null);
+  assert.deepEqual(pickExactVisit(list, "visitReference", "VN888"), { visitReference: "VN888" });
+  assert.equal(pickExactVisit([], "visitReference", "VN888"), null);
+  assert.equal(pickExactVisit(null, "visitReference", "VN888"), null);
 });

@@ -5,6 +5,21 @@ import { makeClient } from "./api.mjs";
 
 export function makeTitle(runId) { return `PARITY-${runId}`; }
 
+// Extract the run id embedded in a PARITY-tagged title, else null. Used by the reuse path so the
+// expected values (and the RUN_ID handed to the Maestro flows) match the data already on the
+// reused visit, instead of the new github.run_id which the visit's notes/actions never carried (M3).
+export function deriveRunId(title) {
+  const m = /^PARITY-(.+)$/.exec(title || "");
+  return m ? m[1] : null;
+}
+
+// Bind ONLY on an exact field match; never fall back to list[0]. The server-side title/ref filters
+// are partial, so a typo'd/truncated value would otherwise silently bind some OTHER live dev visit
+// and the run would be created against the wrong record (M2).
+export function pickExactVisit(list, key, value) {
+  return (list || []).find((v) => v[key] === value) || null;
+}
+
 // All free-text "- Comments" fields of the Risk Assessment form (jobType 658f27c1), exact backend fieldName.
 export const RISK_COMMENT_FIELDS = [
   "Accessing Area/Lone Working- Comments",
@@ -104,7 +119,7 @@ export function buildVisitPayload(runId, fx, now = new Date()) {
 async function findVisitByTitle(c, title) {
   const res = await c.get(`/visits/filter-detailed?title=${encodeURIComponent(title)}&page=1&limit=25`).catch(() => null);
   const list = res?.items ?? (Array.isArray(res) ? res : []);
-  return list.find((v) => v.title === title) || list[0] || null;
+  return pickExactVisit(list, "title", title); // exact only — no list[0] fallback (M2)
 }
 
 async function resolveFixtures(c, mobileClient) {
@@ -145,13 +160,19 @@ async function main() {
   if (suppliedRef) {
     const res = await c.get(`/visits/filter?visitReference=${encodeURIComponent(suppliedRef)}`).catch(() => null);
     const list = res?.items ?? (Array.isArray(res) ? res : []);
-    const visit = list.find((v) => v.visitReference === suppliedRef) || list[0];
-    if (!visit) throw new Error(`setup: supplied VISIT_REF ${suppliedRef} not found`);
+    const visit = pickExactVisit(list, "visitReference", suppliedRef); // exact only — no list[0] (M2)
+    if (!visit) throw new Error(`setup: supplied VISIT_REF ${suppliedRef} not found (exact match required)`);
+    // The reused visit's notes/actions carry the run id from when it was CREATED. Derive that id so
+    // the flow assertions (which read RUN_ID) and buildExpected agree, instead of the new
+    // github.run_id which this visit never carried. Fall back to the env runId for a non-parity
+    // visit. The orchestrator re-reads runId from parity-context.json and re-exports RUN_ID (M3).
+    const reuseRunId = deriveRunId(visit.title) || runId;
+    const reuseExpected = buildExpected(reuseRunId);
     const fx = await resolveFixtures(c, mobileClient).catch(() => ({ jobTypeId: JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url))).jobTypeId }));
     const insp = visit.inspections?.[0] || (await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId }));
-    await c.patch(`/visits/${visit.id}`, { waterSystemDescription: expected.webPatch.waterSystemDescription }).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
-    writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected, reused: true }, null, 2));
-    console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id}`);
+    await c.patch(`/visits/${visit.id}`, { waterSystemDescription: reuseExpected.webPatch.waterSystemDescription }).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
+    writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected: reuseExpected, reused: true }, null, 2));
+    console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id} runId=${reuseRunId}`);
     return;
   }
 
