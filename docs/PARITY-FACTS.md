@@ -1,7 +1,17 @@
 # Parity Test — Confirmed Dev API Facts
 
-Verified empirically against the dev backend on 2026-05-26 (admin login `tq@hydrocert.com`).
+Verified empirically against the dev backend on 2026-05-26.
 These supersede assumptions in the design spec where they differ.
+
+## Hardening + expansion (2026-05-28)
+Review (`docs/PARITY-REVIEW.md`, 19 findings) + fix wave + security audit (`docs/SECURITY.md`) + coverage expansion. Key new facts:
+- **The suite now fails closed.** Previously it reported green CI regardless of results (`continue-on-error` + script `exit 0` + no gate). Now: `verify-data` exits non-zero on hard failure; `buildSummary` pins the `EXPECTED_IDS` denominator (a missing check → synthetic FAIL, can't shrink to a misleading green); a missing/corrupt `parity-mobile-results.json` → FAIL not silent-drop; and a dedicated **"Parity gate" workflow step** (no `continue-on-error`) turns the job red on `summary.gateFailed` or a missing summary.
+- **Split done-bar:** `gateFailed` = hard failures only, excluding the `KNOWN_FLAKY` allowlist (currently empty). Done-bar = hard-gate set 3× consecutive green.
+- **Now 10 checks.** `2d` seeds + asserts all 3 visit-text fields web→mobile (waterSystemDescription/workDetails/samplingDetails — bidirectional with 3d). New **`2g`**: `inspection.itemDetail` PATCHed via API renders on the mobile LocationCard (confirmed) → hard-gated. Full per-datum accounting in `docs/PARITY-COVERAGE-LEDGER.md`.
+- **Comparators hardened:** `checkInspectionActions` compares name+priority; `checkFields`/`checkVisitText` FAIL on empty/undefined (no vacuous pass); reuse path binds on exact visit match (no `|| list[0]`) and derives RUN_ID from the visit title; mobile→web checks AND in their flow exit code in reuse mode.
+- **Security:** plaintext dev creds were redacted from this PUBLIC repo (they remain in git history — **rotate**, see `SECURITY.md`); CI logs are scrubbed of passwords+emails before artifact upload.
+
+---
 
 **API base (dev):** `https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net` (GH var `HYDROCERT_DEV_API_BASE`)
 
