@@ -7,12 +7,17 @@ tags: [parity, mobile2web]
 - extendedWaitUntil:
     visible: "Assisting 1"
     timeout: 12000
+# eraseText before each inputText: the run_flow retry-once can re-enter a field that already holds
+# attempt-1's saved value; inputText appends (no implicit clear), so without eraseText a retry would
+# double the value ("Inspector 1Inspector 1") and the exact-match verify (3b) would FAIL (M5).
 - tapOn:
     below: { text: "Assisting 1" }
+- eraseText
 - inputText: "PARITY-${RUN_ID} Inspector 1"
 - hideKeyboard
 - tapOn:
     below: { text: "Assisting 2" }
+- eraseText
 - inputText: "PARITY-${RUN_ID} Inspector 2"
 - hideKeyboard
 - scrollUntilVisible:
@@ -21,6 +26,7 @@ tags: [parity, mobile2web]
     timeout: 15000
 - tapOn:
     below: { text: "Assisting 3" }
+- eraseText
 - inputText: "PARITY-${RUN_ID} Inspector 3"
 - hideKeyboard
 - tapOn: "Assisting 3"
@@ -30,6 +36,7 @@ tags: [parity, mobile2web]
     timeout: 15000
 - tapOn:
     below: { text: "Works being carried out" }
+- eraseText
 - inputText: "PARITY-${RUN_ID} Works"
 - hideKeyboard
 - tapOn: "Works being carried out"

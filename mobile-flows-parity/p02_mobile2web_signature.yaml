@@ -38,7 +38,9 @@ tags: [parity, mobile2web]
 - swipe:
     start: "58%, 43%"
     end: "42%, 54%"
-- tapOn: "Submit"
+# Anchor Submit so it matches the SignatureDialog's Submit exactly, not any other control whose
+# label contains "Submit" (L3). Consistent with the ^Save$ anchoring used elsewhere.
+- tapOn: "^Submit$"
 - scrollUntilVisible:
     element: { text: "^Save$" }
     direction: DOWN
