@@ -3,11 +3,23 @@
 **Spec:** `docs/superpowers/specs/2026-05-28-parity-full-coverage-design.md`
 **Review:** `docs/PARITY-REVIEW.md` (19 findings)
 **Repo:** `C:\Users\Coca-Cola\tmp-hydroqa\Hydro-QA` (DumitracheBogdan/Hydro-QA, push direct to main, no PR, no Claude attribution)
-**Discipline:** TDD at the comparator layer (`node --test scripts/parity/`); local emulator (API 35) before CI; the split done-bar from the spec.
+**Discipline:** TDD at the comparator layer (`node --test scripts/parity/`); CI as the deterministic gate (no local emulator — protects the user's live trading fleet); the split done-bar from the spec.
 
 ---
 
-## Wave 0 — Fix wave (gates expansion)
+## Execution status (live ledger — 2026-05-28 overnight autonomous run)
+
+- ✅ **Review** — 19 findings adversarially verified → `docs/PARITY-REVIEW.md`.
+- ✅ **Wave 0 (fix wave)** — all 19 addressed; **CI-validated 9/9 green, gate works** (run 26605856128). Commits `638d2af`/`7347055`/`205ae7a`.
+- ✅ **Security** — CRITICAL public-repo plaintext creds redacted + CI log-scrub (`022c1f1`); H-1 reuse-mode fail-open + L-1 email scrub (`371d33a`); **CI-validated** (run 26606623548). Audit report below + `SECURITY.md` (pending).
+- ✅ **Wave A (partial)** — A6 (visit-text bidirectional, in 2d) + A5 (`2g` itemDetail→LocationCard, KNOWN_FLAKY) — `5d6d4e6`; validation run 26607132325 in-flight.
+- ✅ **Coverage ledger** — `docs/PARITY-COVERAGE-LEDGER.md` (100%-accounted-for + ready-to-run specs for C/D items).
+- 📋 **Remaining** — Wave A C1 reads, Wave B/C mobile→web, D lab (guardrailed), E attachments, F 18-RA spike. Specs in the coverage ledger §C. Each: setup datum → flow → verify → EXPECTED_IDS → comparator test → CI; add to KNOWN_FLAKY first if uncertain, promote on green.
+- **Tests:** 39/39 green. **Done-bar:** hard-gate set 3× consecutive green (`gateFailed`).
+
+---
+
+## Wave 0 — Fix wave (gates expansion) — ✅ DONE (CI-validated)
 
 Fixes the fail-open cluster + cheap robustness items. All in the QA repo. TDD: write/extend the failing test, then fix.
 
