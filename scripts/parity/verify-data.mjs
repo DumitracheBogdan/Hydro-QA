@@ -86,10 +86,17 @@ export function buildSummary(ctx, checks, opts = {}) {
   return { runId: ctx.runId, visitRef: ctx.visitRef, total: all.length, passed, failed: all.length - passed, gateFailed, checks: all };
 }
 
-// Checks scored purely by API read-back of a FIXED (non-run-tagged) value cannot self-falsify when
-// their Maestro flow silently fails in reuse mode — a stale matching value would read back as PASS.
-// For those, AND in the flow exit code: PASS only if the flow also exited 0 (M4).
-const FLOW_GUARDED = { "3e-site-induction": "p03b" };
+// Every mobile->web read-back check must AND in its Maestro flow's exit code: PASS only if the flow
+// also exited 0. Otherwise, in reuse mode (where expected values are derived from the reused visit's
+// own run id), a silently-failed flow would stale-pass off the prior run's matching data — a
+// reuse-mode fail-open (M4 for the fixed-value 3e; H-1 generalizes it to the run-tagged 3a/3b/3c,
+// which are also exposed when the reused record already holds matching values).
+const FLOW_GUARDED = {
+  "3a-signature": "p02",
+  "3b-visit-info": "p03",
+  "3c-risk": "p04",
+  "3e-site-induction": "p03b",
+};
 export function applyFlowGuards(checks, flowStatus) {
   if (!flowStatus) return checks;
   return checks.map((c) => {
@@ -133,10 +140,13 @@ async function main() {
     apiChecks.unshift(checkInspectionActions(Array.isArray(actions) ? actions : actions?.items ?? [], ctx.expected.inspectionActions));
   }
 
-  // Optional Phase-2 flow exit codes (written by the orchestrator) — guard fixed-value checks (M4).
+  // Optional Phase-2 flow exit codes (written by the orchestrator) — guard mobile->web checks in
+  // REUSE mode only (M4/H-1). In fresh mode a new visit/inspection starts empty, so a failed flow
+  // already self-falsifies via read-back; applying the guard there would risk a false-FAIL from a
+  // flaky trailing post-save assertion. The fail-open hole the guard closes is reuse-specific.
   let flowStatus = null;
   try { flowStatus = JSON.parse(readFileSync("parity-flow-status.json")); } catch { flowStatus = null; }
-  const guardedApi = applyFlowGuards(apiChecks, flowStatus);
+  const guardedApi = ctx.reused ? applyFlowGuards(apiChecks, flowStatus) : apiChecks;
 
   const summary = buildSummary(ctx, [...mc, ...guardedApi], { mobileMissing });
   writeFileSync("summary.json", JSON.stringify(summary, null, 2));

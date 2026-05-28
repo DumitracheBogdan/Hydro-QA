@@ -127,7 +127,7 @@ cp -f summary.json report.html "$ART/" 2>/dev/null
 # files, and this repo is PUBLIC — an unscrubbed inputText echo would leak the login password.
 LOGS="$LOGS" node -e '
   const fs=require("fs"),path=require("path");
-  const secrets=[process.env.MAESTRO_APP_PASSWORD,process.env.API_PASSWORD,process.env.MOBILE_PASSWORD].filter(Boolean);
+  const secrets=[process.env.MAESTRO_APP_PASSWORD,process.env.API_PASSWORD,process.env.MOBILE_PASSWORD,process.env.MAESTRO_APP_EMAIL,process.env.MOBILE_EMAIL,process.env.API_EMAIL].filter(Boolean);
   const dir=process.env.LOGS;
   function walk(d){ if(!fs.existsSync(d))return; for(const e of fs.readdirSync(d,{withFileTypes:true})){ const p=path.join(d,e.name); if(e.isDirectory())walk(p); else if(/\.(log|txt|json)$/.test(e.name)){ let t=fs.readFileSync(p,"utf8"),o=t; for(const s of secrets) t=t.split(s).join("***REDACTED***"); if(t!==o) fs.writeFileSync(p,t);} } }
   try{ walk(dir); console.log("logs scrubbed for secrets"); }catch(e){ console.error("WARN scrub failed:",e.message); }

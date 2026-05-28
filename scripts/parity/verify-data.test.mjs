@@ -121,18 +121,27 @@ test("buildSummary.gateFailed ignores a knownFlaky check but still reports it fa
   assert.equal(s.failed, 1);
 });
 
-// --- M4: a fixed-value mobile->web check (3e) must also require its Maestro flow to have succeeded ---
-test("applyFlowGuards forces 3e FAIL when the p03b flow failed, even if API read-back matched (M4)", () => {
-  const checks = [{ id: "3e-site-induction", direction: "Mobile->Web", status: "PASS", details: "ok" }];
-  const guarded = applyFlowGuards(checks, { p03b: 1 });
-  assert.equal(guarded.find((c) => c.id === "3e-site-induction").status, "FAIL");
+// --- M4 + H-1: every mobile->web read-back check must also require its Maestro flow to have
+// succeeded, so a silently-failed flow in reuse mode can't stale-pass off prior-run data. ---
+test("applyFlowGuards forces each mobile->web check FAIL when its flow failed (M4, H-1)", () => {
+  const cases = [
+    ["3a-signature", "p02"],
+    ["3b-visit-info", "p03"],
+    ["3c-risk", "p04"],
+    ["3e-site-induction", "p03b"],
+  ];
+  for (const [id, flow] of cases) {
+    const guarded = applyFlowGuards([{ id, status: "PASS", details: "ok" }], { [flow]: 1 });
+    assert.equal(guarded[0].status, "FAIL", `${id} should FAIL when ${flow} failed`);
+  }
 });
 test("applyFlowGuards leaves checks untouched when the guarded flow passed or status is absent (M4)", () => {
   const checks = [
     { id: "3e-site-induction", status: "PASS", details: "ok" },
     { id: "3a-signature", status: "PASS", details: "ok" },
   ];
-  assert.equal(applyFlowGuards(checks, { p03b: 0 }).find((c) => c.id === "3e-site-induction").status, "PASS");
+  assert.equal(applyFlowGuards(checks, { p03b: 0, p02: 0 }).find((c) => c.id === "3e-site-induction").status, "PASS");
   assert.equal(applyFlowGuards(checks, null).find((c) => c.id === "3e-site-induction").status, "PASS");
+  // a flow code that doesn't map to a given check leaves it alone
   assert.equal(applyFlowGuards(checks, { p03b: 1 }).find((c) => c.id === "3a-signature").status, "PASS");
 });
