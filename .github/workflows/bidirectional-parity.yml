@@ -54,7 +54,6 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           VISIT_REF: ${{ github.event.inputs.visit_ref }}
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
-          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
           # admin (engineer) creates the visit via API; the dedicated parity engineer logs into mobile
           # and is the assigned engineer (its password has no special chars -> types cleanly via Maestro).
           API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
@@ -80,7 +79,19 @@ jobs:
         run: |
           echo "## Bidirectional Parity" >> $GITHUB_STEP_SUMMARY
           if [ -f summary.json ]; then
-            node -e "const s=require('./summary.json');console.log('**'+s.passed+'/'+s.total+' PASS** — visit '+s.visitRef)" >> $GITHUB_STEP_SUMMARY
+            node -e "const s=require('./summary.json');console.log('**'+s.passed+'/'+s.total+' PASS** — visit '+s.visitRef+(s.gateFailed?' — :red_circle: GATE FAIL':' — :white_check_mark: GATE PASS'))" >> $GITHUB_STEP_SUMMARY
           else
             echo "No summary produced (early failure — see logs/artifacts)." >> $GITHUB_STEP_SUMMARY
           fi
+
+      # The gate is the ONLY thing that turns the job red on a parity failure. The emulator step is
+      # continue-on-error (so artifacts always upload); without this step a failed/short/absent run
+      # would report green (fail-open). Keys on summary.gateFailed (hard failures, excludes the
+      # documented-flaky allowlist) and treats a missing summary as failure (H2, M7).
+      - name: Parity gate
+        if: always()
+        run: |
+          if [ ! -f summary.json ]; then
+            echo "::error::no summary.json produced — verification did not complete (see artifacts/logs)"; exit 1
+          fi
+          node -e "const s=require('./summary.json');console.log('gate: '+s.passed+'/'+s.total+' PASS, failed='+s.failed+', gateFailed='+s.gateFailed);if(s.gateFailed){console.error('::error::parity gate FAILED');process.exit(1)}console.log('parity gate PASS')"

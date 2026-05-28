@@ -76,6 +76,10 @@ echo "=== Phase 0: setup ==="
 node scripts/parity/setup-data.mjs || { echo "::error::setup failed"; exit 1; }
 VISIT_REF=$(node -e "console.log(require('./parity-context.json').visitRef)")
 export VISIT_REF; echo "visitRef=$VISIT_REF"
+# Re-read RUN_ID from the context: in reuse mode setup derives it from the existing visit title, so
+# the flow assertions (which read $RUN_ID) match the data on the reused visit, not github.run_id (M3).
+RUN_ID=$(node -e "console.log(require('./parity-context.json').runId)")
+export RUN_ID; echo "runId=$RUN_ID"
 
 # ---- Phase 1: web -> mobile (one flow per check) ----
 echo "=== Phase 1: web->mobile ==="
@@ -102,15 +106,22 @@ node -e "(async()=>{const{makeClient}=await import('./scripts/parity/api.mjs');c
 # ---- Phase 2: mobile -> web (input + save). p05 now types into the cleared Description &
 #      Reference field plus the (empty) Work Details / Water Sampling Details fields (3d). ----
 echo "=== Phase 2: mobile->web ==="
-run_flow mobile-flows-parity/p02_mobile2web_signature.yaml
-run_flow mobile-flows-parity/p03_mobile2web_visit_info.yaml
-run_flow mobile-flows-parity/p03b_mobile2web_site_induction.yaml
-run_flow mobile-flows-parity/p04_mobile2web_risk_assessment.yaml
-run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml
+run_flow mobile-flows-parity/p02_mobile2web_signature.yaml; P02=$?
+run_flow mobile-flows-parity/p03_mobile2web_visit_info.yaml; P03=$?
+run_flow mobile-flows-parity/p03b_mobile2web_site_induction.yaml; P03B=$?
+run_flow mobile-flows-parity/p04_mobile2web_risk_assessment.yaml; P04=$?
+run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml; P05=$?
+# Record Phase-2 flow exit codes so verify-data can guard fixed-value checks (e.g. 3e) whose API
+# read-back alone can't detect a silently-failed flow in reuse mode (M4).
+node -e "require('fs').writeFileSync('parity-flow-status.json',JSON.stringify({p02:$P02,p03:$P03,p03b:$P03B,p04:$P04,p05:$P05}))"
+echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05"
 
 # ---- Phase 3: verify (API) + report ----
 echo "=== Phase 3: verify + report ==="
-node scripts/parity/verify-data.mjs
+node scripts/parity/verify-data.mjs; VERIFY=$?
 node scripts/parity/gen-report.mjs
 cp -f summary.json report.html "$ART/" 2>/dev/null
 echo "=== DONE ==="; cat summary.json
+# Propagate the verify gate result as the script's exit code (the workflow gate step also checks
+# summary.json, but this makes a local run / the step status honest too) (H1).
+exit ${VERIFY:-1}
