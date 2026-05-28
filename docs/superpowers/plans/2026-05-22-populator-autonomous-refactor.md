@@ -13,7 +13,7 @@
 **Working directory:** `C:\Users\Coca-Cola\Hydro-QA-work\`
 
 **API base (dev):** `https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net`
-**Auth (dev):** `tq@hydrocert.com` / `TechQuarter2025!`
+**Auth (dev):** `tq@hydrocert.com` (password in GH secret `HYDROCERT_DEV_API_PASSWORD` / Obsidian `credentials.md` — NOT stored in this public repo)
 
 **Hard guardrails (carry into every commit):**
 - DEV ONLY (no prod hostnames anywhere)
@@ -392,7 +392,7 @@ main().catch(e => { console.error('FATAL:', e); process.exit(1); });
 cd /c/Users/Coca-Cola/Hydro-QA-work
 export HYDROCERT_API_BASE="https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net"
 export HYDROCERT_QA_EMAIL="tq@hydrocert.com"
-export HYDROCERT_QA_PASSWORD="TechQuarter2025!"
+export HYDROCERT_QA_PASSWORD="$HYDROCERT_DEV_API_PASSWORD"  # value in GH secret / Obsidian credentials.md (redacted from public repo)
 export WINDOW_DAYS=3
 node scripts/populator-bootstrap.mjs
 ```
@@ -594,7 +594,7 @@ cat > scripts/runtime/plan-batch-9.json <<'EOF'
 EOF
 export HYDROCERT_API_BASE="https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net"
 export HYDROCERT_QA_EMAIL="tq@hydrocert.com"
-export HYDROCERT_QA_PASSWORD="TechQuarter2025!"
+export HYDROCERT_QA_PASSWORD="$HYDROCERT_DEV_API_PASSWORD"  # value in GH secret / Obsidian credentials.md (redacted from public repo)
 export DRY_RUN=true
 node scripts/populator-executor.mjs 9
 ```

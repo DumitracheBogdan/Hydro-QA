@@ -121,6 +121,18 @@ echo "=== Phase 3: verify + report ==="
 node scripts/parity/verify-data.mjs; VERIFY=$?
 node scripts/parity/gen-report.mjs
 cp -f summary.json report.html "$ART/" 2>/dev/null
+
+# SECURITY: scrub any secret values Maestro/curl may have echoed into the logs before they are
+# uploaded as artifacts. GH masks secrets in the live console but NOT inside uploaded artifact
+# files, and this repo is PUBLIC — an unscrubbed inputText echo would leak the login password.
+LOGS="$LOGS" node -e '
+  const fs=require("fs"),path=require("path");
+  const secrets=[process.env.MAESTRO_APP_PASSWORD,process.env.API_PASSWORD,process.env.MOBILE_PASSWORD].filter(Boolean);
+  const dir=process.env.LOGS;
+  function walk(d){ if(!fs.existsSync(d))return; for(const e of fs.readdirSync(d,{withFileTypes:true})){ const p=path.join(d,e.name); if(e.isDirectory())walk(p); else if(/\.(log|txt|json)$/.test(e.name)){ let t=fs.readFileSync(p,"utf8"),o=t; for(const s of secrets) t=t.split(s).join("***REDACTED***"); if(t!==o) fs.writeFileSync(p,t);} } }
+  try{ walk(dir); console.log("logs scrubbed for secrets"); }catch(e){ console.error("WARN scrub failed:",e.message); }
+'
+
 echo "=== DONE ==="; cat summary.json
 # Propagate the verify gate result as the script's exit code (the workflow gate step also checks
 # summary.json, but this makes a local run / the step status honest too) (H1).
