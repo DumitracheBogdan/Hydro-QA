@@ -1,11 +1,13 @@
 appId: com.hydrocert.app
-name: "PARITY p01d - web-to-mobile visit text (waterSystemDescription)"
+name: "PARITY p01d - web-to-mobile visit text (3 Visit Details fields)"
 tags: [parity, web2mobile]
 ---
 - runFlow: _shared/open_tagged_visit.yaml
-# The waterSystemDescription was PATCHed via API in phase 0. Expand the "Visit Details" card
-# (the one BELOW the read-only "Description" notes card, not the identically-named tab) and
-# assert the seeded value shows in the "Description & Reference" field.
+# The 3 visit-text fields (waterSystemDescription / workDetails / samplingDetails) were PATCHed via
+# API in phase 0. Expand the "Visit Details" card (the one BELOW the read-only "Description" notes
+# card, not the identically-named tab) and assert each seeded value shows in its field
+# (Description & Reference / Work Details / Water Sampling Details). Completes the web->mobile
+# direction for all 3 fields (3d/p05 covers mobile->web). (A6)
 - scrollUntilVisible:
     element: { text: "Description" }
     direction: DOWN
@@ -18,3 +20,13 @@ tags: [parity, web2mobile]
     direction: DOWN
     timeout: 15000
 - assertVisible: ".*PARITY-${RUN_ID} wsd-web.*"
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} wd-web.*" }
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*PARITY-${RUN_ID} wd-web.*"
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} sd-web.*" }
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*PARITY-${RUN_ID} sd-web.*"

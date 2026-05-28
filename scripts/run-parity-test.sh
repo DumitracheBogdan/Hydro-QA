@@ -86,6 +86,7 @@ echo "=== Phase 1: web->mobile ==="
 run_flow mobile-flows-parity/p01a_web2mobile_description.yaml; A=$?
 run_flow mobile-flows-parity/p01b_web2mobile_visit_actions.yaml; B=$?
 run_flow mobile-flows-parity/p01d_web2mobile_visit_text.yaml; D=$?
+run_flow mobile-flows-parity/p01e_web2mobile_item_detail.yaml; E=$?
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)
@@ -93,7 +94,8 @@ fi
 node -e "const fs=require('fs');const checks=[
  {id:'2a-description',direction:'Web->Mobile',status:'$(st $A)',details:'p01a notes->Description card'},
  {id:'2b-visit-actions',direction:'Web->Mobile',status:'$(st $B)',details:'p01b'},
- {id:'2d-visit-text',direction:'Web->Mobile',status:'$(st $D)',details:'p01d waterSystemDescription->Description & Reference'}];
+ {id:'2d-visit-text',direction:'Web->Mobile',status:'$(st $D)',details:'p01d 3 visit-text fields web->mobile'},
+ {id:'2g-item-detail',direction:'Web->Mobile',status:'$(st $E)',details:'p01e itemDetail->LocationCard (KNOWN_FLAKY pending verify)'}];
  if('$C2C'!=='SKIP')checks.push({id:'2c-inspection-actions',direction:'Web->Mobile',status:'$C2C',details:'p01c'});
  fs.writeFileSync('parity-mobile-results.json',JSON.stringify({checks}))"
 
@@ -101,7 +103,7 @@ node -e "const fs=require('fs');const checks=[
 #      field. Mobile eraseText is cursor-position-fragile on a prefilled multiline field (it
 #      backspaces from the tap point and leaves a tail), so we clear server-side instead. ----
 echo "=== Phase 1.5: clear web-seeded fields ==="
-node -e "(async()=>{const{makeClient}=await import('./scripts/parity/api.mjs');const ctx=require('./parity-context.json');const c=makeClient(process.env.HYDROCERT_API_BASE);await c.login(process.env.API_EMAIL,process.env.API_PASSWORD);await c.patch('/visits/'+ctx.visitId,{waterSystemDescription:''});console.log('cleared waterSystemDescription')})().catch(e=>{console.error('WARN clear failed:',e.message)})"
+node -e "(async()=>{const{makeClient}=await import('./scripts/parity/api.mjs');const ctx=require('./parity-context.json');const c=makeClient(process.env.HYDROCERT_API_BASE);await c.login(process.env.API_EMAIL,process.env.API_PASSWORD);await c.patch('/visits/'+ctx.visitId,{waterSystemDescription:'',workDetails:'',samplingDetails:''});console.log('cleared visit-text fields')})().catch(e=>{console.error('WARN clear failed:',e.message)})"
 
 # ---- Phase 2: mobile -> web (input + save). p05 now types into the cleared Description &
 #      Reference field plus the (empty) Work Details / Water Sampling Details fields (3d). ----

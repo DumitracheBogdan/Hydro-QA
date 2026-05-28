@@ -1,0 +1,14 @@
+appId: com.hydrocert.app
+name: "PARITY p01e - web-to-mobile inspection item detail (LocationCard)"
+tags: [parity, web2mobile]
+---
+# itemDetail was PATCHed onto the inspection via API in phase 0. The mobile LocationCard on the
+# inspection screen renders itemDetail read-only (R3). Assert the seeded value is visible. (A5/2g)
+# 2g is in KNOWN_FLAKY (verify-data) until a CI run confirms the field actually renders on mobile —
+# if it does not render (an F-01-style gap), this is documented and 2g is verified via API instead.
+- runFlow: _shared/open_inspection.yaml
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} item-detail.*" }
+    direction: DOWN
+    timeout: 20000
+- assertVisible: ".*PARITY-${RUN_ID} item-detail.*"

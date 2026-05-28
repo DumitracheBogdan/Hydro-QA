@@ -84,10 +84,18 @@ export function buildExpected(runId) {
       workDetails: `${tag} workdetails`,
       samplingDetails: `${tag} sampling`,
     },
-    // web->mobile: PATCHed onto the visit via API in phase 0, asserted on the mobile
-    // "Description & Reference" field in phase 1 (p01d). p05 later overwrites it in phase 2.
+    // web->mobile: PATCHed onto the visit via API in phase 0, asserted on the mobile Visit Details
+    // card fields in phase 1 (p01d). Phase 1.5 clears them; p05 re-types the visitText values in
+    // phase 2 (mobile->web, 3d). Distinct "-web" values so neither direction stale-passes the other.
     webPatch: {
       waterSystemDescription: `${tag} wsd-web`,
+      workDetails: `${tag} wd-web`,
+      samplingDetails: `${tag} sd-web`,
+    },
+    // web->mobile (p01e / check 2g): inspection asset field PATCHed via API; the mobile LocationCard
+    // renders itemDetail read-only (R3). itemDetail is the field the card displays.
+    inspectionPatch: {
+      itemDetail: `${tag} item-detail`,
     },
     // mobile->web dropdown (p03b): a fixed option (not run-tagged — it is a fixed-choice field).
     // Verified against the Visit Information form's fieldOptions on jobType 658f27c1.
@@ -170,7 +178,8 @@ async function main() {
     const reuseExpected = buildExpected(reuseRunId);
     const fx = await resolveFixtures(c, mobileClient).catch(() => ({ jobTypeId: JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url))).jobTypeId }));
     const insp = visit.inspections?.[0] || (await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId }));
-    await c.patch(`/visits/${visit.id}`, { waterSystemDescription: reuseExpected.webPatch.waterSystemDescription }).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
+    await c.patch(`/visits/${visit.id}`, reuseExpected.webPatch).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
+    await c.patch(`/inspections/${insp.id}`, reuseExpected.inspectionPatch).catch((e) => console.error(`WARN: inspectionPatch failed (${e.message})`));
     writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected: reuseExpected, reused: true }, null, 2));
     console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id} runId=${reuseRunId}`);
     return;
@@ -184,8 +193,10 @@ async function main() {
   const inspection = await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId });
   if (!inspection?.id) throw new Error("setup: inspection creation returned no id");
 
-  // web->mobile: seed waterSystemDescription so the mobile "Description & Reference" field shows it (p01d / check 2d)
-  await c.patch(`/visits/${visit.id}`, { waterSystemDescription: expected.webPatch.waterSystemDescription });
+  // web->mobile: seed the 3 visit-text fields so the mobile Visit Details card shows them (p01d / check 2d)
+  await c.patch(`/visits/${visit.id}`, expected.webPatch);
+  // web->mobile: seed the inspection asset field so the mobile LocationCard shows it (p01e / check 2g)
+  await c.patch(`/inspections/${inspection.id}`, expected.inspectionPatch).catch((e) => console.error(`WARN: inspectionPatch failed (${e.message})`));
 
   for (const a of expected.visitActions) await c.post("/actions", { siteId: fx.siteId, visitId: visit.id, name: a.name, priority: a.priority });
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });

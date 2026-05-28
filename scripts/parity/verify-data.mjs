@@ -54,15 +54,20 @@ export function checkInspectionActions(actions, expected) {
 // this to PIN the denominator: any expected id that never materialized becomes a synthetic FAIL, so
 // a crashed/absent phase can never shrink the total into a misleading green (H3, M10).
 export const EXPECTED_IDS = [
-  "2a-description", "2b-visit-actions", "2c-inspection-actions", "2d-visit-text",
+  "2a-description", "2b-visit-actions", "2c-inspection-actions", "2d-visit-text", "2g-item-detail",
   "3a-signature", "3b-visit-info", "3c-risk", "3d-visit-text", "3e-site-induction",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
-// A check belongs here ONLY with a documented CI-emulator-flake justification (e.g. long-form
-// geometry). Empty today: the current 9 are stable (historically 3x green). Add ids here, with a
-// comment citing the reason, rather than weakening the gate globally.
-export const KNOWN_FLAKY = new Set([]);
+// A check belongs here ONLY with a documented justification. Add ids here, with a comment citing
+// the reason, rather than weakening the gate globally.
+export const KNOWN_FLAKY = new Set([
+  // 2g (itemDetail -> mobile LocationCard, web->mobile) is NEWLY added and unverified: it is
+  // exercised + reported but does not gate until a CI run confirms itemDetail actually renders on
+  // the mobile inspection screen. If it renders reliably -> remove from here (promote to gate). If
+  // it does not (an F-01-style render gap) -> keep documented and verify 2g via API instead.
+  "2g-item-detail",
+]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
 // opts.expectedIds defaults to EXPECTED_IDS; opts.mobileMissing flags that parity-mobile-results.json

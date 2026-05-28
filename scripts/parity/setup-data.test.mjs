@@ -57,6 +57,20 @@ test("buildExpected exposes the web->mobile PATCH value, distinct from the p05 v
   assert.notEqual(e.webPatch.waterSystemDescription, e.visitText.waterSystemDescription);
 });
 
+test("buildExpected.webPatch covers all 3 visit-text fields web->mobile, each distinct from its p05 value (A6)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.webPatch.workDetails, "PARITY-RUN42 wd-web");
+  assert.equal(e.webPatch.samplingDetails, "PARITY-RUN42 sd-web");
+  // web->mobile seed value must differ from the mobile->web (p05) value so neither stale-passes the other
+  assert.notEqual(e.webPatch.workDetails, e.visitText.workDetails);
+  assert.notEqual(e.webPatch.samplingDetails, e.visitText.samplingDetails);
+});
+
+test("buildExpected exposes the inspection itemDetail seeded web->mobile (A5/2g)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.inspectionPatch.itemDetail, "PARITY-RUN42 item-detail");
+});
+
 test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {
   const e = buildExpected("RUN42");
   assert.equal(e.siteInduction["Site Induction required & Completed"], "Yes - Induction completed");

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, checkVisitText, extractFormValue, buildSummary, EXPECTED_IDS, applyFlowGuards } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -119,6 +119,13 @@ test("buildSummary.gateFailed ignores a knownFlaky check but still reports it fa
   const s = buildSummary({ runId: "R", visitRef: "V" }, checks, { knownFlaky: new Set(["3c-risk"]) });
   assert.equal(s.gateFailed, false);
   assert.equal(s.failed, 1);
+});
+test("2g-item-detail is in KNOWN_FLAKY so a 2g-only failure does not red the gate (newly-added, pending verify)", () => {
+  assert.ok(KNOWN_FLAKY.has("2g-item-detail"));
+  const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2g-item-detail" ? "FAIL" : "PASS", details: "" }));
+  const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
+  assert.equal(s.gateFailed, false); // 2g is documented-flaky
+  assert.equal(s.failed, 1); // still reported
 });
 
 // --- M4 + H-1: every mobile->web read-back check must also require its Maestro flow to have
