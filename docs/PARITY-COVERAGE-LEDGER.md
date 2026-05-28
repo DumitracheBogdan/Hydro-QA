@@ -18,14 +18,14 @@ Status legend: ✅ automated · 🟡 attempted/pending-verify · ◑ partial · 
 | 2b-visit-actions | `visit.actions[]` name×3 | web→mobile | p01b → assertVisible |
 | 2c-inspection-actions | `inspection.actions[]` ×3 (name+priority) | web→mobile (API) | 🔵 API verify — mobile render gap **F-01** |
 | 2d-visit-text | `waterSystemDescription` + `workDetails` + `samplingDetails` | web→mobile | p01d → assertVisible (all 3) — **A6** |
-| 2g-item-detail | `inspection.itemDetail` → LocationCard | web→mobile | 🟡 p01e → assertVisible — **A5, KNOWN_FLAKY pending CI verify** |
+| 2g-item-detail | `inspection.itemDetail` → LocationCard | web→mobile | ✅ p01e → assertVisible — **A5, promoted to gate (renders on mobile, CI 26607132325 10/10)** |
 | 3a-signature | `signature` + `signatureName` | mobile→web | p02 → API `GET /visits/{id}` |
 | 3b-visit-info | `Assisting 1/2/3` + `Works being carried out` | mobile→web | p03 → API inspection formFields |
 | 3c-risk | Risk Assessment "- Comments" | mobile→web | ◑ p04 → 1 field on CI / **18 validated locally** (CI geometry) |
 | 3d-visit-text | `waterSystemDescription`+`workDetails`+`samplingDetails` | mobile→web | p05 → API `GET /visits/{id}` |
 | 3e-site-induction | Site Induction dropdown | mobile→web | p03b → API inspection formFields |
 
-**Hard-gate set** = all of the above except `2c` (API tautology, reported separately) and `2g` (KNOWN_FLAKY until verified). Done-bar: hard-gate set 3× consecutive green (split done-bar, `verify-data.gateFailed`).
+**Hard-gate set** = all 10 checks (KNOWN_FLAKY is empty; 2g promoted after CI confirmed it renders). `2c` is counted but is an API create→read tautology (mobile render gap F-01), reported with an `(API)` label so it doesn't read as cross-platform parity. Done-bar: hard-gate set 3× consecutive green (split done-bar, `verify-data.gateFailed`).
 
 ## B. Partial / known limitations
 

@@ -95,7 +95,7 @@ node -e "const fs=require('fs');const checks=[
  {id:'2a-description',direction:'Web->Mobile',status:'$(st $A)',details:'p01a notes->Description card'},
  {id:'2b-visit-actions',direction:'Web->Mobile',status:'$(st $B)',details:'p01b'},
  {id:'2d-visit-text',direction:'Web->Mobile',status:'$(st $D)',details:'p01d 3 visit-text fields web->mobile'},
- {id:'2g-item-detail',direction:'Web->Mobile',status:'$(st $E)',details:'p01e itemDetail->LocationCard (KNOWN_FLAKY pending verify)'}];
+ {id:'2g-item-detail',direction:'Web->Mobile',status:'$(st $E)',details:'p01e itemDetail->LocationCard'}];
  if('$C2C'!=='SKIP')checks.push({id:'2c-inspection-actions',direction:'Web->Mobile',status:'$C2C',details:'p01c'});
  fs.writeFileSync('parity-mobile-results.json',JSON.stringify({checks}))"
 

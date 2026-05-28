@@ -59,15 +59,11 @@ export const EXPECTED_IDS = [
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
-// A check belongs here ONLY with a documented justification. Add ids here, with a comment citing
-// the reason, rather than weakening the gate globally.
-export const KNOWN_FLAKY = new Set([
-  // 2g (itemDetail -> mobile LocationCard, web->mobile) is NEWLY added and unverified: it is
-  // exercised + reported but does not gate until a CI run confirms itemDetail actually renders on
-  // the mobile inspection screen. If it renders reliably -> remove from here (promote to gate). If
-  // it does not (an F-01-style render gap) -> keep documented and verify 2g via API instead.
-  "2g-item-detail",
-]);
+// A check belongs here ONLY with a documented justification (CI-emulator flake / unverified-new).
+// Add ids here, with a comment citing the reason, rather than weakening the gate globally.
+// Empty: 2g (itemDetail->LocationCard) was promoted to the gate after CI run 26607132325 confirmed
+// itemDetail renders on mobile (10/10). The current 10 checks are all hard-gated.
+export const KNOWN_FLAKY = new Set([]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
 // opts.expectedIds defaults to EXPECTED_IDS; opts.mobileMissing flags that parity-mobile-results.json
