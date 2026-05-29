@@ -70,6 +70,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
+        id: upload_bundle
         uses: actions/upload-artifact@v4
         with:
           name: parity-report
@@ -79,15 +80,55 @@ jobs:
             report.html
           retention-days: 14
 
-      - name: Job summary
+      - name: Upload parity evidence Excel
         if: always()
+        id: upload_excel
+        uses: actions/upload-artifact@v4
+        with:
+          name: parity-evidence-excel-${{ github.run_id }}
+          path: qa-artifacts/parity/parity-evidence.xlsx
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish workflow summary
+        if: always()
+        shell: bash
         run: |
-          echo "## Bidirectional Parity" >> $GITHUB_STEP_SUMMARY
-          if [ -f summary.json ]; then
-            node -e "const s=require('./summary.json');console.log('**'+s.passed+'/'+s.total+' PASS** — visit '+s.visitRef+(s.gateFailed?' — :red_circle: GATE FAIL':' — :white_check_mark: GATE PASS'))" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "No summary produced (early failure — see logs/artifacts)." >> $GITHUB_STEP_SUMMARY
-          fi
+          set +e
+          {
+            echo "## Bidirectional Parity — Dual-UI Evidence (connection + webapp + mobile)"
+            echo ""
+            if [[ -f summary.json ]]; then
+              node -e "
+                const s = require('./summary.json');
+                const checks = Array.isArray(s.checks) ? s.checks : [];
+                const gate = s.gateFailed ? ':red_circle: **GATE FAIL**' : ':white_check_mark: **GATE PASS**';
+                console.log('**' + s.passed + '/' + s.total + ' PASS** — visit \`' + s.visitRef + '\` — ' + gate);
+                console.log('');
+                console.log('| Total | Passed | Failed |');
+                console.log('|-------|--------|--------|');
+                console.log('| ' + (s.total||0) + ' | ' + (s.passed||0) + ' | ' + (s.failed||0) + ' |');
+                console.log('');
+                console.log('### Checks — each datum verified on the connection (API GET) + screenshotted on the webapp AND mobile');
+                console.log('');
+                console.log('| Check | Direction | Result | Details |');
+                console.log('|-------|-----------|--------|---------|');
+                const icon = (st) => st === 'PASS' ? '✅ PASS' : st === 'FAIL' ? '❌ FAIL' : st === 'SKIP' ? '⏭️ SKIP' : st;
+                for (const c of checks) {
+                  const det = String(c.details || '').replace(/\|/g, '\\\\|').replace(/\r?\n/g, ' ');
+                  console.log('| \`' + (c.id || '?') + '\` | ' + (c.direction || '') + ' | ' + icon(c.status || '') + ' | ' + det + ' |');
+                }
+              " 2>/dev/null || echo "_summary parse failed_"
+            else
+              echo "_No summary produced (early failure — see artifacts/logs)._"
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "📥 **[Download dual-UI evidence Excel — webapp + mobile screenshot per check](${{ steps.upload_excel.outputs.artifact-url || '#' }})**"
+            echo ""
+            echo "[Download full bundle (HTML report + all screenshots + summary.json)](${{ steps.upload_bundle.outputs.artifact-url || '#' }})"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # The gate is the ONLY thing that turns the job red on a parity failure. The emulator step is
       # continue-on-error (so artifacts always upload); without this step a failed/short/absent run

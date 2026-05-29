@@ -1,38 +1,86 @@
-// Render report.html from summary.json (qa-parity report style).
+// Render report.html from summary.json — a self-contained dual-UI evidence report: overview table
+// + an Evidence gallery embedding the WEBAPP and MOBILE screenshot for each check (base64 inline, so
+// the single HTML opens in any browser with the photos, no external files).
 import { writeFileSync, readFileSync } from "node:fs";
 
-export function renderReport(s) {
-  // Verdict follows the gate (hard failures only). Fall back to failed>0 for legacy summaries.
+// check id -> Maestro flow basename (mobile {flow}-after.png). Web is {checkId}-web-verify.png.
+const FLOW = {
+  "2a-description": "p01a_web2mobile_description",
+  "2b-visit-actions": "p01b_web2mobile_visit_actions",
+  "2d-visit-text": "p01d_web2mobile_visit_text",
+  "2g-item-detail": "p01e_web2mobile_item_detail",
+  "3a-signature": "p02_mobile2web_signature",
+  "3b-visit-info": "p03_mobile2web_visit_info",
+  "3e-site-induction": "p03b_mobile2web_site_induction",
+  "3c-risk": "p04_mobile2web_risk_assessment",
+  "3d-visit-text": "p05_mobile2web_visit_text",
+};
+
+export function renderReport(s, images = {}) {
   const gateFail = s.gateFailed ?? (s.failed > 0);
   const overall = gateFail ? "ATTENTION" : "PASS";
   const badge = (v) => `<span class="b ${v.toLowerCase().includes("pass") ? "pass" : "fail"}">${v}</span>`;
   const rows = s.checks.map((c) => {
-    // 2c is an API-only backend create->read check (mobile doesn't render inspection actions, F-01).
-    // Flag it so it doesn't read as cross-platform parity (L5).
     const note = String(c.id).startsWith("2c") ? ' <em style="color:#9ca3af">(API-only · known mobile-render gap F-01)</em>' : "";
     return `<tr><td><code>${c.id}</code>${note}</td><td>${c.direction}</td><td>${badge(c.status)}</td><td>${(c.details || "").replace(/</g, "&lt;")}</td></tr>`;
   }).join("");
-  // Parity-only score excludes the 2c tautology so it can't inflate the headline coverage (L5).
   const parity = s.checks.filter((c) => !String(c.id).startsWith("2c"));
   const parityPass = parity.filter((c) => c.status === "PASS").length;
+
+  // Evidence gallery (only when screenshots were supplied) — webapp + mobile side by side per check.
+  const hasImages = Object.keys(images).length > 0;
+  const fig = (label, uri) => uri
+    ? `<figure><figcaption>${label}</figcaption><img src="${uri}" loading="lazy"></figure>`
+    : `<figure><figcaption>${label}</figcaption><div class="noimg">no ${label.toLowerCase()} screenshot</div></figure>`;
+  const gallery = !hasImages ? "" : `<h2 style="margin-top:28px">Evidence — webapp + mobile per check</h2>` + s.checks.map((c) => {
+    if (String(c.id).startsWith("2c")) {
+      return `<div class="ev"><h3><code>${c.id}</code> ${badge(c.status)} <span class="dir">${c.direction}</span></h3><p class="muted">API-only (F-01 — mobile inspection-actions render gap). No cross-platform UI screenshot.</p></div>`;
+    }
+    const im = images[c.id] || {};
+    return `<div class="ev"><h3><code>${c.id}</code> ${badge(c.status)} <span class="dir">${c.direction}</span></h3>
+<div class="shots">${fig("Webapp", im.web)}${fig("Mobile", im.mobile)}</div></div>`;
+  }).join("");
+
   return `<!doctype html><meta charset="utf-8"><title>Parity ${s.runId}</title>
-<style>body{font:14px system-ui,Segoe UI,Arial;margin:24px;color:#111}
+<style>body{font:14px system-ui,Segoe UI,Arial;margin:24px;color:#111;max-width:1280px}
 .banner{padding:16px 20px;border-radius:8px;font-size:20px;font-weight:600;color:#fff;background:${gateFail ? "#dc2626" : "#16a34a"}}
 table{border-collapse:collapse;margin-top:16px;width:100%}td,th{border:1px solid #e5e7eb;padding:8px 10px;text-align:left;font-size:13px}
 th{background:#f9fafb}.b{padding:2px 8px;border-radius:4px;color:#fff;font-size:12px;font-weight:600}
 .b.pass{background:#16a34a}.b.fail{background:#dc2626}code{background:#f3f4f6;padding:1px 5px;border-radius:3px}
-.grid{display:flex;gap:28px;margin-top:12px;color:#374151;flex-wrap:wrap}</style>
+.grid{display:flex;gap:28px;margin-top:12px;color:#374151;flex-wrap:wrap}
+.ev{margin:18px 0;padding:14px 16px;border:1px solid #e5e7eb;border-radius:10px}
+.ev h3{margin:0 0 10px;font-size:15px}.ev .dir{font-weight:400;color:#6b7280;font-size:13px;margin-left:6px}
+.shots{display:flex;gap:18px;flex-wrap:wrap}
+figure{margin:0;flex:1 1 380px;min-width:300px}figcaption{font-size:12px;color:#6b7280;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+figure img{width:100%;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.noimg{padding:40px;border:1px dashed #d1d5db;border-radius:8px;color:#9ca3af;text-align:center;font-size:13px}
+.muted{color:#9ca3af}</style>
 <div class="banner">${s.passed}/${s.total} PASS — ${overall}</div>
 <div class="grid"><div>Run: <code>${s.runId}</code></div><div>Visit: <code>${s.visitRef}</code></div>
 <div>Parity (excl. 2c known-gap): ${parityPass}/${parity.length}</div>
 <div>Gate: <strong>${gateFail ? "FAIL" : "PASS"}</strong></div>
 <div>Passed: ${s.passed}</div><div>Failed: ${s.failed}</div></div>
 <table><tr><th>Check</th><th>Direction</th><th>Result</th><th>Details</th></tr>${rows}</table>
-<footer style="margin-top:24px;color:#9ca3af">Generated by Hydro-QA bidirectional-parity — run ${s.runId}</footer>`;
+${gallery}
+<footer style="margin-top:24px;color:#9ca3af">Generated by Hydro-QA bidirectional-parity — run ${s.runId}. Each check is verified on the connection (API GET) and screenshotted on both the webapp and the mobile app.</footer>`;
+}
+
+function loadImages(s, dir) {
+  const dataUri = (p) => { try { return "data:image/png;base64," + readFileSync(p).toString("base64"); } catch { return null; } };
+  const images = {};
+  for (const c of s.checks || []) {
+    const flow = FLOW[c.id];
+    images[c.id] = {
+      web: dataUri(`${dir}/${c.id}-web-verify.png`),
+      mobile: flow ? dataUri(`${dir}/${flow}-after.png`) : null,
+    };
+  }
+  return images;
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || import.meta.url.endsWith(process.argv[1]?.replace(/\\/g, "/"))) {
   const s = JSON.parse(readFileSync("summary.json"));
-  writeFileSync("report.html", renderReport(s));
-  console.log("report.html written");
+  const dir = process.env.SHOTS || "qa-artifacts/parity/screenshots";
+  writeFileSync("report.html", renderReport(s, loadImages(s, dir)));
+  console.log("report.html written (with embedded webapp+mobile screenshots from " + dir + ")");
 }
