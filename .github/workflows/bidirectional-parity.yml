@@ -54,6 +54,11 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           VISIT_REF: ${{ github.event.inputs.visit_ref }}
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          # webapp-UI evidence layer (Phase 2.5, non-gating): Playwright logs into the dev webapp to
+          # screenshot the web side of each datum.
+          HYDROCERT_DEV_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+          HYDROCERT_QA_EMAIL: ${{ secrets.HYDROCERT_QA_EMAIL }}
+          HYDROCERT_QA_PASSWORD: ${{ secrets.HYDROCERT_QA_PASSWORD }}
           # admin (engineer) creates the visit via API; the dedicated parity engineer logs into mobile
           # and is the assigned engineer (its password has no special chars -> types cleanly via Maestro).
           API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}

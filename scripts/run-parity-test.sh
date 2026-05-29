@@ -118,10 +118,27 @@ run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml; P05=$?
 node -e "require('fs').writeFileSync('parity-flow-status.json',JSON.stringify({p02:$P02,p03:$P03,p03b:$P03B,p04:$P04,p05:$P05}))"
 echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05"
 
+# ---- Phase 2.5: WEBAPP-UI evidence screenshots (the web half — both the web->mobile values the
+#      webapp displays AND the mobile->web values the webapp now renders). By now the visit carries
+#      both directions' data, so one `verify` pass screenshots everything. NON-GATING + best-effort:
+#      any failure here never affects the parity gate (which keys on summary.gateFailed). ----
+echo "=== Phase 2.5: webapp screenshots ==="
+if [ -n "$HYDROCERT_QA_EMAIL" ] && { [ -n "$HYDROCERT_DEV_WEB_BASE" ] || [ -n "$HYDROCERT_WEB_BASE" ]; }; then
+  ( npx --yes playwright install --with-deps chromium || npx --yes playwright install chromium ) >/dev/null 2>&1 || echo "::warning::chromium install failed (webapp shots skipped)"
+  node scripts/parity/webapp-shots.mjs verify || echo "::warning::webapp-shots failed (non-gating)"
+else
+  echo "SKIP webapp screenshots (HYDROCERT_QA_EMAIL / web base not set)"
+fi
+
 # ---- Phase 3: verify (API) + report ----
 echo "=== Phase 3: verify + report ==="
 node scripts/parity/verify-data.mjs; VERIFY=$?
 node scripts/parity/gen-report.mjs
+# Dual-UI evidence Excel (web + mobile screenshots per check) — best-effort, NON-GATING.
+( pip install --quiet openpyxl pillow >/dev/null 2>&1 || pip3 install --quiet openpyxl pillow >/dev/null 2>&1
+  python3 scripts/build_parity_evidence_excel.py summary.json "$SHOTS" "$ART/parity-evidence.xlsx" \
+    || python scripts/build_parity_evidence_excel.py summary.json "$SHOTS" "$ART/parity-evidence.xlsx" ) 2>&1 \
+  | tail -1 || echo "::warning::evidence excel build failed (non-gating)"
 cp -f summary.json report.html "$ART/" 2>/dev/null
 
 # SECURITY: scrub any secret values Maestro/curl may have echoed into the logs before they are
