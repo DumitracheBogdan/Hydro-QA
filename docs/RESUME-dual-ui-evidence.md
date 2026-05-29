@@ -1,6 +1,8 @@
-# RESUME — Parity Dual-UI Evidence (F2–F5)
+# Parity Dual-UI Evidence — ✅ COMPLETE (2026-05-29)
 
-**Paste this into a fresh session to continue.** Foundation (F1) is done + committed.
+**DONE + CI-automated.** F1–F5 all shipped. Every parity run now produces: 10 gated checks + 9 webapp screenshots (Playwright, Phase 2.5 non-gating) + 9 mobile screenshots (Maestro) + the dual-UI Excel `qa-artifacts/parity/parity-evidence.xlsx` (web+mobile per check). Validated CI run **26636483362** (10/10 gate green, 9 web + 9 mobile, 1MB Excel). `scripts/parity/webapp-shots.mjs` + `scripts/build_parity_evidence_excel.py` + `docs/PARITY-CONTRACT.md`. Only residual: 2g itemDetail shows as Asset "-" on web (doesn't surface; covered by connection+mobile). Original F2–F5 plan kept below for reference.
+
+---
 
 ## Paste-ready resume prompt
 > Continue the Hydrocert parity **dual-UI evidence** work in `C:\Users\Coca-Cola\tmp-hydroqa\Hydro-QA` (DumitracheBogdan/Hydro-QA, push to main, no PR, no Claude attribution, dev only, product repos read-only). Design+plan: `docs/superpowers/specs/2026-05-28-parity-dual-ui-evidence-design.md`. Per-datum contract (selectors + evidence mode): `docs/PARITY-CONTRACT.md`. F1 done. Do F2→F5 on etape, CI-validated, autoheal, use superpowers + agents. Goal: parity proves each datum with BOTH webapp + mobile screenshots + the API-GET connection check, reported in an Excel matching the existing generators (Description + real Steps + Expected/Actual + embedded pass/fail screenshots web+mobile).
