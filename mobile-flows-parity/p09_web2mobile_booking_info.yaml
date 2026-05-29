@@ -1,0 +1,19 @@
+appId: com.hydrocert.app
+name: "PARITY p09 - web-to-mobile site booking/access info"
+tags: [parity, web2mobile]
+---
+# site.accessInfo was PATCHed onto the SITE record via API in phase 0 (check 4b, PATCH /sites/{id}).
+# SCORED via API (checkScalarField on GET /sites/{siteId}.accessInfo); this flow captures the
+# MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator. The booking/access
+# info is a different screen and its mobile render is NOT yet CI-confirmed ("may show"), so this
+# mirrors p01f (2h, photo-only): scroll to a static heading with optional:true and screenshot —
+# never a hard assertVisible on the dynamic value, so a non-render degrades to one clean photo
+# instead of burning a retry. Promote to the p01a (assert) pattern once a CI run confirms it renders.
+- runFlow: _shared/open_tagged_visit.yaml
+- scrollUntilVisible:
+    element: { text: "Booking|Access" }
+    direction: DOWN
+    timeout: 20000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

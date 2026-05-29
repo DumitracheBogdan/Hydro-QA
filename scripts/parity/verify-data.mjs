@@ -62,12 +62,26 @@ export function checkSamples(laboratorySamples, expectedTypeIds) {
     details: `${found.length}/${want.length} sample types present in laboratorySamples` };
 }
 
+// 4a/4b/4c/4d — generic scalar web->mobile check: a single field PATCHed via the web API in phase 0
+// must read back equal on the GET of the same record (inspection for 4a/4c/4d, site for 4b). Same
+// scoring model as 2h/checkSamples (API-set, API-scored; the mobile flow is photo-only). Strict
+// equality (no `?? ""`): a missing/undefined field must NOT match, and an empty/undefined want is a
+// FAIL (no vacuous pass — L1/L6). Tolerates a null/undefined object (e.g. site not resolved) -> FAIL.
+export function checkScalarField(id, direction, obj, field, want) {
+  const got = obj == null ? undefined : obj[field];
+  const ok = want !== undefined && want !== "" && got === want;
+  return { id, direction, status: ok ? "PASS" : "FAIL", details: `${field}=${JSON.stringify(got)} want=${JSON.stringify(want)}` };
+}
+
 // The full set of check ids the suite is expected to produce on a complete run. buildSummary uses
 // this to PIN the denominator: any expected id that never materialized becomes a synthetic FAIL, so
 // a crashed/absent phase can never shrink the total into a misleading green (H3, M10).
 export const EXPECTED_IDS = [
   "2a-description", "2b-visit-actions", "2c-inspection-actions", "2d-visit-text", "2g-item-detail", "2h-samples",
   "3a-signature", "3b-visit-info", "3c-risk", "3d-visit-text", "3e-site-induction",
+  // web->mobile API-set scalar fields (mirror 2h scoring; mobile flow photo-only) — additive, never
+  // touch the visit title/ref/dates/status so they can't disturb the mobile search or other checks.
+  "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
@@ -79,7 +93,13 @@ export const EXPECTED_IDS = [
 // in laboratorySamples (deterministic API check). NOTE: the mobile Water-Sampling UI render of those
 // samples needs a requiresWaterSample jobType (the parity jobType has no mobile sampling section) —
 // tracked as a refinement; 2h's web->mobile propagation is proven on the connection (API) + web batch.
-export const KNOWN_FLAKY = new Set([]);
+// 4a/4b/4c/4d (new web->mobile API-set scalar fields) start here until a CI run proves them green —
+// while flaky they are reported but never red the gate, so they cannot break the existing 11 checks.
+// PATCH+GET round-trip verified locally against dev 2026-05-30 (notes/itemReference/itemLocation on
+// /inspections, accessInfo on /sites). Promote to the gate (remove from this set) once CI is green.
+export const KNOWN_FLAKY = new Set([
+  "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
+]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
 // opts.expectedIds defaults to EXPECTED_IDS; opts.mobileMissing flags that parity-mobile-results.json
@@ -146,6 +166,21 @@ async function main() {
   // 2h — water samples added via web API; every sampleTypeId must land in laboratorySamples.
   if (ctx.expected.sampleTypeIds)
     apiChecks.push(checkSamples(inspection.laboratorySamples, ctx.expected.sampleTypeIds));
+
+  // 4a/4c/4d — inspection scalar fields PATCHed web->mobile (read back on the same GET /inspections).
+  if (ctx.expected.inspectionPatch) {
+    const ip = ctx.expected.inspectionPatch;
+    apiChecks.push(checkScalarField("4a-inspection-notes", "Web->Mobile (API)", inspection, "notes", ip.notes));
+    apiChecks.push(checkScalarField("4c-item-reference", "Web->Mobile (API)", inspection, "itemReference", ip.itemReference));
+    apiChecks.push(checkScalarField("4d-item-location", "Web->Mobile (API)", inspection, "itemLocation", ip.itemLocation));
+  }
+  // 4b — site accessInfo (booking info) PATCHed web->mobile (GET /sites/{siteId}). siteId is the
+  // VISIT's siteId persisted by setup (NOT fx.siteId, which may resolve a different site in reuse
+  // mode). A null/missing site GET degrades to a FAIL via checkScalarField (not a crash).
+  if (ctx.expected.sitePatch && ctx.siteId) {
+    const site = await c.get(`/sites/${ctx.siteId}`).catch(() => null);
+    apiChecks.push(checkScalarField("4b-booking-info", "Web->Mobile (API)", site, "accessInfo", ctx.expected.sitePatch.accessInfo));
+  }
 
   // null (not []) distinguishes "file absent/unparseable" from "file present but empty", so the
   // web->mobile half can never be silently dropped into a green run (H3).

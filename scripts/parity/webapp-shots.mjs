@@ -122,9 +122,15 @@ async function main() {
       await expandCard(page, "Actions");
       await shotAt(page, "Actions", "2b-visit-actions", { nth: 0 });
       await shotAt(page, "Client Signature", "3a-signature");
+      // 4b — site Booking Info card on the visit detail (web->mobile API-set accessInfo)
+      await shotAt(page, "Booking Info", "4b-booking-info").catch(() => shot(page, "4b-booking-info"));
       // inspection-level: 3b visit-info, 3c risk, 3e site-induction, 2g itemDetail (on the inspection detail)
       await openInspection(page);
       await shot(page, "2g-item-detail"); // inspection header shows Asset Reference/Location/Detail
+      // 4a/4c/4d — inspection Notes + Asset Reference/Location (web->mobile API-set scalar fields)
+      await shotAt(page, "Notes", "4a-inspection-notes").catch(() => shot(page, "4a-inspection-notes"));
+      await shotAt(page, "Asset Reference", "4c-item-reference").catch(() => shot(page, "4c-item-reference"));
+      await shotAt(page, "Asset Location", "4d-item-location").catch(() => shot(page, "4d-item-location"));
       await expandCard(page, "Visit Information");
       await shotAt(page, "Assisting 1", "3b-visit-info").catch(() => shot(page, "3b-visit-info"));
       await shotAt(page, "Site Induction", "3e-site-induction").catch(() => shot(page, "3e-site-induction"));

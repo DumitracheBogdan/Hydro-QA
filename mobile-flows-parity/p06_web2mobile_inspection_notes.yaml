@@ -1,0 +1,19 @@
+appId: com.hydrocert.app
+name: "PARITY p06 - web-to-mobile inspection notes (Notes card)"
+tags: [parity, web2mobile]
+---
+# inspection.notes was PATCHed onto the inspection via API in phase 0 (check 4a). SCORED via API
+# (checkScalarField on GET /inspections.notes); this flow exists ONLY to capture MOBILE-side photo
+# evidence ({flow}-after.png) and runs `|| true` in the orchestrator. The inspection Notes render is
+# NOT yet CI-confirmed, so this mirrors p01f (2h, photo-only): scroll to the static "Notes" heading
+# with optional:true and screenshot — never a hard assertVisible on the dynamic value, so a
+# non-render degrades to one clean photo instead of burning a retry. Promote to the p01e (assert)
+# pattern once a CI run confirms notes render on the Notes card.
+- runFlow: _shared/open_inspection.yaml
+- scrollUntilVisible:
+    element: { text: "Notes" }
+    direction: DOWN
+    timeout: 20000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

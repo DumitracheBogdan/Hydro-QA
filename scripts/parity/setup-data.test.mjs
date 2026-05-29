@@ -71,6 +71,20 @@ test("buildExpected exposes the inspection itemDetail seeded web->mobile (A5/2g)
   assert.equal(e.inspectionPatch.itemDetail, "PARITY-RUN42 item-detail");
 });
 
+// --- 4a/4c/4d: additional inspection asset/notes fields seeded web->mobile (mirror 2g) ---
+test("buildExpected exposes the inspection notes/itemReference/itemLocation seeded web->mobile (4a/4c/4d)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.inspectionPatch.notes, "PARITY-RUN42 insp-notes");          // 4a
+  assert.equal(e.inspectionPatch.itemReference, "PARITY-RUN42 item-ref");    // 4c
+  assert.equal(e.inspectionPatch.itemLocation, "PARITY-RUN42 item-loc");     // 4d
+});
+
+// --- 4b: the site accessInfo seeded web->mobile (PATCH /sites/{siteId}) ---
+test("buildExpected exposes the site accessInfo (booking info) seeded web->mobile (4b)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.sitePatch.accessInfo, "PARITY-RUN42 booking");
+});
+
 test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {
   const e = buildExpected("RUN42");
   assert.equal(e.siteInduction["Site Induction required & Completed"], "Yes - Induction completed");

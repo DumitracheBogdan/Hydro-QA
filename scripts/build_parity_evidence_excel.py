@@ -85,6 +85,10 @@ CHECK_TO_FLOW = {
     '3c-risk': 'p04_mobile2web_risk_assessment',
     '3d-visit-text': 'p05_mobile2web_visit_text',
     '3e-site-induction': 'p03b_mobile2web_site_induction',
+    '4a-inspection-notes': 'p06_web2mobile_inspection_notes',
+    '4c-item-reference': 'p07_web2mobile_item_reference',
+    '4d-item-location': 'p08_web2mobile_item_location',
+    '4b-booking-info': 'p09_web2mobile_booking_info',
 }
 
 # Short check token (e.g. "2a") used to find F2 web screenshots {check}-web-set.png.
@@ -225,6 +229,59 @@ EVIDENCE_MAP = {
         ],
         'expected': 'Webapp shows "Site Induction required & Completed" = "Yes - Induction completed".',
         'connection': 'GET /inspections/{id} -> inspectionForms[formName="Visit Information"].formFields[fieldName="Site Induction required & Completed"].value.',
+    },
+    '4a-inspection-notes': {
+        'description': 'Web->mobile (API-set): inspection.notes PATCHed via the web API must read '
+                       'back on GET /inspections and render in the mobile inspection Notes card. '
+                       'Additive — never touches the visit title/ref/dates/status.',
+        'steps': [
+            'API: PATCH /inspections/{id} notes = "PARITY-<runId> insp-notes".',
+            'Connection: GET /inspections/{id} -> .notes equals the set value (checkScalarField).',
+            'Webapp: open the Inspections tab -> inspection; confirm the Notes section value.',
+            'Mobile: open the inspection; read the Notes card (p06, photo-only).',
+        ],
+        'expected': 'GET /inspections.notes equals the API-set value; mobile Notes card shows it.',
+        'connection': 'GET /inspections/{id} -> .notes equals "PARITY-<runId> insp-notes".',
+    },
+    '4b-booking-info': {
+        'description': 'Web->mobile (API-set): site.accessInfo (booking/access info) PATCHed via '
+                       'PATCH /sites/{siteId} must read back on GET /sites and render on the mobile '
+                       'visit booking/access info. GUARDRAIL: edits the SITE record shared by all '
+                       'visits at that site (fine on the dev test site, not visit-scoped).',
+        'steps': [
+            'API: resolve the visit siteId; PATCH /sites/{siteId} accessInfo = "PARITY-<runId> booking".',
+            'Connection: GET /sites/{siteId} -> .accessInfo equals the set value (checkScalarField).',
+            'Webapp: open the visit details; confirm the Booking Info card value.',
+            'Mobile: open the visit; read the booking/access info (p09, photo-only).',
+        ],
+        'expected': 'GET /sites.accessInfo equals the API-set value; webapp Booking Info card shows it.',
+        'connection': 'GET /sites/{siteId} -> .accessInfo equals "PARITY-<runId> booking".',
+    },
+    '4c-item-reference': {
+        'description': 'Web->mobile (API-set): inspection.itemReference PATCHed via the web API must '
+                       'read back on GET /inspections and render on the mobile LocationCard (shown as '
+                       'Asset Reference). Mirrors 2g/itemDetail.',
+        'steps': [
+            'API: PATCH /inspections/{id} itemReference = "PARITY-<runId> item-ref".',
+            'Connection: GET /inspections/{id} -> .itemReference equals the set value (checkScalarField).',
+            'Webapp: open the Inspections tab -> inspection; confirm the Asset Reference field.',
+            'Mobile: open the inspection; read the LocationCard Asset Reference (p07, photo-only).',
+        ],
+        'expected': 'GET /inspections.itemReference equals the API-set value; mobile LocationCard shows it.',
+        'connection': 'GET /inspections/{id} -> .itemReference equals "PARITY-<runId> item-ref".',
+    },
+    '4d-item-location': {
+        'description': 'Web->mobile (API-set): inspection.itemLocation PATCHed via the web API must '
+                       'read back on GET /inspections and render on the mobile LocationCard (shown as '
+                       'Asset Location). Mirrors 2g/itemDetail.',
+        'steps': [
+            'API: PATCH /inspections/{id} itemLocation = "PARITY-<runId> item-loc".',
+            'Connection: GET /inspections/{id} -> .itemLocation equals the set value (checkScalarField).',
+            'Webapp: open the Inspections tab -> inspection; confirm the Asset Location field.',
+            'Mobile: open the inspection; read the LocationCard Asset Location (p08, photo-only).',
+        ],
+        'expected': 'GET /inspections.itemLocation equals the API-set value; mobile LocationCard shows it.',
+        'connection': 'GET /inspections/{id} -> .itemLocation equals "PARITY-<runId> item-loc".',
     },
 }
 

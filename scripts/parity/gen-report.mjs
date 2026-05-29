@@ -15,6 +15,10 @@ const FLOW = {
   "3e-site-induction": "p03b_mobile2web_site_induction",
   "3c-risk": "p04_mobile2web_risk_assessment",
   "3d-visit-text": "p05_mobile2web_visit_text",
+  "4a-inspection-notes": "p06_web2mobile_inspection_notes",
+  "4c-item-reference": "p07_web2mobile_item_reference",
+  "4d-item-location": "p08_web2mobile_item_location",
+  "4b-booking-info": "p09_web2mobile_booking_info",
 };
 
 export function renderReport(s, images = {}) {

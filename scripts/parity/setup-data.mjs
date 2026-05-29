@@ -94,8 +94,21 @@ export function buildExpected(runId) {
     },
     // web->mobile (p01e / check 2g): inspection asset field PATCHed via API; the mobile LocationCard
     // renders itemDetail read-only (R3). itemDetail is the field the card displays.
+    // 4a/4c/4d (p06/p07/p08): additional inspection scalar fields PATCHed the same way (notes shows in
+    // the inspection Notes card; itemReference/itemLocation render on the LocationCard). All additive —
+    // they never touch the visit title/ref/dates/status, so they can't disturb the mobile search or
+    // the existing checks. Verified to round-trip via PATCH+GET on dev 2026-05-30.
     inspectionPatch: {
       itemDetail: `${tag} item-detail`,
+      notes: `${tag} insp-notes`,        // 4a — inspection Notes
+      itemReference: `${tag} item-ref`,  // 4c — Asset Reference
+      itemLocation: `${tag} item-loc`,   // 4d — Asset Location
+    },
+    // web->mobile (p09 / check 4b): the SITE's accessInfo (booking/access info) PATCHed via API on
+    // PATCH /sites/{siteId}. GUARDRAIL: this edits the SITE record shared by every visit at that site
+    // — fine on the dev test site, but note it is not visit-scoped. Scored via GET /sites/{siteId}.
+    sitePatch: {
+      accessInfo: `${tag} booking`,
     },
     // mobile->web dropdown (p03b): a fixed option (not run-tagged — it is a fixed-choice field).
     // Verified against the Visit Information form's fieldOptions on jobType 658f27c1.
@@ -195,8 +208,13 @@ async function main() {
     const insp = visit.inspections?.[0] || (await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId }));
     await c.patch(`/visits/${visit.id}`, reuseExpected.webPatch).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
     await c.patch(`/inspections/${insp.id}`, reuseExpected.inspectionPatch).catch((e) => console.error(`WARN: inspectionPatch failed (${e.message})`));
+    // 4b — PATCH the SITE's accessInfo. Use the REUSED visit's own siteId (NOT fx.siteId, which
+    // resolveFixtures may pick from a DIFFERENT visit/site), so verify GETs the same record the
+    // mobile flow opens. Persist that siteId for verify-data (GET /sites/{siteId}).
+    const reuseSiteId = visit.siteId || fx.siteId;
+    if (reuseSiteId) await c.patch(`/sites/${reuseSiteId}`, reuseExpected.sitePatch).catch((e) => console.error(`WARN: sitePatch failed (${e.message})`));
     await addSamples(c, insp.id, reuseExpected); // 2h — add every base water-sample type
-    writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected: reuseExpected, reused: true }, null, 2));
+    writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, siteId: reuseSiteId, expected: reuseExpected, reused: true }, null, 2));
     console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id} runId=${reuseRunId}`);
     return;
   }
@@ -211,15 +229,19 @@ async function main() {
 
   // web->mobile: seed the 3 visit-text fields so the mobile Visit Details card shows them (p01d / check 2d)
   await c.patch(`/visits/${visit.id}`, expected.webPatch);
-  // web->mobile: seed the inspection asset field so the mobile LocationCard shows it (p01e / check 2g)
+  // web->mobile: seed the inspection asset field so the mobile LocationCard shows it (p01e / check 2g
+  // + 4a notes / 4c itemReference / 4d itemLocation, all on the same inspectionPatch object)
   await c.patch(`/inspections/${inspection.id}`, expected.inspectionPatch).catch((e) => console.error(`WARN: inspectionPatch failed (${e.message})`));
+  // web->mobile (4b): seed the SITE accessInfo (booking info). The visit was created with fx.siteId,
+  // so that IS this visit's site. GUARDRAIL: edits the shared site record (fine on the dev test site).
+  await c.patch(`/sites/${fx.siteId}`, expected.sitePatch).catch((e) => console.error(`WARN: sitePatch failed (${e.message})`));
 
   for (const a of expected.visitActions) await c.post("/actions", { siteId: fx.siteId, visitId: visit.id, name: a.name, priority: a.priority });
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });
 
   await addSamples(c, inspection.id, expected); // 2h — add every base water-sample type via the web API
 
-  writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: inspection.id, engineerId: fx.engineerId, expected }, null, 2));
+  writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: inspection.id, siteId: fx.siteId, engineerId: fx.engineerId, expected }, null, 2));
   console.log(`SETUP OK visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${inspection.id}`);
 }
 

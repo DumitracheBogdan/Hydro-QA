@@ -1,0 +1,14 @@
+appId: com.hydrocert.app
+name: "PARITY p07 - web-to-mobile inspection item reference (LocationCard)"
+tags: [parity, web2mobile]
+---
+# inspection.itemReference was PATCHed onto the inspection via API in phase 0 (check 4c). The mobile
+# LocationCard renders itemReference read-only (shown as Asset Reference), mirroring 2g/itemDetail.
+# SCORED via API (checkScalarField on GET /inspections.itemReference); this flow captures the
+# MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator.
+- runFlow: _shared/open_inspection.yaml
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} item-ref.*" }
+    direction: DOWN
+    timeout: 20000
+- assertVisible: ".*PARITY-${RUN_ID} item-ref.*"

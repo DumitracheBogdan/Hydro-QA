@@ -88,6 +88,13 @@ run_flow mobile-flows-parity/p01b_web2mobile_visit_actions.yaml; B=$?
 run_flow mobile-flows-parity/p01d_web2mobile_visit_text.yaml; D=$?
 run_flow mobile-flows-parity/p01e_web2mobile_item_detail.yaml; E=$?
 run_flow mobile-flows-parity/p01f_web2mobile_samples.yaml || true   # 2h mobile-side photo only (2h is scored via API checkSamples)
+# 4a/4c/4d/4b — new web->mobile API-set scalar fields. Scored via API (checkScalarField in
+# verify-data); these flows capture the MOBILE-side photo only, so run `|| true` (mirror p01f) — a
+# missed selector never fails the gate. They are NOT added to parity-mobile-results.json.
+run_flow mobile-flows-parity/p06_web2mobile_inspection_notes.yaml || true  # 4a notes->Notes card
+run_flow mobile-flows-parity/p07_web2mobile_item_reference.yaml || true    # 4c itemReference->LocationCard
+run_flow mobile-flows-parity/p08_web2mobile_item_location.yaml || true     # 4d itemLocation->LocationCard
+run_flow mobile-flows-parity/p09_web2mobile_booking_info.yaml || true      # 4b site accessInfo->booking info
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)
