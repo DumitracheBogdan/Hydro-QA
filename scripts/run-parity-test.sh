@@ -87,6 +87,7 @@ run_flow mobile-flows-parity/p01a_web2mobile_description.yaml; A=$?
 run_flow mobile-flows-parity/p01b_web2mobile_visit_actions.yaml; B=$?
 run_flow mobile-flows-parity/p01d_web2mobile_visit_text.yaml; D=$?
 run_flow mobile-flows-parity/p01e_web2mobile_item_detail.yaml; E=$?
+run_flow mobile-flows-parity/p01f_web2mobile_samples.yaml || true   # 2h mobile-side photo only (2h is scored via API checkSamples)
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)

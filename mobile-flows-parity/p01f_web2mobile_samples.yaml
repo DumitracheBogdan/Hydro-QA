@@ -1,0 +1,16 @@
+appId: com.hydrocert.app
+name: "PARITY p01f - web-to-mobile water samples"
+tags: [parity, web2mobile]
+---
+# 16 water-sample types were added via the web API in phase 0; they sync down to the mobile
+# inspection's Water Sampling section (web->mobile, check 2h). 2h is SCORED via API (checkSamples);
+# this flow exists only to capture the MOBILE-side photo evidence (its {flow}-after.png). It never
+# touches "Submit Samples" (that would transmit to Normec/ALS — forbidden).
+- runFlow: _shared/open_inspection.yaml
+- scrollUntilVisible:
+    element: { text: "Water Sampling" }
+    direction: DOWN
+    timeout: 20000
+- tapOn: "Water Sampling"
+- waitForAnimationToEnd:
+    timeout: 4000

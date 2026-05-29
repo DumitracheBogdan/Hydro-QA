@@ -78,6 +78,7 @@ CHECK_TO_FLOW = {
     '2b-visit-actions': 'p01b_web2mobile_visit_actions',
     '2d-visit-text': 'p01d_web2mobile_visit_text',
     '2g-item-detail': 'p01e_web2mobile_item_detail',
+    '2h-samples': 'p01f_web2mobile_samples',
     '2c-inspection-actions': None,   # API-only, gap F-01, no shot
     '3a-signature': 'p02_mobile2web_signature',
     '3b-visit-info': 'p03_mobile2web_visit_info',
@@ -141,6 +142,20 @@ EVIDENCE_MAP = {
         ],
         'expected': 'Mobile LocationCard renders the API-set itemDetail value.',
         'connection': 'GET /inspections/{id} -> .itemDetail.',
+    },
+    '2h-samples': {
+        'description': 'Web->mobile: every base water-sample type (16) added to the inspection via the '
+                       'web API must propagate to laboratorySamples and render in the mobile Water Sampling section. '
+                       'Per-sample verification. NEVER submits to Normec/ALS.',
+        'steps': [
+            'API: GET /sample-types (16 types); PATCH /inspections/{id} {samples:[{sampleTypeId,quantity:1}] x16} (additive — safe, local/BE only).',
+            'Connection: GET /inspections/{id} -> .laboratorySamples; assert all 16 sampleTypeIds present (checkSamples).',
+            'Webapp: open the inspection -> Lab Results tab; screenshot the listed samples.',
+            'Mobile: open the inspection -> Water Sampling section; screenshot the synced samples.',
+            'GUARDRAIL: never tap "Submit Samples" / POST /laboratory-samples/submit-batch.',
+        ],
+        'expected': 'All 16 sample types present in laboratorySamples and shown on both webapp + mobile.',
+        'connection': 'GET /inspections/{id} -> .laboratorySamples[].sampleTypeId (16/16).',
     },
     '2c-inspection-actions': {
         'description': 'Web->mobile (API-only / KNOWN GAP F-01): 3 inspection-level actions '

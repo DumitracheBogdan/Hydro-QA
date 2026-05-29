@@ -9,6 +9,7 @@ const FLOW = {
   "2b-visit-actions": "p01b_web2mobile_visit_actions",
   "2d-visit-text": "p01d_web2mobile_visit_text",
   "2g-item-detail": "p01e_web2mobile_item_detail",
+  "2h-samples": "p01f_web2mobile_samples",
   "3a-signature": "p02_mobile2web_signature",
   "3b-visit-info": "p03_mobile2web_visit_info",
   "3e-site-induction": "p03b_mobile2web_site_induction",
