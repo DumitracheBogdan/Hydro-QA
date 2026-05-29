@@ -65,9 +65,15 @@ def build(out_json, out_xlsx):
     ws["A4"] = (f"HEADLINE: {proven}/{len(te)} test workflows are PROVEN; {len(te)-proven} are WEAK (assertion/evidence gaps). "
                 f"Screenshots validated: {ssok}/{len(ssall)} show the correct screen.")
     ws["A4"].font = Font(bold=True, size=12, color="9C0006" if proven < len(te) else "006100"); ws.merge_cells("A4:H4"); ws["A4"].alignment = WRAP
+    ws["A5"] = ("LEGEND  —  Verdict: PROVEN = real fail-closed assertions + validated evidence + stable.  "
+                "WEAK = the workflow RUNS (not broken) but its assertions are weak/absent (can report green even through a regression) "
+                "or its evidence isn't validated.  BROKEN = fails / stale / fakes green.   "
+                "Assertions: strong/weak/none = does the job actually go RED on a regression?   "
+                "Screenshots: validated = an agent rendered it and confirmed the correct screen (not blank/ANR/login-error/stale/wrong-screen).")
+    ws["A5"].font = Font(italic=True, size=9, color="595959"); ws.merge_cells("A5:H5"); ws["A5"].alignment = WRAP; ws.row_dimensions[5].height = 56
 
     hdr = ["Workflow", "Verdict", "Assertions", "CI stability (recent)", "Screenshots (valid/total)", "What it tests", "Key gaps", "Detail sheet"]
-    r = 6
+    r = 7
     for i, h in enumerate(hdr, 1):
         c = ws.cell(r, i, h); style_cell(c, HEAD, HEAD_F)
     for e in te:
@@ -89,7 +95,7 @@ def build(out_json, out_xlsx):
         ws.row_dimensions[r].height = 90
     widths = [26, 10, 11, 46, 16, 50, 46, 18]
     for i, w in enumerate(widths, 1): ws.column_dimensions[get_column_letter(i)].width = w
-    ws.freeze_panes = "A7"
+    ws.freeze_panes = "A8"
 
     # ---------- Screenshots (proof) ----------
     sh = wb.create_sheet("Screenshots")
