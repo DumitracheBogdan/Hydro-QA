@@ -124,6 +124,9 @@ echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05"
 #      any failure here never affects the parity gate (which keys on summary.gateFailed). ----
 echo "=== Phase 2.5: webapp screenshots ==="
 if [ -n "$HYDROCERT_QA_EMAIL" ] && { [ -n "$HYDROCERT_DEV_WEB_BASE" ] || [ -n "$HYDROCERT_WEB_BASE" ]; }; then
+  # The workflow never runs `npm install` (parity scripts use built-in fetch), so the playwright
+  # PACKAGE isn't in node_modules here — install it (+ the chromium browser) before webapp-shots.
+  npm install --no-save playwright@1.58.2 >/dev/null 2>&1 || npm install --no-save playwright >/dev/null 2>&1 || echo "::warning::npm install playwright failed"
   ( npx --yes playwright install --with-deps chromium || npx --yes playwright install chromium ) >/dev/null 2>&1 || echo "::warning::chromium install failed (webapp shots skipped)"
   node scripts/parity/webapp-shots.mjs verify || echo "::warning::webapp-shots failed (non-gating)"
 else
