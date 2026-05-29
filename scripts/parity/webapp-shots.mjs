@@ -79,14 +79,18 @@ async function openVisit(page, c) {
 }
 
 async function openInspection(page) {
-  // switch to Inspections tab + open the first inspection
+  // switch to Inspections tab
   await page.getByRole("tab", { name: /Inspections/i }).first().click({ timeout: 6000 }).catch(async () => {
     await page.getByText("Inspections", { exact: false }).first().click({ timeout: 6000 }).catch(() => {});
   });
-  await page.waitForTimeout(1200);
-  // open the inspection (a row / "View"/"Open" button) — best-effort
-  await page.getByRole("button", { name: /view|open|details/i }).first().click({ timeout: 5000 }).catch(() => {});
-  await page.waitForTimeout(1200);
+  await page.waitForTimeout(1500);
+  // open the inspection: the row is a clickable card titled by its jobType ("Health and Safty Risk
+  // Assessment (IN######)") with a chevron -> click the row text to navigate to the inspection detail.
+  await page.getByText(/Health and Saf.?ty Risk Assessment/i).first().click({ timeout: 6000 })
+    .catch(() => page.getByText(/Risk Assessment|Inspection/i).first().click({ timeout: 6000 }).catch(() => {}));
+  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(1800);
+  log("after openInspection url", page.url());
 }
 
 async function main() {
@@ -118,12 +122,14 @@ async function main() {
       await expandCard(page, "Actions");
       await shotAt(page, "Actions", "2b-visit-actions", { nth: 0 });
       await shotAt(page, "Client Signature", "3a-signature");
-      // inspection-level (best-effort): 3b visit-info, 3c risk, 3e site-induction, 2g itemDetail
+      // inspection-level: 3b visit-info, 3c risk, 3e site-induction, 2g itemDetail (on the inspection detail)
       await openInspection(page);
-      await shotAt(page, "Visit Information", "3b-visit-info");
-      await shotAt(page, "Site Induction", "3e-site-induction");
-      await shotAt(page, "Risk Assessment", "3c-risk");
-      await shot(page, "2g-item-detail");
+      await shot(page, "2g-item-detail"); // inspection header shows Asset Reference/Location/Detail
+      await expandCard(page, "Visit Information");
+      await shotAt(page, "Assisting 1", "3b-visit-info").catch(() => shot(page, "3b-visit-info"));
+      await shotAt(page, "Site Induction", "3e-site-induction").catch(() => shot(page, "3e-site-induction"));
+      await expandCard(page, "Risk Assessment");
+      await shotAt(page, "Risk Assessment", "3c-risk", { nth: 0 });
     }
     log("DONE phase=" + PHASE);
   } catch (e) { console.error("::error:: webapp-shots", e.message); }
