@@ -130,6 +130,21 @@ async function findVisitByTitle(c, title) {
   return pickExactVisit(list, "title", title); // exact only — no list[0] fallback (M2)
 }
 
+// 2h — add every base water-sample type to the inspection via the web API (PATCH /inspections
+// {samples}; additive-merge). Records sampleTypeIds on `expected` for verify. NEVER submits to
+// Normec/ALS (that is POST /laboratory-samples/submit-batch — forbidden). Best-effort, non-fatal.
+async function addSamples(c, inspectionId, expected) {
+  try {
+    const st = await c.get("/sample-types");
+    const types = (Array.isArray(st) ? st : st?.items || []).filter((t) => t && t.id);
+    if (!types.length) { console.error("WARN: no sample-types returned"); return; }
+    await c.patch(`/inspections/${inspectionId}`, { samples: types.map((t) => ({ sampleTypeId: t.id, quantity: 1 })) });
+    expected.sampleTypeIds = types.map((t) => t.id);
+    expected.sampleTypeNames = Object.fromEntries(types.map((t) => [t.id, t.name || t.sampleType || t.title || ""]));
+    console.log(`SAMPLES added ${types.length} types`);
+  } catch (e) { console.error(`WARN: addSamples failed (${e.message})`); }
+}
+
 async function resolveFixtures(c, mobileClient) {
   const fx = JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url)));
   // engineerId: prefer explicit env, else the mobile QA user's own id
@@ -180,6 +195,7 @@ async function main() {
     const insp = visit.inspections?.[0] || (await c.post("/inspections", { visitId: visit.id, jobTypeId: fx.jobTypeId }));
     await c.patch(`/visits/${visit.id}`, reuseExpected.webPatch).catch((e) => console.error(`WARN: webPatch failed (${e.message})`));
     await c.patch(`/inspections/${insp.id}`, reuseExpected.inspectionPatch).catch((e) => console.error(`WARN: inspectionPatch failed (${e.message})`));
+    await addSamples(c, insp.id, reuseExpected); // 2h — add every base water-sample type
     writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, expected: reuseExpected, reused: true }, null, 2));
     console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id} runId=${reuseRunId}`);
     return;
@@ -200,6 +216,8 @@ async function main() {
 
   for (const a of expected.visitActions) await c.post("/actions", { siteId: fx.siteId, visitId: visit.id, name: a.name, priority: a.priority });
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });
+
+  await addSamples(c, inspection.id, expected); // 2h — add every base water-sample type via the web API
 
   writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: inspection.id, engineerId: fx.engineerId, expected }, null, 2));
   console.log(`SETUP OK visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${inspection.id}`);

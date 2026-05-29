@@ -50,11 +50,23 @@ export function checkInspectionActions(actions, expected) {
     details: `${present.length}/${(expected || []).length} inspection actions present via API (name+priority)` };
 }
 
+// 2h — every sample type added via the web API (PATCH /inspections {samples}) must land in the
+// inspection's laboratorySamples (web->mobile propagation). Per-sample: each expected sampleTypeId
+// must be present. (Adding samples is safe; we NEVER trigger Submit-to-Normec/ALS.)
+export function checkSamples(laboratorySamples, expectedTypeIds) {
+  const present = new Set((laboratorySamples || []).map((s) => s.sampleTypeId));
+  const want = expectedTypeIds || [];
+  const found = want.filter((id) => present.has(id));
+  const ok = want.length > 0 && found.length === want.length;
+  return { id: "2h-samples", direction: "Web->Mobile", status: ok ? "PASS" : "FAIL",
+    details: `${found.length}/${want.length} sample types present in laboratorySamples` };
+}
+
 // The full set of check ids the suite is expected to produce on a complete run. buildSummary uses
 // this to PIN the denominator: any expected id that never materialized becomes a synthetic FAIL, so
 // a crashed/absent phase can never shrink the total into a misleading green (H3, M10).
 export const EXPECTED_IDS = [
-  "2a-description", "2b-visit-actions", "2c-inspection-actions", "2d-visit-text", "2g-item-detail",
+  "2a-description", "2b-visit-actions", "2c-inspection-actions", "2d-visit-text", "2g-item-detail", "2h-samples",
   "3a-signature", "3b-visit-info", "3c-risk", "3d-visit-text", "3e-site-induction",
 ];
 
@@ -63,7 +75,11 @@ export const EXPECTED_IDS = [
 // Add ids here, with a comment citing the reason, rather than weakening the gate globally.
 // Empty: 2g (itemDetail->LocationCard) was promoted to the gate after CI run 26607132325 confirmed
 // itemDetail renders on mobile (10/10). The current 10 checks are all hard-gated.
-export const KNOWN_FLAKY = new Set([]);
+export const KNOWN_FLAKY = new Set([
+  // 2h (water samples web->mobile, 16 types) is NEWLY added: exercised + reported but does not gate
+  // until a CI run confirms the API add + read-back is stable. Promote once green.
+  "2h-samples",
+]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
 // opts.expectedIds defaults to EXPECTED_IDS; opts.mobileMissing flags that parity-mobile-results.json
@@ -127,6 +143,9 @@ async function main() {
   // 3e — Site Induction single-select dropdown set on mobile (p03b).
   if (ctx.expected.siteInduction)
     apiChecks.push(checkFields("3e-site-induction", "Mobile->Web", inspection, "Visit Information", ctx.expected.siteInduction));
+  // 2h — water samples added via web API; every sampleTypeId must land in laboratorySamples.
+  if (ctx.expected.sampleTypeIds)
+    apiChecks.push(checkSamples(inspection.laboratorySamples, ctx.expected.sampleTypeIds));
 
   // null (not []) distinguishes "file absent/unparseable" from "file present but empty", so the
   // web->mobile half can never be silently dropped into a green run (H3).

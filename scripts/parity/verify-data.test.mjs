@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, checkVisitText, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -106,6 +106,21 @@ test("buildSummary with mobileMissing fails the absent web->mobile checks, never
     assert.equal(s.checks.find((c) => c.id === id).status, "FAIL");
   }
   assert.ok(s.failed >= 3);
+});
+
+// --- Samples flagship (2h): every added sampleTypeId must land in laboratorySamples (web->mobile) ---
+test("checkSamples PASSes when every expected sampleTypeId is present in laboratorySamples (2h)", () => {
+  const ls = [{ sampleTypeId: "A" }, { sampleTypeId: "B" }, { sampleTypeId: "C" }];
+  const r = checkSamples(ls, ["A", "B", "C"]);
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "2h-samples");
+});
+test("checkSamples FAILs when an expected sampleTypeId is missing (2h)", () => {
+  const ls = [{ sampleTypeId: "A" }, { sampleTypeId: "B" }];
+  assert.equal(checkSamples(ls, ["A", "B", "C"]).status, "FAIL");
+});
+test("checkSamples FAILs on empty expected (no vacuous pass) (2h)", () => {
+  assert.equal(checkSamples([{ sampleTypeId: "A" }], []).status, "FAIL");
 });
 
 // --- Split done-bar: gateFailed ignores documented-flaky checks but flags hard failures ---
