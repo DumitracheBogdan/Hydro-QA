@@ -236,3 +236,12 @@ P1 = easy + high-value + cross-platform-verifiable · P2 = medium · P3 = hard (
 
 ## 6. Reconciliation note
 Every datum across the four input blobs maps to exactly one row in §2 (merged across web/mobile/API/samples angles) or is an explicit one-platform / gap / guardrail row. The 10 automated checks (§4.1) plus the 35 prioritized NEW items (§5) cover the planned (C1–C4) and manual-tracked (D) sections of `PARITY-COVERAGE-LEDGER.md`. `totalDatums` returned = the §2 master-table row count.
+
+
+---
+
+## Findings (samples flagship, 2026-05-30)
+- **2h samples (web->mobile) — connection PROVEN:** all 16 base sample types added via `PATCH /inspections/{id} {samples}` land in `laboratorySamples` (16/16, CI run 26666131981). Per-sample. NEVER submitted to Normec/ALS.
+- **Web evidence:** the inspection "Lab Results" tab shows the samples grouped as a Test Batch (refinement: expand the batch chevron before the screenshot to show all 16 individually).
+- **Mobile render REFINEMENT (not a bug):** the parity jobType `658f27c1` ("Health and Safty Risk Assessment") has **no mobile Water-Sampling section** — it renders Visit Information + Risk Assessment forms only. Water samples surface on mobile only for a `requiresWaterSample` jobType. To get a mobile sample photo, run the sample sub-check against a water-sampling jobType (add a 2nd inspection with one), or accept the connection+web evidence. `p01f` currently screenshots the inspection screen (no sampling section for this jobType).
+- **Mobile->web sample-add = documented GAP:** mobile sample-add is Room-only (no endpoint) and only syncs on Submit-to-lab (forbidden) — cannot be auto-verified web-side. Documented, not automatable safely.

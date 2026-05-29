@@ -75,11 +75,11 @@ export const EXPECTED_IDS = [
 // Add ids here, with a comment citing the reason, rather than weakening the gate globally.
 // Empty: 2g (itemDetail->LocationCard) was promoted to the gate after CI run 26607132325 confirmed
 // itemDetail renders on mobile (10/10). The current 10 checks are all hard-gated.
-export const KNOWN_FLAKY = new Set([
-  // 2h (water samples web->mobile, 16 types) is NEWLY added: exercised + reported but does not gate
-  // until a CI run confirms the API add + read-back is stable. Promote once green.
-  "2h-samples",
-]);
+// Empty: 2h (16 water-sample types) promoted to the gate after CI run 26666131981 confirmed 16/16
+// in laboratorySamples (deterministic API check). NOTE: the mobile Water-Sampling UI render of those
+// samples needs a requiresWaterSample jobType (the parity jobType has no mobile sampling section) —
+// tracked as a refinement; 2h's web->mobile propagation is proven on the connection (API) + web batch.
+export const KNOWN_FLAKY = new Set([]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
 // opts.expectedIds defaults to EXPECTED_IDS; opts.mobileMissing flags that parity-mobile-results.json
