@@ -53,15 +53,18 @@ async function shotAt(page, headingText, name, { nth = 0 } = {}) {
   } catch (e) { log("ERR", name, e.message); await shot(page, name); }
 }
 
-// expand a collapsible card by its heading (click the header), disambiguating from a same-named tab
-async function expandCard(page, headingText, { belowText } = {}) {
+// expand a collapsible card by its heading (click the header), disambiguating from a same-named tab.
+// `exact:true` matches the card header EXACTLY — needed for "Risk Assessment", whose non-exact .first()
+// would otherwise hit the inspection title "Health and Safty Risk Assessment" (the h1) and never open
+// the card (the dropdowns/comments would stay hidden in the screenshot).
+async function expandCard(page, headingText, { belowText, exact = false } = {}) {
   try {
     let header;
     if (belowText) {
       // the editable CARD sits below the read-only "Description" card; the TAB is above it
       header = page.getByText(headingText, { exact: false }).last();
     } else {
-      header = page.getByText(headingText, { exact: false }).first();
+      header = page.getByText(headingText, { exact }).first();
     }
     await header.scrollIntoViewIfNeeded({ timeout: 6000 });
     await header.click({ timeout: 6000 }).catch(() => {});
@@ -147,12 +150,14 @@ async function main() {
       await expandCard(page, "Visit Information");
       await shotAt(page, "Assisting 1", "3b-visit-info").catch(() => shot(page, "3b-visit-info"));
       await shotAt(page, "Site Induction", "3e-site-induction").catch(() => shot(page, "3e-site-induction"));
-      await expandCard(page, "Risk Assessment");
-      await shotAt(page, "Risk Assessment", "3c-risk", { nth: 0 });
-      // 4f — the 36 Risk Assessment Yes/No dropdowns (web read-only per F-02). The RA card is already
-      // expanded; anchor on a "- Risk Managed?" label (only the dropdowns carry it) to frame the
-      // Yes/No selects. Best-effort (4f is scored via API checkFields on all 36).
-      await shotAt(page, "Risk Managed", "4f-ra-dropdowns", { nth: 0 }).catch(() => shot(page, "4f-ra-dropdowns"));
+      // exact:true so this opens the RA CARD, not the inspection title h1 ("...Safty Risk Assessment").
+      await expandCard(page, "Risk Assessment", { exact: true });
+      // 3c web evidence — anchor on the first comment field (now visible in the open card).
+      await shotAt(page, "Accessing Area/Lone Working- Comments", "3c-risk", { nth: 0 }).catch(() => shot(page, "3c-risk"));
+      // 4f — the 36 Risk Assessment Yes/No dropdowns (web read-only per F-02). The RA card is now open;
+      // anchor on the FIRST dropdown label to frame the Yes/No selects. Best-effort (4f is scored via
+      // API checkFields on all 36; this is the web-side evidence photo).
+      await shotAt(page, "Accessing Area/Lone Working", "4f-ra-dropdowns", { nth: 0 }).catch(() => shot(page, "4f-ra-dropdowns"));
       // 2h — water samples: the inspection's "Lab Results" tab lists the added sample types.
       await page.getByRole("tab", { name: /Lab Results/i }).first().click({ timeout: 6000 })
         .catch(() => page.getByText("Lab Results", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));

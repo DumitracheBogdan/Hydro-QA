@@ -108,11 +108,12 @@ test("buildSummary with mobileMissing fails the absent web->mobile checks, never
   assert.ok(s.failed >= 3);
 });
 
-// --- 4f: the 36 Risk Assessment dropdowns are an expected check, flaky until a CI run proves the
-// mobile render (web is read-only per F-02, so it starts in KNOWN_FLAKY like 4a-4d did). ---
-test("EXPECTED_IDS includes 4f-ra-dropdowns and it starts KNOWN_FLAKY (until CI proves mobile render)", () => {
+// --- 4f: the 36 Risk Assessment dropdowns are a hard-gated check. PROMOTED after CI run 26683132921
+// confirmed 4f PASS (36/36 API) AND the mobile RA form rendered the Yes/No values (real web->mobile,
+// not an API tautology). So it must NOT be in KNOWN_FLAKY — a 4f failure must red the gate. ---
+test("EXPECTED_IDS includes 4f-ra-dropdowns and it is NOT KNOWN_FLAKY (hard-gated after CI promotion)", () => {
   assert.ok(EXPECTED_IDS.includes("4f-ra-dropdowns"));
-  assert.ok(KNOWN_FLAKY.has("4f-ra-dropdowns"));
+  assert.ok(!KNOWN_FLAKY.has("4f-ra-dropdowns"));
 });
 test("checkFields drives 4f: all 36 RA dropdowns matching => PASS, one mismatch => FAIL (4f)", () => {
   const ff = (name, value) => ({ formField: { fieldName: name }, value });

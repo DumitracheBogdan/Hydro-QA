@@ -188,14 +188,9 @@ export const KNOWN_FLAKY = new Set([
   // comparator is sound, the mobile SET flow needs selector iteration. The other 8 (4a-4d, 2i, 2j, 2k,
   // 2l) were CI-verified PASS (run 26669758113, 19/20) and are now hard-gated.
   "4e-mobile-action",
-  // 4f: the 36 RA dropdowns are API-set + API-scored (deterministic round-trip, probe-verified), so the
-  // VALUE check is reliable. It starts here only until the FIRST CI run confirms the mobile RA form
-  // actually RENDERS the values (the web UI is read-only per F-02, so "web->mobile" is API-set -> the
-  // mobile photo is the real-vs-tautology discriminator — same precedent as 2c/F-01, where API-set data
-  // didn't render on mobile). If the CI mobile photo shows the Yes/No values -> promote to the gate; if
-  // blank -> keep flaky, relabel as API-only, and file an F-01-style render-gap finding. Reported but
-  // never reds the gate while here, so it cannot break the existing 19 checks.
-  "4f-ra-dropdowns",
+  // 4f (36 RA dropdowns) PROMOTED to the gate: CI run 26683132921 confirmed 4f PASS (36/36 API
+  // round-trip) AND the mobile RA-form photo (p15-after.png) RENDERS the Yes/No values ("Accessing
+  // Area/Lone Working" = "Yes") — so web->mobile parity is REAL, not an API tautology. Now hard-gated.
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
