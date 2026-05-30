@@ -179,10 +179,10 @@ export const EXPECTED_IDS = [
 // keeps the existing engineer (parity.bot — the mobile QA login) assigned, so the visit stays on mobile.
 // Promote (remove here) once CI is green.
 export const KNOWN_FLAKY = new Set([
-  "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
-  "2i-add-inspection", "2j-visit-status",
+  // Only 4e remains flaky: its p12 mobile add-action flow (AddActionsBottomSheet) fails on the CI
+  // emulator — the API comparator is sound, the mobile SET flow needs selector iteration. The other
+  // 8 (4a-4d, 2i, 2j, 2k, 2l) were CI-verified PASS (run 26669758113, 19/20) and are now hard-gated.
   "4e-mobile-action",
-  "2k-sample-note", "2l-engineers",
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).

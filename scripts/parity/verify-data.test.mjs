@@ -173,15 +173,13 @@ test("EXPECTED_IDS includes the 4 new web->mobile API checks (4a/4b/4c/4d)", () 
 // --- the 4 new checks start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---
 // Inverse of the "2g-item-detail is promoted (NOT in KNOWN_FLAKY)" test: a failure of any new
 // check must NOT flip gateFailed while it is still in the flaky allowlist.
-test("the 4 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (4x)", () => {
+test("the 4 promoted checks (4a-4d) are NOT in KNOWN_FLAKY so a failure reds the gate", () => {
   for (const id of ["4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location"]) {
-    assert.equal(KNOWN_FLAKY.has(id), true, `${id} must be KNOWN_FLAKY until CI-green`);
+    assert.equal(KNOWN_FLAKY.has(id), false, `${id} promoted (CI-verified PASS)`);
   }
-  // a failing new check leaves the gate green (the existing 11 are unaffected)
   const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "4a-inspection-notes" ? "FAIL" : "PASS", details: "" }));
   const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
-  assert.equal(s.gateFailed, false); // 4a flaky -> does not gate
-  assert.equal(s.failed, 1);         // but is still reported failed
+  assert.equal(s.gateFailed, true); // 4a now gates
 });
 
 // --- M4 + H-1: every mobile->web read-back check must also require its Maestro flow to have
@@ -302,15 +300,13 @@ test("applyFlowGuards leaves 4e untouched when p12 passed (4e)", () => {
 });
 
 // --- the 2 new checks start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---
-test("the 2 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (2i/2j)", () => {
+test("the 2 promoted checks (2i/2j) are NOT in KNOWN_FLAKY so a failure reds the gate", () => {
   for (const id of ["2i-add-inspection", "2j-visit-status"]) {
-    assert.equal(KNOWN_FLAKY.has(id), true, `${id} must be KNOWN_FLAKY until CI-green`);
+    assert.equal(KNOWN_FLAKY.has(id), false, `${id} promoted (CI-verified PASS)`);
   }
-  // a failing new check leaves the gate green (the existing 15 are unaffected)
   const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2i-add-inspection" ? "FAIL" : "PASS", details: "" }));
   const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
-  assert.equal(s.gateFailed, false); // 2i flaky -> does not gate
-  assert.equal(s.failed, 1);         // but is still reported failed
+  assert.equal(s.gateFailed, true); // 2i now gates
 });
 
 // --- 2k: a per-sample NOTE POSTed via /laboratory-samples/{id}/notes must read back on
@@ -372,13 +368,11 @@ test("EXPECTED_IDS includes the 2 new web->mobile checks (2k/2l)", () => {
 });
 
 // --- the 2 NEW checks (2k/2l) start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---
-test("the 2 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (2k/2l)", () => {
+test("the 2 promoted checks (2k/2l) are NOT in KNOWN_FLAKY so a failure reds the gate", () => {
   for (const id of ["2k-sample-note", "2l-engineers"]) {
-    assert.equal(KNOWN_FLAKY.has(id), true, `${id} must be KNOWN_FLAKY until CI-green`);
+    assert.equal(KNOWN_FLAKY.has(id), false, `${id} promoted (CI-verified PASS)`);
   }
-  // a failing new check leaves the gate green (the existing 11 hard-gated checks are unaffected)
   const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2k-sample-note" ? "FAIL" : "PASS", details: "" }));
   const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
-  assert.equal(s.gateFailed, false); // 2k flaky -> does not gate
-  assert.equal(s.failed, 1);         // but is still reported failed
+  assert.equal(s.gateFailed, true); // 2k now gates
 });
