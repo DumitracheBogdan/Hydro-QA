@@ -86,3 +86,15 @@ If blank -> keep flaky, relabel "API-only", file an F-01-style render-gap findin
 visit-status=2j & engineers=2l already cover those datums), P2 mobile-set (photo label, predefined action,
 flaky like 4e), P3 multi-select (needs isMultiSelect toggle / different jobType), P4 Normec/ALS sample
 dropdowns (GUARDRAIL — mobile-only, manual, NEVER submit-batch).
+
+### RESULT (2026-05-30)
+- Run 26683132921: 4f PASS (36/36) + mobile RA photo RENDERS the values -> **promoted 4f to the gate** (89a0027).
+- Run 26683863166 (confirming): RED — but on **3c-risk**, a PRE-EXISTING flaky gated check, NOT 4f (4f PASS).
+  Root cause (systematic debug): p04's `tapOn {below: "...- Comments"}` nondeterministically misses on the CI
+  emulator -> inputText no-ops -> value not persisted; Maestro reports the tap COMPLETED so the flow exits 0
+  and run_flow (retry-on-non-zero only) never retries. Run 1 vs 2 executed p04 IDENTICALLY -> pure timing flake
+  (~20%, documented). p15 exonerated (p04 expanded RA + found the field fine). **Fixed (0719667):** assertVisible
+  the typed value -> a miss now exits non-zero -> run_flow retries; good runs unaffected. ~20% -> ~4%.
+- Run 26684712220: **GREEN, 20/21, gateFailed=false, 4f PASS + 3c PASS** (only 4e flaky). Web evidence photo now
+  shows all 36 dropdowns (expandCard exact:true fix). **Suite = 20 hard-gated + 1 flaky.** 98 unit tests green.
+- Done-bar: confirming runs in flight for 3x green on the final code (0719667).
