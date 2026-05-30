@@ -24,3 +24,28 @@
 
 ## Guardrails
 QA repo only; product repos read-only; dev only; **NEVER** Submit-to-Normec/ALS (POST /laboratory-samples/submit-batch); no Claude attribution; don't change visit title/ref/dates in a way that breaks mobile search; promote a check only after a green CI run with it.
+
+
+---
+
+## FINAL OVERNIGHT STATUS (2026-05-30)
+**Suite: 20 checks, 19 HARD-GATED, 1 KNOWN_FLAKY (4e).** Final confirming CI: run 26670639867.
+
+**Built + PROMOTED to gate (8 new, CI-verified PASS run 26669758113, 19/20):**
+- 4a inspection-notes, 4b booking-info (site.accessInfo), 4c item-reference, 4d item-location (web->mobile API-set)
+- 2i add-inspection (2nd jobType; web shows 2 inspections), 2j visit-status=confirmed (web->mobile)
+- 2k sample-note (per-sample note), 2l engineers (2nd engineer, parity.bot preserved)
+Each: setup add (API) + web photo (webapp-shots) + mobile photo (pXX) + API verify + report/Excel.
+
+**KNOWN_FLAKY (built, reports, non-gating):**
+- 4e mobile-action (mobile->web add-action) — API comparator sound; the p12 Maestro AddActionsBottomSheet flow FAILS on the CI emulator (selectors). Needs mobile-flow selector iteration to set the action on-device, then promote. The mobile->write Maestro flows are the flaky frontier (same class as the 18-field RA).
+
+## Remaining backlog (NOT auto'd overnight — rationale per item)
+Deliberately not implemented to protect the green gate / because not safely automatable in CI:
+- **State-changers (mobile->web): inspection missed (Unable to Inspect), visit aborted.** Marking missed/aborted changes inspection/visit STATE and can HIDE the form fields that 3b/3c/3e read -> would break hard-gated checks. Must run isolated/last with care; deferred. (mobile->web direction already covered by 3a-3e.)
+- **Form-field types (number/toggle/N-A) mobile->web:** the parity jobType 658f27c1 (Visit Information + Risk Assessment) may not expose NUMBER/TOGGLE/showNotApplicable fields -> need a jobType that has them (like samples needing requiresWaterSample). Conditional.
+- **sample-delete / action-delete (destructive):** deleting a sample changes laboratorySamples count -> breaks 2h (16/16); deleting an action breaks 2b. Only safe on test-only items with care.
+- **P3 hard:** attachment upload (multipart) + reorder (drag/bulk-sort), RA-18-on-CI (scroll geometry), RA-36 dropdowns. Attempt with KNOWN_FLAKY; Maestro-hostile.
+- **P4 manual (documented in catalog):** signature freehand draw, camera/gallery, date/datetime pickers, multi-select dropdowns, swipe/drag gestures, mobile->web sample-add (Room-only, no endpoint, syncs only on forbidden Submit), Normec/ALS field-set, submit-batch GUARDRAIL (NEVER).
+
+**To promote 4e:** fix p12 selectors (mobile FAB -> Actions -> AddActionsBottomSheet -> Add Custom Action -> name + priority + Save) on the CI emulator; once CI shows 4e PASS, remove from KNOWN_FLAKY.
