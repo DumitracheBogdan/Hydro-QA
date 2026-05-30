@@ -143,6 +143,11 @@ export const EXPECTED_IDS = [
   // GET /laboratory-samples/{id}.sampleNote.noteText. 2l: a SECOND engineer added to the visit ->
   // visitEngineers.length >= 2. Both web->mobile, additive, scored on the connection (API GET).
   "2k-sample-note", "2l-engineers",
+  // 4f: the 36 Risk Assessment Yes/No DROPDOWN fields set web->mobile via PATCH /inspections/{id}/
+  // submit-form (web read-only per F-02). ALL 36 must read back equal on GET (checkFields ANDs every
+  // fieldName). Distinct from 3c (the 18 free-text "- Comments" of the same form). One check, 36 datums
+  // (mirrors 2h = 16 samples in one check). The single biggest dropdown-coverage win (1 -> 37 dropdowns).
+  "4f-ra-dropdowns",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
@@ -179,10 +184,18 @@ export const EXPECTED_IDS = [
 // keeps the existing engineer (parity.bot — the mobile QA login) assigned, so the visit stays on mobile.
 // Promote (remove here) once CI is green.
 export const KNOWN_FLAKY = new Set([
-  // Only 4e remains flaky: its p12 mobile add-action flow (AddActionsBottomSheet) fails on the CI
-  // emulator — the API comparator is sound, the mobile SET flow needs selector iteration. The other
-  // 8 (4a-4d, 2i, 2j, 2k, 2l) were CI-verified PASS (run 26669758113, 19/20) and are now hard-gated.
+  // 4e: its p12 mobile add-action flow (AddActionsBottomSheet) fails on the CI emulator — the API
+  // comparator is sound, the mobile SET flow needs selector iteration. The other 8 (4a-4d, 2i, 2j, 2k,
+  // 2l) were CI-verified PASS (run 26669758113, 19/20) and are now hard-gated.
   "4e-mobile-action",
+  // 4f: the 36 RA dropdowns are API-set + API-scored (deterministic round-trip, probe-verified), so the
+  // VALUE check is reliable. It starts here only until the FIRST CI run confirms the mobile RA form
+  // actually RENDERS the values (the web UI is read-only per F-02, so "web->mobile" is API-set -> the
+  // mobile photo is the real-vs-tautology discriminator — same precedent as 2c/F-01, where API-set data
+  // didn't render on mobile). If the CI mobile photo shows the Yes/No values -> promote to the gate; if
+  // blank -> keep flaky, relabel as API-only, and file an F-01-style render-gap finding. Reported but
+  // never reds the gate while here, so it cannot break the existing 19 checks.
+  "4f-ra-dropdowns",
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
@@ -254,6 +267,11 @@ async function main() {
   // 2h — water samples added via web API; every sampleTypeId must land in laboratorySamples.
   if (ctx.expected.sampleTypeIds)
     apiChecks.push(checkSamples(inspection.laboratorySamples, ctx.expected.sampleTypeIds));
+  // 4f — the 36 Risk Assessment Yes/No dropdowns set web->mobile via submit-form. ALL 36 must read back
+  // equal on the same GET /inspections (checkFields matches each by exact fieldName). Distinct from the
+  // 3c "- Comments" free-text on the same form. One check, 36 datums — fail-closed (one mismatch -> FAIL).
+  if (ctx.expected.raDropdowns)
+    apiChecks.push(checkFields("4f-ra-dropdowns", "Web->Mobile (API)", inspection, "Risk Assessment", ctx.expected.raDropdowns));
 
   // 4a/4c/4d — inspection scalar fields PATCHed web->mobile (read back on the same GET /inspections).
   if (ctx.expected.inspectionPatch) {

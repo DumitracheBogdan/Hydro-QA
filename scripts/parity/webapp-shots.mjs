@@ -149,6 +149,10 @@ async function main() {
       await shotAt(page, "Site Induction", "3e-site-induction").catch(() => shot(page, "3e-site-induction"));
       await expandCard(page, "Risk Assessment");
       await shotAt(page, "Risk Assessment", "3c-risk", { nth: 0 });
+      // 4f — the 36 Risk Assessment Yes/No dropdowns (web read-only per F-02). The RA card is already
+      // expanded; anchor on a "- Risk Managed?" label (only the dropdowns carry it) to frame the
+      // Yes/No selects. Best-effort (4f is scored via API checkFields on all 36).
+      await shotAt(page, "Risk Managed", "4f-ra-dropdowns", { nth: 0 }).catch(() => shot(page, "4f-ra-dropdowns"));
       // 2h — water samples: the inspection's "Lab Results" tab lists the added sample types.
       await page.getByRole("tab", { name: /Lab Results/i }).first().click({ timeout: 6000 })
         .catch(() => page.getByText("Lab Results", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));

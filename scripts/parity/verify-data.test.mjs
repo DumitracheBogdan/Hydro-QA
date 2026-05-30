@@ -108,6 +108,23 @@ test("buildSummary with mobileMissing fails the absent web->mobile checks, never
   assert.ok(s.failed >= 3);
 });
 
+// --- 4f: the 36 Risk Assessment dropdowns are an expected check, flaky until a CI run proves the
+// mobile render (web is read-only per F-02, so it starts in KNOWN_FLAKY like 4a-4d did). ---
+test("EXPECTED_IDS includes 4f-ra-dropdowns and it starts KNOWN_FLAKY (until CI proves mobile render)", () => {
+  assert.ok(EXPECTED_IDS.includes("4f-ra-dropdowns"));
+  assert.ok(KNOWN_FLAKY.has("4f-ra-dropdowns"));
+});
+test("checkFields drives 4f: all 36 RA dropdowns matching => PASS, one mismatch => FAIL (4f)", () => {
+  const ff = (name, value) => ({ formField: { fieldName: name }, value });
+  const insp = { inspectionForms: [{ formName: "Risk Assessment", formFields: [
+    ff("Accessing Area/Lone Working", "Yes"), ff("Asbestos/Exposure", "No"),
+  ] }] };
+  const want = { "Accessing Area/Lone Working": "Yes", "Asbestos/Exposure": "No" };
+  assert.equal(checkFields("4f-ra-dropdowns", "Web->Mobile (API)", insp, "Risk Assessment", want).status, "PASS");
+  const bad = { "Accessing Area/Lone Working": "Yes", "Asbestos/Exposure": "Yes" }; // one wrong
+  assert.equal(checkFields("4f-ra-dropdowns", "Web->Mobile (API)", insp, "Risk Assessment", bad).status, "FAIL");
+});
+
 // --- Samples flagship (2h): every added sampleTypeId must land in laboratorySamples (web->mobile) ---
 test("checkSamples PASSes when every expected sampleTypeId is present in laboratorySamples (2h)", () => {
   const ls = [{ sampleTypeId: "A" }, { sampleTypeId: "B" }, { sampleTypeId: "C" }];

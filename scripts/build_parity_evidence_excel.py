@@ -94,6 +94,7 @@ CHECK_TO_FLOW = {
     '4e-mobile-action': 'p12_mobile2web_add_action',
     '2k-sample-note': 'p13_web2mobile_sample_note',
     '2l-engineers': 'p14_web2mobile_engineers',
+    '4f-ra-dropdowns': 'p15_web2mobile_ra_dropdowns',
 }
 
 # Short check token (e.g. "2a") used to find F2 web screenshots {check}-web-set.png.
@@ -367,6 +368,24 @@ EVIDENCE_MAP = {
         ],
         'expected': 'GET /visits.visitEngineers.length >= 2; the webapp Engineers chips show both engineers (parity.bot kept).',
         'connection': 'GET /visits/{id} -> .visitEngineers.length >= 2.',
+    },
+    '4f-ra-dropdowns': {
+        'description': 'Web->mobile (API-set): the 36 Risk Assessment Yes/No DROPDOWN fields set via '
+                       'PATCH /inspections/{id}/submit-form (the web UI renders them read-only per F-02) '
+                       'must read back on GET /inspections and render in the mobile Risk Assessment '
+                       "form's Yes/No dropdowns. ONE check, 36 datums (mirrors 2h = 16 samples). DISTINCT "
+                       'from 3c (the 18 free-text "- Comments" of the same form). submit-form is MERGE, so '
+                       'setting these never nulls the 3c comments. The single biggest dropdown-coverage '
+                       'win: parity dropdown coverage 1 -> 37.',
+        'steps': [
+            'API: GET /inspections/{id} -> the Risk Assessment form\'s 36 dropdown fields (fieldOptions = Yes/No); resolve each InspectionFormField id by fieldName.',
+            'API: PATCH /inspections/{id}/submit-form {formFields:[{id,value}]} with alternating Yes/No (one value per field).',
+            'Connection: GET /inspections/{id} -> all 36 RA dropdown values equal the set values (checkFields ANDs every fieldName).',
+            'Webapp: open the inspection -> Risk Assessment card; the 36 Yes/No selects are read-only and show the values.',
+            'Mobile: open the inspection -> Risk Assessment form; the ExposedDropdownMenuBox dropdowns show the values (p15, photo-only — the render discriminator).',
+        ],
+        'expected': 'GET /inspections RA form: all 36 dropdowns equal the API-set Yes/No; mobile RA form renders them.',
+        'connection': 'GET /inspections/{id} -> inspectionForms[formName="Risk Assessment"].formFields[36 dropdowns].value all match.',
     },
 }
 

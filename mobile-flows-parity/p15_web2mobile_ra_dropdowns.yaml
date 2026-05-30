@@ -1,0 +1,30 @@
+appId: com.hydrocert.app
+name: "PARITY p15 - web-to-mobile Risk Assessment Yes/No dropdowns (36)"
+tags: [parity, web2mobile]
+---
+# The 36 Risk Assessment Yes/No DROPDOWN fields were set via API in phase 0 (check 4f, PATCH
+# /inspections/{id}/submit-form). SCORED via API (checkFields on GET /inspections -> the RA form's
+# 36 dropdown values); this flow exists ONLY to capture MOBILE-side photo evidence ({flow}-after.png)
+# of the RA form rendering those values, and runs `|| true` in the orchestrator. The mobile RA-form
+# dropdown render is NOT yet CI-confirmed (web is read-only per F-02, so the mobile photo is the
+# real-vs-tautology discriminator). So this mirrors p06 (photo-only): open the inspection, expand the
+# Risk Assessment card, scroll to the FIRST dropdown ("Accessing Area/Lone Working" = "Yes" at idx 0),
+# all optional:true — never a hard assertVisible on the dynamic value, so a non-render degrades to one
+# clean photo instead of burning a retry. Promote 4f to the gate once a CI run confirms the values
+# render in the mobile RA form's ExposedDropdownMenuBox.
+- runFlow: _shared/open_inspection.yaml
+- scrollUntilVisible:
+    element: { text: "Risk Assessment" }
+    direction: DOWN
+    timeout: 20000
+    optional: true
+- tapOn:
+    text: "Risk Assessment"
+    optional: true
+- scrollUntilVisible:
+    element: { text: "Accessing Area/Lone Working" }
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

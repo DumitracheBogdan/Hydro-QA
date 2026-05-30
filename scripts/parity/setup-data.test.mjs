@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit, addSecondInspection, addSampleNote, addSecondEngineer } from "./setup-data.mjs";
+import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, RA_DROPDOWN_FIELDS, deriveRunId, pickExactVisit, addSecondInspection, addSampleNote, addSecondEngineer, addRaDropdowns } from "./setup-data.mjs";
 
 // Minimal fake REST client for addSecondInspection (no network). Records POSTs.
 function fakeClient({ visitInspections = [], jobTypes = [] } = {}) {
@@ -271,4 +271,67 @@ test("addSecondEngineer is non-fatal + PATCHes nothing when no 2nd engineer is a
   await addSecondEngineer(c, "V1", expected); // must not throw
   assert.equal(c.patched.length, 0);
   assert.equal(expected.engineerCount, undefined);
+});
+
+// --- 4f: the 36 Risk Assessment Yes/No DROPDOWN fields, web->mobile API-set via submit-form ---
+// DISTINCT from 3c (the 18 free-text "- Comments" fields of the same form). The 36 fieldNames are the
+// exact backend labels (generated from the live dev dump 2026-05-30, NOT retyped — incl. the anomalies:
+// "Releasing Aerosols - Risks Managed?" plural, "Assesing Chemical Dosing Equipment" backend typo).
+test("RA_DROPDOWN_FIELDS is exactly the 36 Risk Assessment Yes/No dropdown fieldNames, none a '- Comments' (4f)", () => {
+  assert.equal(RA_DROPDOWN_FIELDS.length, 36);
+  assert.equal(new Set(RA_DROPDOWN_FIELDS).size, 36); // no dupes
+  assert.ok(RA_DROPDOWN_FIELDS.includes("Accessing Area/Lone Working"));
+  assert.ok(RA_DROPDOWN_FIELDS.includes("Releasing Aerosols - Risks Managed?")); // plural "Risks" anomaly
+  assert.ok(RA_DROPDOWN_FIELDS.includes("Assesing Chemical Dosing Equipment"));  // backend typo preserved
+  for (const f of RA_DROPDOWN_FIELDS) assert.ok(!f.includes("- Comments"), `${f} must not be a 3c comment field`);
+});
+
+test("buildExpected.raDropdowns covers all 36 RA dropdowns with deterministic Yes/No values (4f)", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(Object.keys(e.raDropdowns).length, 36);
+  assert.deepEqual(Object.keys(e.raDropdowns).sort(), [...RA_DROPDOWN_FIELDS].sort());
+  for (const v of Object.values(e.raDropdowns)) assert.ok(v === "Yes" || v === "No");
+  // not all the same value (alternating) — proves each field carries its own value, not a default
+  assert.ok(new Set(Object.values(e.raDropdowns)).size === 2);
+});
+
+// addRaDropdowns: GET the inspection, resolve each dropdown's InspectionFormField id BY fieldName, PATCH
+// /inspections/{id}/submit-form with one {id,value} per resolved dropdown. submit-form is MERGE
+// (probe-verified) so this never nulls the 3c comments. Mirrors the real dev shape probed 2026-05-30.
+function fakeRaClient({ formFields = [], formName = "Risk Assessment" } = {}) {
+  const patched = [];
+  return {
+    patched,
+    async get(path) {
+      if (path.startsWith("/inspections/")) return { inspectionForms: [{ formName, formFields }] };
+      return null;
+    },
+    async patch(path, body) { patched.push({ path, body }); return { ok: true }; },
+  };
+}
+test("addRaDropdowns PATCHes submit-form with one {id,value} per resolved dropdown, ignoring free-text fields (4f)", async () => {
+  const formFields = [
+    { id: "IFF-A", formField: { fieldName: "Accessing Area/Lone Working", fieldOptions: [{ label: "Yes", value: "Yes" }] } },
+    { id: "IFF-B", formField: { fieldName: "Asbestos/Exposure", fieldOptions: [{ label: "Yes", value: "Yes" }] } },
+    { id: "IFF-C", formField: { fieldName: "Accessing Area/Lone Working- Comments", fieldOptions: [] } }, // 3c free-text — must be ignored
+  ];
+  const c = fakeRaClient({ formFields });
+  const expected = { raDropdowns: { "Accessing Area/Lone Working": "Yes", "Asbestos/Exposure": "No" } };
+  await addRaDropdowns(c, "INSP-1", expected);
+  assert.equal(c.patched.length, 1);
+  assert.equal(c.patched[0].path, "/inspections/INSP-1/submit-form");
+  assert.deepEqual(c.patched[0].body.formFields, [
+    { id: "IFF-A", value: "Yes" },
+    { id: "IFF-B", value: "No" },
+  ]);
+});
+test("addRaDropdowns is non-fatal + PATCHes nothing when the inspection has no Risk Assessment form (4f, best-effort)", async () => {
+  const c = fakeRaClient({ formName: "Visit Information", formFields: [] });
+  await addRaDropdowns(c, "INSP-1", { raDropdowns: { "X": "Yes" } }); // must not throw
+  assert.equal(c.patched.length, 0);
+});
+test("addRaDropdowns is non-fatal when a GET fails (4f, best-effort)", async () => {
+  const c = { patched: [], async get() { throw new Error("boom"); }, async patch(p, b) { this.patched.push({ p, b }); } };
+  await addRaDropdowns(c, "INSP-1", { raDropdowns: { "X": "Yes" } }); // must not throw
+  assert.equal(c.patched.length, 0);
 });

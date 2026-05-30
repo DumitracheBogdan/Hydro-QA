@@ -50,6 +50,52 @@ export const RISK_COMMENT_FIELDS = [
 // THIS constant so they never drift. To re-attempt the full 18 on CI, widen the slice in one place.
 export const RISK_COMMENT_FIELDS_AUTOMATED = RISK_COMMENT_FIELDS.slice(0, 1);
 
+// 4f — every Yes/No DROPDOWN field of the Risk Assessment form (jobType 658f27c1), exact backend
+// fieldName in sortOrder. GENERATED from the live dev dump 2026-05-30 (GET /inspections/{id} ->
+// inspectionForms[Risk Assessment].formFields where formField.fieldOptions is non-empty), NOT retyped
+// — so the exact-match lookup never silently drops a field. 36 fields = 18 hazard/"- Risk Managed?"
+// pairs. DISTINCT from RISK_COMMENT_FIELDS (the 18 free-text "- Comments" of the SAME form, which 3c
+// covers). Anomalies preserved verbatim: "Releasing Aerosols - Risks Managed?" (plural "Risks"),
+// "Assesing Chemical Dosing Equipment" (backend typo), "Cleaning Tanks, Towers etc" (no period).
+export const RA_DROPDOWN_FIELDS = [
+  "Accessing Area/Lone Working",
+  "Accessing Area/Lone Work - Risk Managed?",
+  "Asbestos/Exposure",
+  "Asbestos/Exposure - Risk Managed?",
+  "Accessing High Areas",
+  "Accessing High Areas - Risk Managed?",
+  "Rodent, Bird, Insect Infestation",
+  "Rodent, Bird, Insect - Risk Managed?",
+  "Working Around Machinery",
+  "Working Around Machinery - Risk Managed?",
+  "Working In Plant Room",
+  "Working In Plant Room - Risk Managed?",
+  "Slipping on Water",
+  "Slipping on Water - Risk Managed?",
+  "Drowning in Water",
+  "Drowning in Water - Risk Managed?",
+  "Entering Confined Space",
+  "Entering Confined Space - Risk Managed?",
+  "Cleaning Tanks, Towers etc",
+  "Cleaning Tanks, Towers - Risk Managed?",
+  "Electrical Equipment Around Water",
+  "Electrical Equip/Water - Risk Managed?",
+  "Opening Valves/Hatches",
+  "Opening Valves/Hatches - Risk Managed?",
+  "Releasing Aerosols",
+  "Releasing Aerosols - Risks Managed?",
+  "Hot Water Scalding",
+  "Hot Water Scalding - Risk Managed?",
+  "Manual Handling",
+  "Manual Handling - Risk Managed?",
+  "Assesing Chemical Dosing Equipment",
+  "Dosing Equipment - Risk Managed?",
+  "Handling Chemicals",
+  "Handling Chemicals - Risk Managed?",
+  "Disinfecting Systems",
+  "Disinfecting Systems - Risk Managed?",
+];
+
 export function buildExpected(runId) {
   const tag = makeTitle(runId);
   const visitActs = [
@@ -126,6 +172,13 @@ export function buildExpected(runId) {
     siteInduction: {
       "Site Induction required & Completed": "Yes - Induction completed",
     },
+    // web->mobile dropdowns (4f): the 36 Risk Assessment Yes/No dropdowns, set via API
+    // PATCH /inspections/{id}/submit-form (web renders them read-only per F-02). Deterministic
+    // ALTERNATING Yes/No (by index) so every field carries its OWN value — an all-"Yes" payload could
+    // stale-pass off a backend default; alternating proves each of the 36 propagated independently.
+    // Keys are the EXACT fieldName (checkFields matches on fieldName). Verified web->mobile via the
+    // mobile Risk Assessment form's ExposedDropdownMenuBox + GET round-trip.
+    raDropdowns: Object.fromEntries(RA_DROPDOWN_FIELDS.map((name, i) => [name, i % 2 === 0 ? "Yes" : "No"])),
     // mobile->web (p12 / check 4e): a CUSTOM visit-level action ADDED ON MOBILE (the user's "add on
     // mobile, see on web"). RECORD-ONLY — this name is NEVER POSTed in setup (unlike the 2b Hi/Med/Lo
     // actions, which the web creates). The mobile flow (p12) is the ONLY writer, so a PASS on
@@ -265,6 +318,39 @@ export async function addSecondEngineer(c, visitId, expected) {
   } catch (e) { console.error(`WARN: addSecondEngineer failed (${e.message})`); }
 }
 
+// 4f — set the 36 Risk Assessment Yes/No DROPDOWN fields web->mobile. The per-inspection
+// InspectionFormField id (the submit-form key) is NOT stable across inspections, so resolve it AT
+// RUNTIME: GET /inspections/{id}, find the Risk Assessment form, map each dropdown's exact fieldName
+// (fieldOptions non-empty) -> formFields[].id, then PATCH /inspections/{id}/submit-form
+// {formFields:[{id,value}]} with the expected Yes/No per field. submit-form is MERGE (probe-verified
+// 2026-05-30 — setting these does NOT null the 3c free-text "- Comments"), so this is safe at any phase
+// and never reddens 3c. A fieldName that doesn't resolve is simply omitted -> fewer set -> 4f FAILs at
+// verify (fail-closed, never a false pass). Best-effort + non-fatal (mirror addSamples): a GET/PATCH
+// failure leaves 4f to FAIL at verify, but never breaks the run. Reads expected.raDropdowns (built by
+// buildExpected); records nothing new on expected (the expected map IS the source of truth for verify).
+export async function addRaDropdowns(c, inspectionId, expected) {
+  try {
+    const want = expected.raDropdowns || {};
+    if (!Object.keys(want).length) { console.error("WARN: no raDropdowns in expected (4f skipped)"); return; }
+    const insp = await c.get(`/inspections/${inspectionId}`).catch(() => null);
+    const ra = (insp?.inspectionForms || []).find((f) => /risk assessment/i.test(f.formName || ""));
+    if (!ra) { console.error("WARN: no Risk Assessment form (4f skipped)"); return; }
+    // map exact fieldName -> InspectionFormField id, dropdown fields only (fieldOptions non-empty)
+    const idByName = new Map();
+    for (const ff of ra.formFields || []) {
+      if ((ff.formField?.fieldOptions || []).length > 0 && ff.formField?.fieldName) idByName.set(ff.formField.fieldName, ff.id);
+    }
+    const formFields = [];
+    for (const [name, value] of Object.entries(want)) {
+      const id = idByName.get(name);
+      if (id) formFields.push({ id, value });
+    }
+    if (!formFields.length) { console.error("WARN: no RA dropdown ids resolved (4f skipped)"); return; }
+    await c.patch(`/inspections/${inspectionId}/submit-form`, { formFields });
+    console.log(`4F set ${formFields.length}/${Object.keys(want).length} RA dropdowns via submit-form`);
+  } catch (e) { console.error(`WARN: addRaDropdowns failed (${e.message})`); }
+}
+
 async function resolveFixtures(c, mobileClient) {
   const fx = JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url)));
   // engineerId: prefer explicit env, else the mobile QA user's own id
@@ -323,6 +409,8 @@ async function main() {
     await addSamples(c, insp.id, reuseExpected); // 2h — add every base water-sample type
     // 2k — POST a note to the FIRST laboratorySample (AFTER addSamples, so the inspection has samples).
     await addSampleNote(c, insp.id, reuseExpected.sampleNoteText, reuseExpected);
+    // 4f — set the 36 Risk Assessment Yes/No dropdowns (submit-form MERGE; won't null the 3c comments).
+    await addRaDropdowns(c, insp.id, reuseExpected);
     // 2l — add a SECOND engineer (KEEPS the reused visit's existing engineer structurally — idempotent
     // if it already has >= 2, so the mobile-login engineer is never dropped on a re-run).
     await addSecondEngineer(c, visit.id, reuseExpected);
@@ -361,6 +449,9 @@ async function main() {
   await addSamples(c, inspection.id, expected); // 2h — add every base water-sample type via the web API
   // 2k — POST a note to the FIRST laboratorySample (AFTER addSamples, so the inspection has samples).
   await addSampleNote(c, inspection.id, expected.sampleNoteText, expected);
+  // 4f — set the 36 Risk Assessment Yes/No dropdowns web->mobile via submit-form (MERGE — leaves the
+  // 3c "- Comments" free-text untouched; mobile renders them in the RA form's ExposedDropdownMenuBox).
+  await addRaDropdowns(c, inspection.id, expected);
   // 2l — add a SECOND engineer to the visit (KEEPS the existing parity engineer structurally, so the
   // visit stays on mobile). Additive PATCH; safe in Phase 0 (doesn't touch inspection nav or the search).
   await addSecondEngineer(c, visit.id, expected);

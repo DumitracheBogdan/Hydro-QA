@@ -105,6 +105,7 @@ run_flow mobile-flows-parity/p11_web2mobile_visit_status.yaml || true       # 2j
 # never fails the gate. They are NOT added to parity-mobile-results.json.
 run_flow mobile-flows-parity/p13_web2mobile_sample_note.yaml || true        # 2k sample note->Water Sampling
 run_flow mobile-flows-parity/p14_web2mobile_engineers.yaml || true          # 2l 2nd engineer->Engineers chips
+run_flow mobile-flows-parity/p15_web2mobile_ra_dropdowns.yaml || true       # 4f 36 RA Yes/No dropdowns->RA form
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)

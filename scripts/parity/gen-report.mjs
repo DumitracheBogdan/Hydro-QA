@@ -24,6 +24,7 @@ const FLOW = {
   "4e-mobile-action": "p12_mobile2web_add_action",
   "2k-sample-note": "p13_web2mobile_sample_note",
   "2l-engineers": "p14_web2mobile_engineers",
+  "4f-ra-dropdowns": "p15_web2mobile_ra_dropdowns",
 };
 
 export function renderReport(s, images = {}) {
