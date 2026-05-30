@@ -89,6 +89,8 @@ CHECK_TO_FLOW = {
     '4c-item-reference': 'p07_web2mobile_item_reference',
     '4d-item-location': 'p08_web2mobile_item_location',
     '4b-booking-info': 'p09_web2mobile_booking_info',
+    '2i-add-inspection': 'p10_web2mobile_add_inspection',
+    '2j-visit-status': 'p11_web2mobile_visit_status',
 }
 
 # Short check token (e.g. "2a") used to find F2 web screenshots {check}-web-set.png.
@@ -282,6 +284,36 @@ EVIDENCE_MAP = {
         ],
         'expected': 'GET /inspections.itemLocation equals the API-set value; mobile LocationCard shows it.',
         'connection': 'GET /inspections/{id} -> .itemLocation equals "PARITY-<runId> item-loc".',
+    },
+    '2i-add-inspection': {
+        'description': 'Web->mobile: a SECOND inspection added to the visit on the webapp (POST '
+                       '/inspections with a DIFFERENT jobType than the primary Risk Assessment one) '
+                       'must show on the visit -> inspections.length >= 2. Additive: never deletes or '
+                       'modifies the first inspection (the existing checks depend on it).',
+        'steps': [
+            'API: GET /job-types; pick a jobType id != the primary (658f27c1...).',
+            'API: POST /inspections {visitId, jobTypeId: <second jobType>} (the 1st inspection stays untouched).',
+            'Connection: GET /visits/{id} -> .inspections.length >= 2 (checkInspectionCount).',
+            'Webapp: open the visit -> Inspections tab; screenshot the list (now 2 inspections).',
+            'Mobile: open the visit, tap the Inspections tab; screenshot the list (p10, photo-only).',
+        ],
+        'expected': 'GET /visits.inspections.length >= 2; the webapp Inspections tab lists 2 inspections.',
+        'connection': 'GET /visits/{id} -> .inspections.length >= 2.',
+    },
+    '2j-visit-status': {
+        'description': 'Web->mobile: the visit BOOKING status set on the webapp (PATCH /visits/{id} '
+                       "status='confirmed', from the scheduled|pending|confirmed|cancelled enum) must "
+                       'read back on GET /visits.status. GUARDRAIL: BOOKING status only -- never '
+                       'touches visitStatus/inspectionStatus (the execution states). Probe-verified the '
+                       "visit stays searchable with status='confirmed'.",
+        'steps': [
+            "API: PATCH /visits/{id} status = 'confirmed' (NOT 'cancelled', which can hide the visit).",
+            "Connection: GET /visits/{id} -> .status equals 'confirmed' (checkScalarField).",
+            'Webapp: open the visit details; screenshot the header status badge.',
+            'Mobile: open the visit; screenshot the header status badge (p11, photo-only).',
+        ],
+        'expected': "GET /visits.status equals 'confirmed'; webapp header shows the Confirmed badge.",
+        'connection': "GET /visits/{id} -> .status equals 'confirmed'.",
     },
 }
 

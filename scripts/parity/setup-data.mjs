@@ -110,6 +110,13 @@ export function buildExpected(runId) {
     sitePatch: {
       accessInfo: `${tag} booking`,
     },
+    // web->mobile (p11 / check 2j): the visit's BOOKING status PATCHed via PATCH /visits/{id} {status}.
+    // Fixed value from the booking enum scheduled|pending|confirmed|cancelled — 'confirmed' (NOT
+    // 'cancelled', which can hide the visit from the list). GUARDRAIL: this is the BOOKING status only;
+    // it NEVER touches visitStatus/inspectionStatus (the execution states). Probe-verified 2026-05-30:
+    // status='confirmed' round-trips on PATCH+GET and the visit stays searchable (filter + calendar).
+    // Scored via GET /visits/{id}.status === 'confirmed' (checkScalarField).
+    bookingStatus: "confirmed",
     // mobile->web dropdown (p03b): a fixed option (not run-tagged — it is a fixed-choice field).
     // Verified against the Visit Information form's fieldOptions on jobType 658f27c1.
     siteInduction: {
@@ -156,6 +163,44 @@ async function addSamples(c, inspectionId, expected) {
     expected.sampleTypeNames = Object.fromEntries(types.map((t) => [t.id, t.name || t.sampleType || t.title || ""]));
     console.log(`SAMPLES added ${types.length} types`);
   } catch (e) { console.error(`WARN: addSamples failed (${e.message})`); }
+}
+
+// 2i — add a SECOND inspection to the visit via the web API using a DIFFERENT jobType than the
+// primary Risk Assessment one. Discovers a 2nd jobType at runtime via GET /job-types. Records
+// secondInspectionId on `expected`. GUARDRAIL: only ADDS — never deletes/modifies the first
+// inspection (the existing checks depend on it). Best-effort + non-fatal (mirror addSamples): a
+// failure leaves the structural 2i check to FAIL, but never breaks the run. Idempotent: if a 2nd
+// inspection (different jobType) already exists, reuse it instead of stacking another.
+//
+// CALLED IN PHASE 2.5 (add-second-inspection.mjs), NOT in Phase-0 setup: the shared mobile
+// _shared/open_inspection.yaml taps the FIRST "(Start|View) Inspection" by POSITION, so a 2nd
+// inspection present during Phase 1/2 could shift which inspection the hard-gated flows
+// (p01e/2g, p03/3b, p04/3c, p03b/3e) open. Adding it AFTER the mobile flows keeps Phase 1/2
+// single-inspection + deterministic; 2i is scored at verify (checkInspectionCount), independent of
+// when the 2nd inspection was created. Exported for the Phase-2.5 entrypoint + unit tests.
+export async function addSecondInspection(c, visitId, primaryJobTypeId, expected) {
+  try {
+    // Idempotency (reuse path): if the visit already carries an inspection with a jobType DIFFERENT
+    // from the primary, that IS the 2nd inspection — reuse it instead of stacking a new one each run.
+    const v = await c.get(`/visits/${visitId}`).catch(() => null);
+    const existing = (v?.inspections || []).find((i) => i.jobTypeId && i.jobTypeId !== primaryJobTypeId);
+    if (existing?.id) {
+      expected.secondInspectionId = existing.id;
+      expected.secondJobTypeId = existing.jobTypeId;
+      console.log(`2I reusing existing second inspection ${existing.id} jobType=${existing.jobTypeId}`);
+      return;
+    }
+    const jts = await c.get("/job-types");
+    const types = (Array.isArray(jts) ? jts : jts?.items || []).filter((t) => t && t.id);
+    const other = types.find((t) => t.id !== primaryJobTypeId);
+    if (!other) { console.error("WARN: no second jobType available for 2i"); return; }
+    const insp2 = await c.post("/inspections", { visitId, jobTypeId: other.id });
+    if (insp2?.id) {
+      expected.secondInspectionId = insp2.id;
+      expected.secondJobTypeId = other.id;
+      console.log(`2I added second inspection ${insp2.id} jobType=${other.id} (${other.name || ""})`);
+    }
+  } catch (e) { console.error(`WARN: addSecondInspection failed (${e.message})`); }
 }
 
 async function resolveFixtures(c, mobileClient) {
@@ -214,6 +259,13 @@ async function main() {
     const reuseSiteId = visit.siteId || fx.siteId;
     if (reuseSiteId) await c.patch(`/sites/${reuseSiteId}`, reuseExpected.sitePatch).catch((e) => console.error(`WARN: sitePatch failed (${e.message})`));
     await addSamples(c, insp.id, reuseExpected); // 2h — add every base water-sample type
+    // 2j — set the visit BOOKING status (probe-verified 'confirmed' stays searchable; execution states untouched).
+    await c.patch(`/visits/${visit.id}`, { status: reuseExpected.bookingStatus }).catch((e) => console.error(`WARN: bookingStatus PATCH failed (${e.message})`));
+    // 2i deferred to Phase 2.5 (see create-path note). REUSE CAVEAT: a reused visit that ALREADY
+    // carries 2 inspections faces the mobile position-nav ambiguity regardless of when we add — but
+    // add-second-inspection.mjs only reuses an existing 2nd inspection (never stacks more), and the
+    // hard-gated flows still target the FIRST (Risk Assessment) inspection. Fresh-visit CI is the
+    // primary path and is fully protected by the deferral.
     writeFileSync("parity-context.json", JSON.stringify({ runId: reuseRunId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: insp.id, siteId: reuseSiteId, expected: reuseExpected, reused: true }, null, 2));
     console.log(`SETUP REUSE visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${insp.id} runId=${reuseRunId}`);
     return;
@@ -240,6 +292,16 @@ async function main() {
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });
 
   await addSamples(c, inspection.id, expected); // 2h — add every base water-sample type via the web API
+
+  // 2j — set the visit's BOOKING status web->mobile. Probe-verified 'confirmed' keeps the visit
+  // searchable and never touches visitStatus/inspectionStatus. Last so it never blocks the other seeds.
+  await c.patch(`/visits/${visit.id}`, { status: expected.bookingStatus }).catch((e) => console.error(`WARN: bookingStatus PATCH failed (${e.message})`));
+  // 2i is DEFERRED to Phase 2.5 (add-second-inspection.mjs), NOT done here: adding a 2nd inspection in
+  // Phase 0 would give the visit two inspections during Phase 1/2, and the shared mobile
+  // _shared/open_inspection.yaml taps the FIRST "(Start|View) Inspection" by POSITION — a 2nd
+  // inspection could shift which one the hard-gated flows (p01e/2g, p03/3b, p04/3c, p03b/3e) open and
+  // red the gate. 2i is scored at verify by checkInspectionCount(GET /visits), so creation timing is
+  // irrelevant to scoring; deferring it keeps Phase 1/2 single-inspection and deterministic.
 
   writeFileSync("parity-context.json", JSON.stringify({ runId, visitId: visit.id, visitRef: visit.visitReference, inspectionId: inspection.id, siteId: fx.siteId, engineerId: fx.engineerId, expected }, null, 2));
   console.log(`SETUP OK visitRef=${visit.visitReference} visitId=${visit.id} inspectionId=${inspection.id}`);

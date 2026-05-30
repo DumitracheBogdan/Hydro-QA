@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, checkInspectionCount, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -207,4 +207,50 @@ test("applyFlowGuards leaves checks untouched when the guarded flow passed or st
   assert.equal(applyFlowGuards(checks, null).find((c) => c.id === "3e-site-induction").status, "PASS");
   // a flow code that doesn't map to a given check leaves it alone
   assert.equal(applyFlowGuards(checks, { p03b: 1 }).find((c) => c.id === "3a-signature").status, "PASS");
+});
+
+// --- 2i: a SECOND inspection added on the webapp must show on the visit (inspections.length >= 2) ---
+test("checkInspectionCount PASSes when the visit has at least the expected number of inspections (2i)", () => {
+  const visit = { inspections: [{ id: "a" }, { id: "b" }] };
+  const r = checkInspectionCount(visit, 2);
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "2i-add-inspection");
+});
+test("checkInspectionCount FAILs when the visit has fewer than the expected inspections (2i)", () => {
+  const visit = { inspections: [{ id: "a" }] };
+  assert.equal(checkInspectionCount(visit, 2).status, "FAIL");
+});
+test("checkInspectionCount FAILs on a null/missing inspections array (no crash, no vacuous pass) (2i)", () => {
+  assert.equal(checkInspectionCount(null, 2).status, "FAIL");
+  assert.equal(checkInspectionCount({}, 2).status, "FAIL");
+  assert.equal(checkInspectionCount({ inspections: [] }, 2).status, "FAIL");
+});
+test("checkInspectionCount FAILs on a non-positive atLeast (no vacuous pass) (2i/L6)", () => {
+  assert.equal(checkInspectionCount({ inspections: [{ id: "a" }] }, 0).status, "FAIL");
+});
+
+// --- 2j: web->mobile booking status set on the webapp must read back on GET /visits.status ---
+// 2j reuses the existing generic checkScalarField (status === 'confirmed'), so no new comparator.
+test("checkScalarField scores the visit booking status field for 2j (status='confirmed')", () => {
+  assert.equal(checkScalarField("2j-visit-status", "Web->Mobile (API)", { status: "confirmed" }, "status", "confirmed").status, "PASS");
+  assert.equal(checkScalarField("2j-visit-status", "Web->Mobile (API)", { status: "scheduled" }, "status", "confirmed").status, "FAIL");
+});
+
+// --- the 2 new checks are pinned in EXPECTED_IDS (denominator) ---
+test("EXPECTED_IDS includes the 2 new web->mobile checks (2i/2j)", () => {
+  for (const id of ["2i-add-inspection", "2j-visit-status"]) {
+    assert.ok(EXPECTED_IDS.includes(id), `${id} must be in EXPECTED_IDS`);
+  }
+});
+
+// --- the 2 new checks start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---
+test("the 2 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (2i/2j)", () => {
+  for (const id of ["2i-add-inspection", "2j-visit-status"]) {
+    assert.equal(KNOWN_FLAKY.has(id), true, `${id} must be KNOWN_FLAKY until CI-green`);
+  }
+  // a failing new check leaves the gate green (the existing 15 are unaffected)
+  const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2i-add-inspection" ? "FAIL" : "PASS", details: "" }));
+  const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
+  assert.equal(s.gateFailed, false); // 2i flaky -> does not gate
+  assert.equal(s.failed, 1);         // but is still reported failed
 });

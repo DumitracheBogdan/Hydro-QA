@@ -73,6 +73,17 @@ export function checkScalarField(id, direction, obj, field, want) {
   return { id, direction, status: ok ? "PASS" : "FAIL", details: `${field}=${JSON.stringify(got)} want=${JSON.stringify(want)}` };
 }
 
+// 2i — a SECOND inspection added on the webapp (POST /inspections with a DIFFERENT jobType) must show
+// on the visit: GET /visits/{id}.inspections.length >= atLeast (web->mobile, structural — no value to
+// match, so this is its own comparator rather than checkScalarField). Tolerates a null/missing visit
+// or inspections array -> FAIL (no crash). A non-positive atLeast is a FAIL (no vacuous pass — L6).
+export function checkInspectionCount(visit, atLeast) {
+  const n = (visit && Array.isArray(visit.inspections)) ? visit.inspections.length : 0;
+  const ok = atLeast > 0 && n >= atLeast;
+  return { id: "2i-add-inspection", direction: "Web->Mobile", status: ok ? "PASS" : "FAIL",
+    details: `inspections=${n} want>=${atLeast}` };
+}
+
 // The full set of check ids the suite is expected to produce on a complete run. buildSummary uses
 // this to PIN the denominator: any expected id that never materialized becomes a synthetic FAIL, so
 // a crashed/absent phase can never shrink the total into a misleading green (H3, M10).
@@ -82,6 +93,10 @@ export const EXPECTED_IDS = [
   // web->mobile API-set scalar fields (mirror 2h scoring; mobile flow photo-only) — additive, never
   // touch the visit title/ref/dates/status so they can't disturb the mobile search or other checks.
   "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
+  // 2i: a SECOND inspection (different jobType) added on the webapp -> shows on the visit
+  // (inspections.length >= 2). 2j: the visit's BOOKING status set on the webapp -> reads back
+  // status='confirmed'. Both web->mobile, additive, scored on the connection (API GET).
+  "2i-add-inspection", "2j-visit-status",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
@@ -97,8 +112,15 @@ export const EXPECTED_IDS = [
 // while flaky they are reported but never red the gate, so they cannot break the existing 11 checks.
 // PATCH+GET round-trip verified locally against dev 2026-05-30 (notes/itemReference/itemLocation on
 // /inspections, accessInfo on /sites). Promote to the gate (remove from this set) once CI is green.
+// 2i/2j (new web->mobile checks) also start here until a CI run proves them green — reported but
+// never red the gate, so they cannot break the existing 15 checks. PATCH/POST + GET round-trip
+// probe-verified against dev 2026-05-30: a 2nd inspection (different jobType) makes
+// inspections.length==2; PATCH status='confirmed' round-trips AND the visit stays searchable
+// (filter + calendar-filter), with visitStatus/inspectionStatus untouched. Promote (remove here)
+// once CI is green.
 export const KNOWN_FLAKY = new Set([
   "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
+  "2i-add-inspection", "2j-visit-status",
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
@@ -174,6 +196,14 @@ async function main() {
     apiChecks.push(checkScalarField("4c-item-reference", "Web->Mobile (API)", inspection, "itemReference", ip.itemReference));
     apiChecks.push(checkScalarField("4d-item-location", "Web->Mobile (API)", inspection, "itemLocation", ip.itemLocation));
   }
+  // 2i — a SECOND inspection added on the webapp (different jobType): the visit must now carry >= 2
+  // inspections (web->mobile, structural). Scored off the visit already GET'd above.
+  apiChecks.push(checkInspectionCount(visit, 2));
+  // 2j — the visit's BOOKING status PATCHed web->mobile (status='confirmed'). Read back on the same
+  // GET /visits. Generic scalar check (status === expected). NEVER asserts visitStatus/inspectionStatus.
+  if (ctx.expected.bookingStatus)
+    apiChecks.push(checkScalarField("2j-visit-status", "Web->Mobile (API)", visit, "status", ctx.expected.bookingStatus));
+
   // 4b — site accessInfo (booking info) PATCHed web->mobile (GET /sites/{siteId}). siteId is the
   // VISIT's siteId persisted by setup (NOT fx.siteId, which may resolve a different site in reuse
   // mode). A null/missing site GET degrades to a FAIL via checkScalarField (not a crash).

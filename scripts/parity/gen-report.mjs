@@ -19,6 +19,8 @@ const FLOW = {
   "4c-item-reference": "p07_web2mobile_item_reference",
   "4d-item-location": "p08_web2mobile_item_location",
   "4b-booking-info": "p09_web2mobile_booking_info",
+  "2i-add-inspection": "p10_web2mobile_add_inspection",
+  "2j-visit-status": "p11_web2mobile_visit_status",
 };
 
 export function renderReport(s, images = {}) {

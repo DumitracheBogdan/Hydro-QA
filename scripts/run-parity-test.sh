@@ -95,6 +95,11 @@ run_flow mobile-flows-parity/p06_web2mobile_inspection_notes.yaml || true  # 4a 
 run_flow mobile-flows-parity/p07_web2mobile_item_reference.yaml || true    # 4c itemReference->LocationCard
 run_flow mobile-flows-parity/p08_web2mobile_item_location.yaml || true     # 4d itemLocation->LocationCard
 run_flow mobile-flows-parity/p09_web2mobile_booking_info.yaml || true      # 4b site accessInfo->booking info
+# 2i/2j — new web->mobile checks. Scored via API (checkInspectionCount / checkScalarField in
+# verify-data); these flows capture the MOBILE-side photo only, so run `|| true` (mirror p06-p09) — a
+# missed selector never fails the gate. They are NOT added to parity-mobile-results.json.
+run_flow mobile-flows-parity/p10_web2mobile_add_inspection.yaml || true     # 2i 2nd inspection->Inspections list
+run_flow mobile-flows-parity/p11_web2mobile_visit_status.yaml || true       # 2j booking status->header badge
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)
@@ -125,6 +130,14 @@ run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml; P05=$?
 # read-back alone can't detect a silently-failed flow in reuse mode (M4).
 node -e "require('fs').writeFileSync('parity-flow-status.json',JSON.stringify({p02:$P02,p03:$P03,p03b:$P03B,p04:$P04,p05:$P05}))"
 echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05"
+
+# ---- Phase 2.4: 2i — add the SECOND inspection NOW (after every mobile flow that drills into an
+#      inspection). Deferred to here on purpose: the shared mobile open_inspection.yaml taps the
+#      FIRST "(Start|View) Inspection" by position, so a 2nd inspection during Phase 1/2 could shift
+#      which inspection the hard-gated flows (2g/3b/3c/3e) open. By now they are all done, so the
+#      extra inspection is harmless. NON-GATING (2i is KNOWN_FLAKY, scored at verify). ----
+echo "=== Phase 2.4: add second inspection (2i, post-mobile) ==="
+node scripts/parity/add-second-inspection.mjs || echo "::warning::add-second-inspection failed (non-gating, 2i)"
 
 # ---- Phase 2.5: WEBAPP-UI evidence screenshots (the web half — both the web->mobile values the
 #      webapp displays AND the mobile->web values the webapp now renders). By now the visit carries

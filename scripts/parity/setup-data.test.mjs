@@ -1,6 +1,24 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit } from "./setup-data.mjs";
+import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit, addSecondInspection } from "./setup-data.mjs";
+
+// Minimal fake REST client for addSecondInspection (no network). Records POSTs.
+function fakeClient({ visitInspections = [], jobTypes = [] } = {}) {
+  const posted = [];
+  return {
+    posted,
+    async get(path) {
+      if (path.startsWith("/visits/")) return { inspections: visitInspections };
+      if (path === "/job-types") return jobTypes;
+      return null;
+    },
+    async post(path, body) {
+      posted.push({ path, body });
+      if (path === "/inspections") return { id: "NEW-INSP", jobTypeId: body.jobTypeId };
+      return null;
+    },
+  };
+}
 
 test("makeTitle tags with run id", () => {
   assert.equal(makeTitle("RUN42"), "PARITY-RUN42");
@@ -83,6 +101,43 @@ test("buildExpected exposes the inspection notes/itemReference/itemLocation seed
 test("buildExpected exposes the site accessInfo (booking info) seeded web->mobile (4b)", () => {
   const e = buildExpected("RUN42");
   assert.equal(e.sitePatch.accessInfo, "PARITY-RUN42 booking");
+});
+
+// --- 2j: the visit booking status PATCHed web->mobile (PATCH /visits/{id} {status}) ---
+// Fixed valid booking value ('confirmed', NOT run-tagged) from the scheduled|pending|confirmed|cancelled
+// enum. 'confirmed' is searchable (probe verified) and never touches visitStatus/inspectionStatus.
+test("buildExpected exposes the visit booking status seeded web->mobile (2j, fixed 'confirmed')", () => {
+  const e = buildExpected("RUN42");
+  assert.equal(e.bookingStatus, "confirmed");
+});
+
+// --- 2i: addSecondInspection picks a DIFFERENT jobType, POSTs one inspection, records the id ---
+test("addSecondInspection POSTs an inspection with a jobType != the primary and records secondInspectionId (2i)", async () => {
+  const c = fakeClient({ visitInspections: [], jobTypes: [{ id: "PRIMARY" }, { id: "OTHER", name: "Cooling Tower" }] });
+  const expected = {};
+  await addSecondInspection(c, "V1", "PRIMARY", expected);
+  assert.equal(c.posted.length, 1);
+  assert.equal(c.posted[0].path, "/inspections");
+  assert.equal(c.posted[0].body.visitId, "V1");
+  assert.notEqual(c.posted[0].body.jobTypeId, "PRIMARY"); // must differ from primary (unambiguous nav)
+  assert.equal(c.posted[0].body.jobTypeId, "OTHER");
+  assert.equal(expected.secondInspectionId, "NEW-INSP");
+  assert.equal(expected.secondJobTypeId, "OTHER");
+});
+test("addSecondInspection REUSES an existing 2nd inspection (different jobType) and POSTs nothing — idempotent (2i)", async () => {
+  const c = fakeClient({ visitInspections: [{ id: "I1", jobTypeId: "PRIMARY" }, { id: "I2", jobTypeId: "OTHER" }], jobTypes: [{ id: "PRIMARY" }, { id: "OTHER" }] });
+  const expected = {};
+  await addSecondInspection(c, "V1", "PRIMARY", expected);
+  assert.equal(c.posted.length, 0); // no new inspection stacked
+  assert.equal(expected.secondInspectionId, "I2");
+  assert.equal(expected.secondJobTypeId, "OTHER");
+});
+test("addSecondInspection is non-fatal when no second jobType exists (2i, best-effort)", async () => {
+  const c = fakeClient({ visitInspections: [], jobTypes: [{ id: "PRIMARY" }] });
+  const expected = {};
+  await addSecondInspection(c, "V1", "PRIMARY", expected); // must not throw
+  assert.equal(c.posted.length, 0);
+  assert.equal(expected.secondInspectionId, undefined);
 });
 
 test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {

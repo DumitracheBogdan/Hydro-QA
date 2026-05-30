@@ -116,6 +116,10 @@ async function main() {
     } else {
       // VERIFY: screenshot each displayed datum. Visit-level (robust) first.
       await shotAt(page, "Description", "2a-description");
+      // 2j — visit booking status badge on the visit-detail header (web->mobile API-set status).
+      // The header is at the top of the just-loaded visit-detail page, so screenshot the current
+      // viewport (best-effort scroll to a status word if present).
+      await shotAt(page, "Confirmed", "2j-visit-status").catch(() => shot(page, "2j-visit-status"));
       await expandCard(page, "Visit Details", { belowText: "Description" }); // the editable card, not the tab
       await shotAt(page, "Water Sampling Details", "2d-visit-text");
       await shot(page, "3d-visit-text"); // same Visit Details card shows the mobile->web values too
@@ -124,6 +128,12 @@ async function main() {
       await shotAt(page, "Client Signature", "3a-signature");
       // 4b — site Booking Info card on the visit detail (web->mobile API-set accessInfo)
       await shotAt(page, "Booking Info", "4b-booking-info").catch(() => shot(page, "4b-booking-info"));
+      // 2i — the Inspections tab now lists 2 inspections (a 2nd was added via API). Open the tab and
+      // screenshot the LIST (before drilling into an inspection), so the photo shows both rows.
+      await page.getByRole("tab", { name: /Inspections/i }).first().click({ timeout: 6000 })
+        .catch(() => page.getByText("Inspections", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));
+      await page.waitForTimeout(1500);
+      await shot(page, "2i-add-inspection");
       // inspection-level: 3b visit-info, 3c risk, 3e site-induction, 2g itemDetail (on the inspection detail)
       await openInspection(page);
       await shot(page, "2g-item-detail"); // inspection header shows Asset Reference/Location/Detail

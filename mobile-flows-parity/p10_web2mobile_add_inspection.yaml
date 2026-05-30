@@ -1,0 +1,24 @@
+appId: com.hydrocert.app
+name: "PARITY p10 - web-to-mobile add inspection (Inspections list shows 2)"
+tags: [parity, web2mobile]
+---
+# A SECOND inspection (different jobType) is added to the visit via the web API for check 2i
+# (POST /inspections). SCORED via API (checkInspectionCount on GET /visits.inspections.length >= 2);
+# this flow exists ONLY to capture MOBILE-side photo evidence ({flow}-after.png) and runs `|| true` in
+# the orchestrator. NOTE on TIMING: the 2nd inspection is created in Phase 2.4 (AFTER all Phase 1/2
+# mobile flows) so it can't disturb the position-based mobile inspection nav used by the hard-gated
+# flows; this p10 flow runs in Phase 1, so its photo may show only the FIRST inspection. That is fine
+# — p10 is photo-only/|| true and 2i is scored by API at verify, not by this screenshot. This mirrors
+# p01f/p06 (photo-only): open the visit, tap the Inspections tab, scroll the list with optional:true
+# and screenshot — never a hard assertVisible, so a non-render degrades to one clean photo instead of
+# burning a retry. GUARDRAIL: read-only navigation — never deletes/modifies the first inspection.
+- runFlow: _shared/open_tagged_visit.yaml
+- tapOn:
+    text: "Inspections.*"
+- scrollUntilVisible:
+    element: { text: "(Start|View) Inspection" }
+    direction: DOWN
+    timeout: 20000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

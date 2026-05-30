@@ -1,0 +1,21 @@
+appId: com.hydrocert.app
+name: "PARITY p11 - web-to-mobile visit booking status (status badge)"
+tags: [parity, web2mobile]
+---
+# The visit's BOOKING status was PATCHed to 'confirmed' via the web API in phase 0 (check 2j,
+# PATCH /visits/{id} {status}). SCORED via API (checkScalarField on GET /visits.status === 'confirmed');
+# this flow exists ONLY to capture MOBILE-side photo evidence ({flow}-after.png) and runs `|| true` in
+# the orchestrator. The visit-detail header status badge render is NOT yet CI-confirmed, so this
+# mirrors p09 (photo-only): open the visit and screenshot the header with a static, optional scroll —
+# never a hard assertVisible on the status text, so a non-render degrades to one clean photo instead of
+# burning a retry. GUARDRAIL: status='confirmed' is the BOOKING state only and keeps the visit
+# searchable (probe-verified); the execution states (visitStatus/inspectionStatus) are untouched.
+# Promote to the assert pattern once a CI run confirms the badge renders.
+- runFlow: _shared/open_tagged_visit.yaml
+- scrollUntilVisible:
+    element: { text: "[Cc]onfirmed" }
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000
