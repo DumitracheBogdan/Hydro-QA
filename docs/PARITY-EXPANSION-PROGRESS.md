@@ -49,3 +49,40 @@ Deliberately not implemented to protect the green gate / because not safely auto
 - **P4 manual (documented in catalog):** signature freehand draw, camera/gallery, date/datetime pickers, multi-select dropdowns, swipe/drag gestures, mobile->web sample-add (Room-only, no endpoint, syncs only on forbidden Submit), Normec/ALS field-set, submit-batch GUARDRAIL (NEVER).
 
 **To promote 4e:** fix p12 selectors (mobile FAB -> Actions -> AddActionsBottomSheet -> Add Custom Action -> name + priority + Save) on the CI emulator; once CI shows 4e PASS, remove from KNOWN_FLAKY.
+
+---
+
+## DROPDOWN WAVE (2026-05-30) — 4f: 36 Risk Assessment Yes/No dropdowns
+
+**Why:** dropdown parity coverage was **1/75** surfaces (only 3e Site Induction). Discovery sweep
+`docs/PARITY-DROPDOWNS-CATALOG.md` (4-agent workflow) mapped EVERY dropdown on both apps; 53 addable
+new checks, the bulk being the **36 Risk Assessment Yes/No dropdowns** of the parity jobType (P1, easiest,
+identical to the proven 3e pattern).
+
+**Built (4f-ra-dropdowns):** ONE check, 36 datums (mirrors 2h = 16 samples).
+- `RA_DROPDOWN_FIELDS` (36 exact fieldNames, GENERATED from the live dev dump, asserted length===36).
+- `buildExpected.raDropdowns` = {fieldName: alternating Yes/No}.
+- `addRaDropdowns(c, inspectionId, expected)` — GET inspection, resolve each dropdown's InspectionFormField
+  id by fieldName, `PATCH /inspections/{id}/submit-form {formFields:[{id,value}]}`. Called in create + reuse.
+- verify: reuses `checkFields("4f-ra-dropdowns", "Web->Mobile (API)", inspection, "Risk Assessment", raDropdowns)`
+  — all 36 must match (fail-closed). EXPECTED_IDS += 4f, KNOWN_FLAKY += 4f (until CI confirms render).
+- Evidence: p15 mobile flow (RA form photo) + web shot + gen-report FLOW + Excel CHECK_TO_FLOW/EVIDENCE_MAP.
+
+**Probe-verified live before building (advisor caught these):**
+1. `submit-form` is **MERGE** not replace — setting the 36 dropdowns does NOT null the 18 free-text
+   "- Comments" that 3c reads. So 4f is safe at any phase; cannot red 3c's green gate.
+2. 36 fieldNames generated from the dump (not retyped) — incl. anomalies "Releasing Aerosols - Risks
+   Managed?" (plural) + "Assesing Chemical Dosing Equipment" (backend typo).
+3. **End-to-end live PASS:** buildExpected -> addRaDropdowns -> submit-form -> GET -> checkFields = 36/36, restored.
+
+**+7 unit tests (97 total green).** Committed ab86e3d. CI validation: run **26683132921** (in flight).
+
+**Promote-vs-relabel decision (the render discriminator):** web UI is read-only on these (F-02), so
+"Web->Mobile" is API-set -> the **mobile RA photo (p15-after.png) is the real-vs-tautology discriminator**.
+After CI: if the mobile RA form shows the Yes/No values -> promote 4f to the gate (remove from KNOWN_FLAKY).
+If blank -> keep flaky, relabel "API-only", file an F-01-style render-gap finding (precedent: 2c).
+
+**Remaining dropdown backlog (from the catalog, deferred):** P2b entity Selects (product, action-status —
+visit-status=2j & engineers=2l already cover those datums), P2 mobile-set (photo label, predefined action,
+flaky like 4e), P3 multi-select (needs isMultiSelect toggle / different jobType), P4 Normec/ALS sample
+dropdowns (GUARDRAIL — mobile-only, manual, NEVER submit-batch).
