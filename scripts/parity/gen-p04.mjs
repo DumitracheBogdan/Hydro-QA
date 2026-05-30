@@ -21,6 +21,13 @@ function fieldSteps(label) {
     `    below: { text: ${JSON.stringify(label)} }`,
     `- inputText: ${JSON.stringify(VALUE)}`,
     `- hideKeyboard`,
+    // Verify the value actually landed in the field. On the CI emulator the "below label" tap can
+    // miss the input (it sits at/below the fold) -> inputText no-ops, value never persists. Maestro
+    // still reports the tap COMPLETED, so without this assert the flow exits 0 and run_flow (retry-on-
+    // non-zero only) never retries -> the silent miss reaches the API verify as a 3c FAIL. assertVisible
+    // turns a miss into a NON-ZERO exit -> run_flow relaunches + retries (a fresh attempt lands).
+    // Root-cause fix for the documented ~20% 3c geometry flake (run 26683863166).
+    `- assertVisible: ${JSON.stringify(VALUE)}`,
     `- tapOn: ${JSON.stringify(label)}`,
   ];
 }

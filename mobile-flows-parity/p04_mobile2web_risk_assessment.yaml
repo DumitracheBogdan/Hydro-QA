@@ -17,6 +17,7 @@ tags: [parity, mobile2web]
     below: { text: "Accessing Area/Lone Working- Comments" }
 - inputText: "PARITY-${RUN_ID} rc"
 - hideKeyboard
+- assertVisible: "PARITY-${RUN_ID} rc"
 - tapOn: "Accessing Area/Lone Working- Comments"
 # Collapse the (very long) Risk Assessment card before Save, else scrolling DOWN to Save
 # through the fully-expanded card times out (the automated field is near the TOP of the
