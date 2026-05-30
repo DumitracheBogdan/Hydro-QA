@@ -10,7 +10,11 @@
 - Suite = **11 checks**: 2a,2b,2c(API),2d,2g,2h(samples 16/16),3a,3b,3c,3d,3e. Dual-UI (web+mobile photos) + rich report.html + run-summary list + download buttons.
 
 ## Waves (from catalog, by priority)
-- [~] **Wave 1 (P1 safe, web->mobile API-set):** 4a-inspection-notes, 4b-booking-info(site.accessInfo), 4c-item-reference, 4d-item-location. (agent in flight)
+- [x] **Wave 1 (P1 safe, web->mobile API-set):** 4a-inspection-notes, 4b-booking-info, 4c-item-reference, 4d-item-location — DONE, CI-VERIFIED PASS (run 26668604041, 17/17). Photos correct (2i shot shows item-ref/loc on web). **PROMOTE: remove from KNOWN_FLAKY on next verify-data edit (after Wave 4 agent, to avoid file conflict).**
+- [x] **Wave 2:** 2i-add-inspection (2 inspections shown on web), 2j-visit-status(confirmed) — DONE, CI-VERIFIED PASS. PROMOTE with Wave 1.
+- [~] **Wave 3:** 4e-mobile-action (mobile->web) — committed, KNOWN_FLAKY; Wave 3 CI (26669275076) pending (p12 mobile flow is the flaky part).
+- [~] **Wave 4:** 2k-sample-note, 2l-engineers (web->mobile) — agent in flight.
+- NEXT verify-data edit must: remove from KNOWN_FLAKY -> {4a,4b,4c,4d,2i,2j} (CI-verified PASS); keep {4e,2k,2l} until their CI green.
 - [ ] **Wave 2 (P1 form-fields, mobile->web):** form-field NUMBER, TOGGLE/switch, N/A flag (isNotApplicable). Needs Maestro flows.
 - [ ] **Wave 3 (P2 web->mobile API-set):** visit.status badge, visit.engineers chip, visit.from/to (CAUTION: don't break today-dating/mobile search), add/delete inspection.
 - [ ] **Wave 4 (P2 mobile->web state):** inspection missed (Unable to Inspect), visit aborted, mobile add-action (name+priority). STATE-CHANGERS → run LAST in Phase 2, after form reads, or they hide fields.
