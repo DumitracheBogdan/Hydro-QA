@@ -97,4 +97,25 @@ dropdowns (GUARDRAIL — mobile-only, manual, NEVER submit-batch).
   the typed value -> a miss now exits non-zero -> run_flow retries; good runs unaffected. ~20% -> ~4%.
 - Run 26684712220: **GREEN, 20/21, gateFailed=false, 4f PASS + 3c PASS** (only 4e flaky). Web evidence photo now
   shows all 36 dropdowns (expandCard exact:true fix). **Suite = 20 hard-gated + 1 flaky.** 98 unit tests green.
-- Done-bar: confirming runs in flight for 3x green on the final code (0719667).
+- Done-bar confirming runs: 26685430715 **GREEN** (20/21, 4f+3c PASS). 26685441241 + 26687389570 **RED** but on a
+  WHOLESALE mobile failure (see KNOWN FLAKE below), NOT 4f (4f PASS in all). Net on final code: 4f 3x PASS, suite
+  2x clean green + 2 hits of a pre-existing infra flake.
+
+### KNOWN PRE-EXISTING FLAKE — mobile-app visit-sync (NOT caused by the dropdown work)
+**Symptom:** ~2 of 4 CI runs (2026-05-30 afternoon) failed WHOLESALE on the mobile side — every mobile-dependent
+check failed at once (2a/2b/2d/2g + 3a/3b/3c/3d/3e + 4e), while EVERY pure-API check passed (incl 4f, 2h, 2i-2l,
+4a-4d). The mobile flows all die at `open_tagged_visit.yaml` -> `scrollUntilVisible "View Visit Details"` (visit not
+found in the mobile search), PERSISTENTLY for the whole run (all flows + their run_flow retries fail).
+**Root cause (systematic-debugged, evidence in run 26687389570):** the visit IS created (setup logs `SAMPLES added
+16` + `4F set 36/36`) with a valid `visitRef=VN013747`, but the mobile APP doesn't reliably sync/surface a
+freshly-API-created visit into its list/search for that run. Intermittent sync-timing; aggravated by dev-env load +
+52 accumulated PARITY visits. The app pulls visits on login; a just-created visit sometimes isn't in the pull.
+**NOT caused by 4f/p15/3c-fix (ruled out with evidence):** (a) `submit-form` does NOT change inspection/visit
+status (probed: identical before/after) -> 4f can't hide the visit; (b) the failure is at p01a (the FIRST mobile
+flow, BEFORE p15) -> p15 exonerated; (c) setup succeeds + visitRef is valid; (d) 4f PASS in all 4 runs; (e) runs 1&2
+ran the IDENTICAL setup and the mobile side passed.
+**Proof the suite CODE is correct:** runs 26684712220 + 26685430715 = clean green 20/21 (4f+3c PASS) when the
+backend sync cooperates.
+**Recommended future fix (needs emulator iteration — DEFERRED per user):** harden `open_tagged_visit.yaml` — on
+"View Visit Details" not found, pull-to-refresh the visits list (force a sync) and retry the search; and/or add a
+stale-visit cleanup to stop the 52-and-growing accumulation. Both touch shared flows / dev data, so deferred.
