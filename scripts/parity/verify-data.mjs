@@ -98,6 +98,31 @@ export function checkInspectionCount(visit, atLeast) {
     details: `inspections=${n} want>=${atLeast}` };
 }
 
+// 2k — a per-sample NOTE POSTed via /laboratory-samples/{id}/notes (web->mobile) must read back on
+// GET /laboratory-samples/{id}.sampleNote.noteText. The note is NESTED on the sample object (the flat
+// .notes field stays null — probe-verified on dev 2026-05-30), so this drills sample.sampleNote.noteText
+// rather than reusing checkScalarField (obj[field] is a flat lookup that would compare the whole
+// sampleNote object). Tolerates a null/missing sample or sampleNote -> FAIL (no crash). An
+// empty/undefined want is a FAIL (no vacuous pass — L6).
+export function checkSampleNote(sample, want) {
+  const got = sample?.sampleNote?.noteText;
+  const ok = want !== undefined && want !== "" && got === want;
+  return { id: "2k-sample-note", direction: "Web->Mobile", status: ok ? "PASS" : "FAIL",
+    details: `sampleNote.noteText=${JSON.stringify(got)} want=${JSON.stringify(want)}` };
+}
+
+// 2l — a SECOND engineer added to the visit on the webapp (PATCH /visits/{id} {engineerIds:[...]})
+// must show on the visit: GET /visits/{id}.visitEngineers.length >= atLeast (web->mobile, structural —
+// no value to match, so its own comparator like checkInspectionCount). Write field is engineerIds; READ
+// field is visitEngineers (the drift note — probe-verified on dev 2026-05-30). Tolerates a null/missing
+// visit or visitEngineers array -> FAIL (no crash). A non-positive atLeast is a FAIL (no vacuous pass — L6).
+export function checkEngineerCount(visit, atLeast) {
+  const n = (visit && Array.isArray(visit.visitEngineers)) ? visit.visitEngineers.length : 0;
+  const ok = atLeast > 0 && n >= atLeast;
+  return { id: "2l-engineers", direction: "Web->Mobile", status: ok ? "PASS" : "FAIL",
+    details: `visitEngineers=${n} want>=${atLeast}` };
+}
+
 // The full set of check ids the suite is expected to produce on a complete run. buildSummary uses
 // this to PIN the denominator: any expected id that never materialized becomes a synthetic FAIL, so
 // a crashed/absent phase can never shrink the total into a misleading green (H3, M10).
@@ -114,6 +139,10 @@ export const EXPECTED_IDS = [
   // 4e: a CUSTOM visit-level action ADDED ON MOBILE (p12) -> reads back via GET /actions?visitId.
   // mobile->web (the user's "add on mobile, see on web"), scored on the connection + flow-guarded.
   "4e-mobile-action",
+  // 2k: a per-sample NOTE POSTed to the samples flagship's first laboratorySample -> reads back on
+  // GET /laboratory-samples/{id}.sampleNote.noteText. 2l: a SECOND engineer added to the visit ->
+  // visitEngineers.length >= 2. Both web->mobile, additive, scored on the connection (API GET).
+  "2k-sample-note", "2l-engineers",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
@@ -143,10 +172,17 @@ export const EXPECTED_IDS = [
 // NewActionWidget Save vs the bottom-sheet footer Save vs the visit-level Save) are unverified on the
 // CI emulator, so the flow is the flaky part. The API read-back comparator (checkActionPresent) is
 // deterministic and tested; promote 4e to the gate (remove here) once CI shows p12 sets+reads green.
+// 2k/2l (new web->mobile checks) also start here until a CI run proves them green — reported but never
+// red the gate, so they cannot break the existing 17 checks. PATCH/POST + GET round-trip probe-verified
+// against dev 2026-05-30: POST /laboratory-samples/{id}/notes lands on GET .sampleNote.noteText (the
+// flat .notes stays null); PATCH /visits {engineerIds:[existing,2nd]} makes visitEngineers.length==2 AND
+// keeps the existing engineer (parity.bot — the mobile QA login) assigned, so the visit stays on mobile.
+// Promote (remove here) once CI is green.
 export const KNOWN_FLAKY = new Set([
   "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
   "2i-add-inspection", "2j-visit-status",
   "4e-mobile-action",
+  "2k-sample-note", "2l-engineers",
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
@@ -234,6 +270,12 @@ async function main() {
   if (ctx.expected.bookingStatus)
     apiChecks.push(checkScalarField("2j-visit-status", "Web->Mobile (API)", visit, "status", ctx.expected.bookingStatus));
 
+  // 2l — a SECOND engineer added to the visit on the webapp (PATCH /visits {engineerIds:[...]}): the
+  // visit must now carry >= 2 engineers (web->mobile, structural). Scored off the visit already GET'd
+  // above; READ field is visitEngineers (the drift note). The PATCH KEEPS the existing engineer
+  // (parity.bot) so the visit stays on mobile — guaranteed structurally in setup (addSecondEngineer).
+  apiChecks.push(checkEngineerCount(visit, 2));
+
   // 4e — a CUSTOM visit-level action ADDED ON MOBILE (p12) read back via GET /actions?visitId.
   // mobile->web (add on mobile, see on web). Scored by name-only presence (checkActionPresent);
   // guarded by p12 in reuse mode. setup-data records the expected name but NEVER POSTs it, so a PASS
@@ -249,6 +291,16 @@ async function main() {
   if (ctx.expected.sitePatch && ctx.siteId) {
     const site = await c.get(`/sites/${ctx.siteId}`).catch(() => null);
     apiChecks.push(checkScalarField("4b-booking-info", "Web->Mobile (API)", site, "accessInfo", ctx.expected.sitePatch.accessInfo));
+  }
+
+  // 2k — a per-sample NOTE POSTed to the samples flagship's first laboratorySample (web->mobile). Read
+  // back on GET /laboratory-samples/{sampleId}.sampleNote.noteText. The sampleId is the EXACT one
+  // persisted by setup (NOT re-derived from laboratorySamples[0], whose order isn't guaranteed stable).
+  // A null/missing sample GET degrades to a FAIL via checkSampleNote (not a crash). Probe-verified on
+  // dev 2026-05-30: the POSTed note lands on .sampleNote.noteText (the flat .notes field stays null).
+  if (ctx.expected.sampleId && ctx.expected.sampleNoteText) {
+    const sample = await c.get(`/laboratory-samples/${ctx.expected.sampleId}`).catch(() => null);
+    apiChecks.push(checkSampleNote(sample, ctx.expected.sampleNoteText));
   }
 
   // null (not []) distinguishes "file absent/unparseable" from "file present but empty", so the

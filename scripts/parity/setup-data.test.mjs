@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit, addSecondInspection } from "./setup-data.mjs";
+import { buildVisitPayload, buildExpected, makeTitle, RISK_COMMENT_FIELDS, RISK_COMMENT_FIELDS_AUTOMATED, deriveRunId, pickExactVisit, addSecondInspection, addSampleNote, addSecondEngineer } from "./setup-data.mjs";
 
 // Minimal fake REST client for addSecondInspection (no network). Records POSTs.
 function fakeClient({ visitInspections = [], jobTypes = [] } = {}) {
@@ -140,6 +140,13 @@ test("addSecondInspection is non-fatal when no second jobType exists (2i, best-e
   assert.equal(expected.secondInspectionId, undefined);
 });
 
+// --- 2k: the per-sample note text seeded web->mobile (POST /laboratory-samples/{id}/notes) ---
+// Mirrors the 2g/4b/2j buildExpected assertions: without this, dropping the buildExpected line would
+// make addSampleNote POST {noteText: undefined} and 2k silently always-FAIL with no unit signal.
+test("buildExpected exposes the per-sample note text seeded web->mobile (2k)", () => {
+  assert.equal(buildExpected("RUN42").sampleNoteText, "PARITY-RUN42 sample-note");
+});
+
 test("buildExpected exposes the Site Induction dropdown choice (p03b, fixed option)", () => {
   const e = buildExpected("RUN42");
   assert.equal(e.siteInduction["Site Induction required & Completed"], "Yes - Induction completed");
@@ -160,4 +167,108 @@ test("pickExactVisit returns null when no exact match (never falls back to list[
   assert.deepEqual(pickExactVisit(list, "visitReference", "VN888"), { visitReference: "VN888" });
   assert.equal(pickExactVisit([], "visitReference", "VN888"), null);
   assert.equal(pickExactVisit(null, "visitReference", "VN888"), null);
+});
+
+// --- 2k: addSampleNote — POST a note to the FIRST laboratorySample, record id + text on expected ---
+// Fake client for addSampleNote: GET /inspections/{id} returns laboratorySamples; POST
+// /laboratory-samples/{id}/notes records the note. Mirrors the real dev shapes probed 2026-05-30:
+// the POST body is { noteText }, and the sampleId comes from inspection.laboratorySamples[0].id.
+function fakeNoteClient({ laboratorySamples = [] } = {}) {
+  const posted = [];
+  return {
+    posted,
+    async get(path) {
+      if (path.startsWith("/inspections/")) return { laboratorySamples };
+      return null;
+    },
+    async post(path, body) {
+      posted.push({ path, body });
+      return { noteId: "NEW-NOTE", entityId: path.split("/")[2], noteText: body.noteText };
+    },
+  };
+}
+
+test("addSampleNote POSTs a note to laboratorySamples[0] and records sampleId + sampleNoteText (2k)", async () => {
+  const c = fakeNoteClient({ laboratorySamples: [{ id: "SAMP-1" }, { id: "SAMP-2" }] });
+  const expected = {};
+  await addSampleNote(c, "INSP-1", "PARITY-RUN42 sample-note", expected);
+  assert.equal(c.posted.length, 1);
+  assert.equal(c.posted[0].path, "/laboratory-samples/SAMP-1/notes"); // FIRST sample
+  assert.equal(c.posted[0].body.noteText, "PARITY-RUN42 sample-note");
+  assert.equal(expected.sampleId, "SAMP-1");
+  assert.equal(expected.sampleNoteText, "PARITY-RUN42 sample-note");
+});
+test("addSampleNote is non-fatal + POSTs nothing when the inspection has no samples (2k, best-effort)", async () => {
+  const c = fakeNoteClient({ laboratorySamples: [] });
+  const expected = {};
+  await addSampleNote(c, "INSP-1", "PARITY-RUN42 sample-note", expected); // must not throw
+  assert.equal(c.posted.length, 0);
+  assert.equal(expected.sampleId, undefined);
+  assert.equal(expected.sampleNoteText, undefined);
+});
+
+// --- 2l: addSecondEngineer — KEEP every existing engineer, ADD a discovered 2nd, PATCH engineerIds ---
+// Fake client: GET /visits/{id} returns visitEngineers; GET /users returns the engineer pool; PATCH
+// /visits/{id} records the body. Mirrors the real dev shapes probed 2026-05-30: write field is
+// engineerIds, read field is visitEngineers[].engineerId, /users entries carry isEngineer.
+function fakeEngineerClient({ visitEngineers = [], users = [] } = {}) {
+  const patched = [];
+  return {
+    patched,
+    async get(path) {
+      if (path.startsWith("/visits/")) return { visitEngineers };
+      if (path === "/users") return users;
+      return null;
+    },
+    async patch(path, body) { patched.push({ path, body }); return null; },
+  };
+}
+
+test("addSecondEngineer KEEPS the existing engineer and ADDS a discovered 2nd via engineerIds (2l)", async () => {
+  const c = fakeEngineerClient({
+    visitEngineers: [{ engineerId: "PARITY-BOT" }],
+    users: [{ id: "PARITY-BOT", isEngineer: true }, { id: "ENG-2", isEngineer: true }, { id: "NON-ENG", isEngineer: false }],
+  });
+  const expected = {};
+  await addSecondEngineer(c, "V1", expected);
+  assert.equal(c.patched.length, 1);
+  assert.equal(c.patched[0].path, "/visits/V1");
+  const ids = c.patched[0].body.engineerIds;
+  assert.ok(ids.includes("PARITY-BOT"), "the existing engineer must be KEPT");
+  assert.equal(ids.length, 2);
+  assert.notEqual(ids[1], "NON-ENG"); // never picks a non-engineer
+  assert.equal(expected.engineerCount, 2);
+});
+
+// GUARDRAIL (the headline risk): the PATCH must NEVER produce an engineerIds array that drops the
+// already-assigned engineer (parity.bot is the mobile QA login — if it vanishes the visit disappears
+// from mobile and ALL checks die). Built structurally from the existing visitEngineers, so it holds
+// regardless of fx state. Multiple pre-existing engineers must ALL survive.
+test("addSecondEngineer NEVER drops an already-assigned engineer — the kept list always includes it (2l GUARDRAIL)", async () => {
+  const c = fakeEngineerClient({
+    visitEngineers: [{ engineerId: "PARITY-BOT" }],
+    users: [{ id: "PARITY-BOT", isEngineer: true }, { id: "ENG-2", isEngineer: true }],
+  });
+  await addSecondEngineer(c, "V1", {});
+  assert.ok(c.patched[0].body.engineerIds.includes("PARITY-BOT"), "parity.bot must survive the PATCH");
+});
+test("addSecondEngineer preserves ALL pre-existing engineers when adding the 2nd (2l GUARDRAIL)", async () => {
+  const c = fakeEngineerClient({
+    visitEngineers: [{ engineerId: "ENG-A" }, { engineerId: "ENG-B" }],
+    users: [{ id: "ENG-A", isEngineer: true }, { id: "ENG-B", isEngineer: true }, { id: "ENG-C", isEngineer: true }],
+  });
+  const expected = {};
+  await addSecondEngineer(c, "V1", expected); // already >= 2 -> idempotent: no PATCH, record count
+  assert.equal(c.patched.length, 0); // no stacking when already 2+
+  assert.equal(expected.engineerCount, 2);
+});
+test("addSecondEngineer is non-fatal + PATCHes nothing when no 2nd engineer is available (2l, best-effort)", async () => {
+  const c = fakeEngineerClient({
+    visitEngineers: [{ engineerId: "ONLY-ENG" }],
+    users: [{ id: "ONLY-ENG", isEngineer: true }], // no other engineer to add
+  });
+  const expected = {};
+  await addSecondEngineer(c, "V1", expected); // must not throw
+  assert.equal(c.patched.length, 0);
+  assert.equal(expected.engineerCount, undefined);
 });

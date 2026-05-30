@@ -92,6 +92,8 @@ CHECK_TO_FLOW = {
     '2i-add-inspection': 'p10_web2mobile_add_inspection',
     '2j-visit-status': 'p11_web2mobile_visit_status',
     '4e-mobile-action': 'p12_mobile2web_add_action',
+    '2k-sample-note': 'p13_web2mobile_sample_note',
+    '2l-engineers': 'p14_web2mobile_engineers',
 }
 
 # Short check token (e.g. "2a") used to find F2 web screenshots {check}-web-set.png.
@@ -331,6 +333,40 @@ EVIDENCE_MAP = {
         ],
         'expected': 'GET /actions?visitId contains an action named "PARITY-<runId> MobAct"; the webapp Actions card shows it.',
         'connection': 'GET /actions?visitId={id} -> some action .name == "PARITY-<runId> MobAct".',
+    },
+    '2k-sample-note': {
+        'description': 'Web->mobile (API-set): a per-sample NOTE POSTed to the samples flagship\'s FIRST '
+                       'laboratorySample (the inspection gets 16 samples via 2h/addSamples first) must '
+                       'read back on GET /laboratory-samples/{id}.sampleNote.noteText and render on the '
+                       'mobile Water Sampling sample. The note is NESTED on the sample (the flat .notes '
+                       'field stays null). NEVER submits to Normec/ALS.',
+        'steps': [
+            'API (after 2h addSamples): GET /inspections/{id} -> laboratorySamples[0].id (persist the exact id).',
+            'API: POST /laboratory-samples/{sampleId}/notes {noteText: "PARITY-<runId> sample-note"}.',
+            'Connection: GET /laboratory-samples/{sampleId} -> .sampleNote.noteText equals the set value (checkSampleNote).',
+            'Webapp: open the inspection -> Lab Results tab; expand the sample; confirm the note value.',
+            'Mobile: open the inspection -> Water Sampling section; read the sample note (p13, photo-only).',
+            'GUARDRAIL: never tap "Submit Samples" / POST /laboratory-samples/submit-batch.',
+        ],
+        'expected': 'GET /laboratory-samples.sampleNote.noteText equals the API-set value; the webapp Lab Results sample shows it.',
+        'connection': 'GET /laboratory-samples/{sampleId} -> .sampleNote.noteText equals "PARITY-<runId> sample-note".',
+    },
+    '2l-engineers': {
+        'description': 'Web->mobile: a SECOND engineer added to the visit on the webapp (PATCH '
+                       '/visits/{id} {engineerIds:[existing, second]}) must show on the visit -> '
+                       'visitEngineers.length >= 2. Write field is engineerIds; READ field is '
+                       'visitEngineers (the drift note). GUARDRAIL: the existing engineer (parity.bot — '
+                       'the mobile QA login) is KEPT structurally, so the visit never vanishes from mobile.',
+        'steps': [
+            'API: GET /visits/{id} -> current visitEngineers[].engineerId (the kept list).',
+            'API: GET /users -> first isEngineer user not already on the visit (the 2nd engineer).',
+            'API: PATCH /visits/{id} {engineerIds: [...existing, second]} (existing kept FIRST).',
+            'Connection: GET /visits/{id} -> .visitEngineers.length >= 2 (checkEngineerCount).',
+            'Webapp: open the visit details; screenshot the Engineers chips (now 2).',
+            'Mobile: open the visit; screenshot the Engineers chips (p14, photo-only).',
+        ],
+        'expected': 'GET /visits.visitEngineers.length >= 2; the webapp Engineers chips show both engineers (parity.bot kept).',
+        'connection': 'GET /visits/{id} -> .visitEngineers.length >= 2.',
     },
 }
 

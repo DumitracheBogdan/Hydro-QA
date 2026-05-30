@@ -128,6 +128,9 @@ async function main() {
       await shotAt(page, "Client Signature", "3a-signature");
       // 4b — site Booking Info card on the visit detail (web->mobile API-set accessInfo)
       await shotAt(page, "Booking Info", "4b-booking-info").catch(() => shot(page, "4b-booking-info"));
+      // 2l — the visit Engineers chips (a 2nd engineer was added via API). Visit-level card on the
+      // detail page; scroll to the Engineers heading (best-effort) and screenshot the chips.
+      await shotAt(page, "Engineers", "2l-engineers").catch(() => shot(page, "2l-engineers"));
       // 2i — the Inspections tab now lists 2 inspections (a 2nd was added via API). Open the tab and
       // screenshot the LIST (before drilling into an inspection), so the photo shows both rows.
       await page.getByRole("tab", { name: /Inspections/i }).first().click({ timeout: 6000 })
@@ -151,6 +154,10 @@ async function main() {
         .catch(() => page.getByText("Lab Results", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));
       await page.waitForTimeout(1200);
       await shot(page, "2h-samples");
+      // 2k — per-sample note: still on the Lab Results tab, expand the FIRST sample row to reveal its
+      // note, then screenshot. Best-effort (the note lands on .sampleNote.noteText; 2k is scored via API).
+      await expandCard(page, "Potable/Domestic");
+      await shotAt(page, "Note", "2k-sample-note").catch(() => shot(page, "2k-sample-note"));
     }
     log("DONE phase=" + PHASE);
   } catch (e) { console.error("::error:: webapp-shots", e.message); }

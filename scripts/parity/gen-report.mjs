@@ -22,6 +22,8 @@ const FLOW = {
   "2i-add-inspection": "p10_web2mobile_add_inspection",
   "2j-visit-status": "p11_web2mobile_visit_status",
   "4e-mobile-action": "p12_mobile2web_add_action",
+  "2k-sample-note": "p13_web2mobile_sample_note",
+  "2l-engineers": "p14_web2mobile_engineers",
 };
 
 export function renderReport(s, images = {}) {

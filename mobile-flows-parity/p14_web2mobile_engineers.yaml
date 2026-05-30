@@ -1,0 +1,22 @@
+appId: com.hydrocert.app
+name: "PARITY p14 - web-to-mobile second engineer (visit Engineers chips)"
+tags: [parity, web2mobile]
+---
+# A SECOND engineer was added to the visit via the web API in phase 0 (check 2l, PATCH /visits/{id}
+# {engineerIds:[existing, second]}). It reads back on GET /visits.visitEngineers (write field
+# engineerIds, read field visitEngineers — the drift note, probe-verified 2026-05-30). SCORED via API
+# (checkEngineerCount on GET /visits.visitEngineers.length >= 2); this flow exists ONLY to capture
+# MOBILE-side photo evidence ({flow}-after.png) and runs `|| true` in the orchestrator (mirror
+# p10/p11). GUARDRAIL: the setup PATCH KEEPS the existing engineer (parity.bot — the mobile QA login
+# this flow logs in as), so the visit still surfaces for parity.bot; this flow only opens the visit and
+# screenshots the Engineers chips with a static, optional scroll — never a hard assertVisible on the
+# 2nd engineer name, so a non-render degrades to one clean photo instead of burning a retry. Promote to
+# the assert pattern once a CI run confirms the 2nd engineer chip renders.
+- runFlow: _shared/open_tagged_visit.yaml
+- scrollUntilVisible:
+    element: { text: "Engineer.*" }
+    direction: DOWN
+    timeout: 15000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 4000

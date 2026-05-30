@@ -100,6 +100,11 @@ run_flow mobile-flows-parity/p09_web2mobile_booking_info.yaml || true      # 4b 
 # missed selector never fails the gate. They are NOT added to parity-mobile-results.json.
 run_flow mobile-flows-parity/p10_web2mobile_add_inspection.yaml || true     # 2i 2nd inspection->Inspections list
 run_flow mobile-flows-parity/p11_web2mobile_visit_status.yaml || true       # 2j booking status->header badge
+# 2k/2l — new web->mobile checks. Scored via API (checkSampleNote / checkEngineerCount in verify-data);
+# these flows capture the MOBILE-side photo only, so run `|| true` (mirror p06-p11) — a missed selector
+# never fails the gate. They are NOT added to parity-mobile-results.json.
+run_flow mobile-flows-parity/p13_web2mobile_sample_note.yaml || true        # 2k sample note->Water Sampling
+run_flow mobile-flows-parity/p14_web2mobile_engineers.yaml || true          # 2l 2nd engineer->Engineers chips
 C2C='SKIP'
 if [ -f mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml ]; then
   run_flow mobile-flows-parity/p01c_web2mobile_inspection_actions.yaml; C=$?; C2C=$(st $C)

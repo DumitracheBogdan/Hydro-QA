@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, checkInspectionCount, checkActionPresent, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, checkInspectionCount, checkActionPresent, checkSampleNote, checkEngineerCount, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -310,5 +310,75 @@ test("the 2 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not
   const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2i-add-inspection" ? "FAIL" : "PASS", details: "" }));
   const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
   assert.equal(s.gateFailed, false); // 2i flaky -> does not gate
+  assert.equal(s.failed, 1);         // but is still reported failed
+});
+
+// --- 2k: a per-sample NOTE POSTed via /laboratory-samples/{id}/notes must read back on
+// GET /laboratory-samples/{id}.sampleNote.noteText (web->mobile). The note is NESTED on the sample
+// (the flat .notes field stays null — probe-confirmed 2026-05-30), so checkSampleNote drills
+// sample.sampleNote.noteText rather than reusing checkScalarField (which does obj[field], a flat
+// lookup that would compare the whole sampleNote object). Same null-tolerance + no-vacuous-pass
+// guards as checkInspectionCount/checkScalarField. The TDD fixture uses the REAL nested shape. ---
+test("checkSampleNote PASSes when sample.sampleNote.noteText equals the expected want (2k)", () => {
+  const sample = { id: "S1", sampleNote: { noteText: "PARITY-R sample-note" } };
+  const r = checkSampleNote(sample, "PARITY-R sample-note");
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "2k-sample-note");
+});
+test("checkSampleNote FAILs when the nested noteText differs (2k)", () => {
+  const sample = { id: "S1", sampleNote: { noteText: "WRONG" } };
+  assert.equal(checkSampleNote(sample, "PARITY-R sample-note").status, "FAIL");
+});
+test("checkSampleNote FAILs when sampleNote is null/absent (note never landed) (2k)", () => {
+  assert.equal(checkSampleNote({ id: "S1", sampleNote: null }, "PARITY-R sample-note").status, "FAIL");
+  assert.equal(checkSampleNote({ id: "S1" }, "PARITY-R sample-note").status, "FAIL");
+});
+test("checkSampleNote FAILs (no crash) on a null/undefined sample (2k)", () => {
+  assert.equal(checkSampleNote(null, "PARITY-R sample-note").status, "FAIL");
+  assert.equal(checkSampleNote(undefined, "PARITY-R sample-note").status, "FAIL");
+});
+test("checkSampleNote FAILs on an empty/undefined want (no vacuous pass) (2k/L6)", () => {
+  assert.equal(checkSampleNote({ sampleNote: { noteText: "" } }, "").status, "FAIL");
+  assert.equal(checkSampleNote({ sampleNote: { noteText: "x" } }, undefined).status, "FAIL");
+});
+
+// --- 2l: a SECOND engineer added to the visit on the webapp (PATCH /visits/{id} {engineerIds:[...]})
+// must show on the visit -> visitEngineers.length >= atLeast (web->mobile, structural). Write field is
+// engineerIds; READ field is visitEngineers (drift note) — probe-confirmed 2026-05-30. New comparator
+// (no value to match, like checkInspectionCount). Null-tolerant; non-positive atLeast -> FAIL. ---
+test("checkEngineerCount PASSes when the visit has at least the expected number of engineers (2l)", () => {
+  const visit = { visitEngineers: [{ engineerId: "A" }, { engineerId: "B" }] };
+  const r = checkEngineerCount(visit, 2);
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "2l-engineers");
+});
+test("checkEngineerCount FAILs when the visit has fewer than the expected engineers (2l)", () => {
+  assert.equal(checkEngineerCount({ visitEngineers: [{ engineerId: "A" }] }, 2).status, "FAIL");
+});
+test("checkEngineerCount FAILs on a null/missing visitEngineers array (no crash, no vacuous pass) (2l)", () => {
+  assert.equal(checkEngineerCount(null, 2).status, "FAIL");
+  assert.equal(checkEngineerCount({}, 2).status, "FAIL");
+  assert.equal(checkEngineerCount({ visitEngineers: [] }, 2).status, "FAIL");
+});
+test("checkEngineerCount FAILs on a non-positive atLeast (no vacuous pass) (2l/L6)", () => {
+  assert.equal(checkEngineerCount({ visitEngineers: [{ engineerId: "A" }] }, 0).status, "FAIL");
+});
+
+// --- the 2 NEW checks (2k/2l) are pinned in EXPECTED_IDS (denominator) ---
+test("EXPECTED_IDS includes the 2 new web->mobile checks (2k/2l)", () => {
+  for (const id of ["2k-sample-note", "2l-engineers"]) {
+    assert.ok(EXPECTED_IDS.includes(id), `${id} must be in EXPECTED_IDS`);
+  }
+});
+
+// --- the 2 NEW checks (2k/2l) start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---
+test("the 2 new checks are in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (2k/2l)", () => {
+  for (const id of ["2k-sample-note", "2l-engineers"]) {
+    assert.equal(KNOWN_FLAKY.has(id), true, `${id} must be KNOWN_FLAKY until CI-green`);
+  }
+  // a failing new check leaves the gate green (the existing 11 hard-gated checks are unaffected)
+  const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "2k-sample-note" ? "FAIL" : "PASS", details: "" }));
+  const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
+  assert.equal(s.gateFailed, false); // 2k flaky -> does not gate
   assert.equal(s.failed, 1);         // but is still reported failed
 });

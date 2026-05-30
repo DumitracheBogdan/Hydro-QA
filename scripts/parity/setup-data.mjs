@@ -117,6 +117,10 @@ export function buildExpected(runId) {
     // status='confirmed' round-trips on PATCH+GET and the visit stays searchable (filter + calendar).
     // Scored via GET /visits/{id}.status === 'confirmed' (checkScalarField).
     bookingStatus: "confirmed",
+    // web->mobile (2k): a per-sample NOTE POSTed to the samples flagship's first laboratorySample via
+    // POST /laboratory-samples/{id}/notes. addSampleNote also persists the EXACT sampleId on `expected`
+    // at runtime (the sample doesn't exist until addSamples runs). Distinct "sample-note" suffix.
+    sampleNoteText: `${tag} sample-note`,
     // mobile->web dropdown (p03b): a fixed option (not run-tagged — it is a fixed-choice field).
     // Verified against the Visit Information form's fieldOptions on jobType 658f27c1.
     siteInduction: {
@@ -210,6 +214,57 @@ export async function addSecondInspection(c, visitId, primaryJobTypeId, expected
   } catch (e) { console.error(`WARN: addSecondInspection failed (${e.message})`); }
 }
 
+// 2k — POST a NOTE to the FIRST laboratorySample of the inspection (the samples flagship adds 16 via
+// addSamples; after that runs the inspection has laboratorySamples). Endpoint POST
+// /laboratory-samples/{sampleId}/notes {noteText} — probe-verified on dev 2026-05-30; the note reads
+// back on GET /laboratory-samples/{id}.sampleNote.noteText (the flat .notes stays null). Records the
+// EXACT sampleId + the note text on `expected` (so verify reads the same sample, not laboratorySamples[0]
+// which has no guaranteed-stable order, and both auto-serialize via the single writeFileSync of expected).
+// Best-effort + non-fatal (mirror addSamples): no samples / a POST failure leaves 2k to FAIL at verify,
+// but never breaks the run. NEVER submits to Normec/ALS (that is /laboratory-samples/submit-batch).
+export async function addSampleNote(c, inspectionId, noteText, expected) {
+  try {
+    const insp = await c.get(`/inspections/${inspectionId}`).catch(() => null);
+    const sample = (insp?.laboratorySamples || [])[0];
+    if (!sample?.id) { console.error("WARN: no laboratorySample to attach a note (2k skipped)"); return; }
+    await c.post(`/laboratory-samples/${sample.id}/notes`, { noteText });
+    expected.sampleId = sample.id;
+    expected.sampleNoteText = noteText;
+    console.log(`2K added sample note on sample ${sample.id}`);
+  } catch (e) { console.error(`WARN: addSampleNote failed (${e.message})`); }
+}
+
+// 2l — add a SECOND engineer to the visit (web->mobile, engineer chip). PATCH /visits/{id}
+// {engineerIds:[...]} — write field is engineerIds; READ field is visitEngineers[].engineerId (the
+// drift note — probe-verified on dev 2026-05-30). GUARDRAIL (the headline risk): the kept list is built
+// STRUCTURALLY from the visit's CURRENT visitEngineers, then a discovered 2nd engineer is appended — so
+// the already-assigned engineer (parity.bot, the mobile QA login the app uses to surface the visit) can
+// NEVER be dropped, regardless of fx state (in reuse mode fx.engineerId may be undefined). Discovers the
+// 2nd via GET /users (first isEngineer user not already on the visit). Idempotent: if the visit already
+// carries >= 2 engineers, record the count and PATCH nothing (no stacking). Best-effort + non-fatal
+// (mirror addSecondInspection): no 2nd engineer / a PATCH failure leaves 2l to FAIL at verify, never
+// breaks the run. Records engineerCount on `expected` for the verify denominator note.
+export async function addSecondEngineer(c, visitId, expected) {
+  try {
+    const v = await c.get(`/visits/${visitId}`).catch(() => null);
+    const existing = (v?.visitEngineers || []).map((e) => e.engineerId).filter(Boolean);
+    if (existing.length >= 2) {
+      expected.engineerCount = existing.length;
+      console.log(`2L reusing existing ${existing.length} engineers on visit ${visitId} (no PATCH)`);
+      return;
+    }
+    if (!existing.length) { console.error("WARN: visit has no assigned engineer — refusing to PATCH (2l guardrail)"); return; }
+    const users = await c.get("/users").catch(() => null);
+    const list = Array.isArray(users) ? users : users?.items || [];
+    const second = list.find((u) => u && u.isEngineer && u.id && !existing.includes(u.id));
+    if (!second) { console.error("WARN: no second engineer available for 2l"); return; }
+    const engineerIds = [...existing, second.id]; // KEEP all existing FIRST, ADD the 2nd
+    await c.patch(`/visits/${visitId}`, { engineerIds });
+    expected.engineerCount = engineerIds.length;
+    console.log(`2L added second engineer ${second.id} (kept ${existing.length} existing) -> ${engineerIds.length} engineers`);
+  } catch (e) { console.error(`WARN: addSecondEngineer failed (${e.message})`); }
+}
+
 async function resolveFixtures(c, mobileClient) {
   const fx = JSON.parse(readFileSync(new URL("./fixtures.dev.json", import.meta.url)));
   // engineerId: prefer explicit env, else the mobile QA user's own id
@@ -266,6 +321,11 @@ async function main() {
     const reuseSiteId = visit.siteId || fx.siteId;
     if (reuseSiteId) await c.patch(`/sites/${reuseSiteId}`, reuseExpected.sitePatch).catch((e) => console.error(`WARN: sitePatch failed (${e.message})`));
     await addSamples(c, insp.id, reuseExpected); // 2h — add every base water-sample type
+    // 2k — POST a note to the FIRST laboratorySample (AFTER addSamples, so the inspection has samples).
+    await addSampleNote(c, insp.id, reuseExpected.sampleNoteText, reuseExpected);
+    // 2l — add a SECOND engineer (KEEPS the reused visit's existing engineer structurally — idempotent
+    // if it already has >= 2, so the mobile-login engineer is never dropped on a re-run).
+    await addSecondEngineer(c, visit.id, reuseExpected);
     // 2j — set the visit BOOKING status (probe-verified 'confirmed' stays searchable; execution states untouched).
     await c.patch(`/visits/${visit.id}`, { status: reuseExpected.bookingStatus }).catch((e) => console.error(`WARN: bookingStatus PATCH failed (${e.message})`));
     // 2i deferred to Phase 2.5 (see create-path note). REUSE CAVEAT: a reused visit that ALREADY
@@ -299,6 +359,11 @@ async function main() {
   for (const a of expected.inspectionActions) await c.post("/actions", { siteId: fx.siteId, inspectionId: inspection.id, name: a.name, priority: a.priority });
 
   await addSamples(c, inspection.id, expected); // 2h — add every base water-sample type via the web API
+  // 2k — POST a note to the FIRST laboratorySample (AFTER addSamples, so the inspection has samples).
+  await addSampleNote(c, inspection.id, expected.sampleNoteText, expected);
+  // 2l — add a SECOND engineer to the visit (KEEPS the existing parity engineer structurally, so the
+  // visit stays on mobile). Additive PATCH; safe in Phase 0 (doesn't touch inspection nav or the search).
+  await addSecondEngineer(c, visit.id, expected);
 
   // 2j — set the visit's BOOKING status web->mobile. Probe-verified 'confirmed' keeps the visit
   // searchable and never touches visitStatus/inspectionStatus. Last so it never blocks the other seeds.
