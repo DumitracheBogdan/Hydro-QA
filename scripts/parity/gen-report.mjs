@@ -21,6 +21,7 @@ const FLOW = {
   "4b-booking-info": "p09_web2mobile_booking_info",
   "2i-add-inspection": "p10_web2mobile_add_inspection",
   "2j-visit-status": "p11_web2mobile_visit_status",
+  "4e-mobile-action": "p12_mobile2web_add_action",
 };
 
 export function renderReport(s, images = {}) {

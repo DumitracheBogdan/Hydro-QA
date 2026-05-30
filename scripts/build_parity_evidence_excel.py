@@ -91,6 +91,7 @@ CHECK_TO_FLOW = {
     '4b-booking-info': 'p09_web2mobile_booking_info',
     '2i-add-inspection': 'p10_web2mobile_add_inspection',
     '2j-visit-status': 'p11_web2mobile_visit_status',
+    '4e-mobile-action': 'p12_mobile2web_add_action',
 }
 
 # Short check token (e.g. "2a") used to find F2 web screenshots {check}-web-set.png.
@@ -314,6 +315,22 @@ EVIDENCE_MAP = {
         ],
         'expected': "GET /visits.status equals 'confirmed'; webapp header shows the Confirmed badge.",
         'connection': "GET /visits/{id} -> .status equals 'confirmed'.",
+    },
+    '4e-mobile-action': {
+        'description': 'Mobile->web: a CUSTOM visit-level action ADDED ON MOBILE (the "add on mobile, '
+                       'see on web" case) must read back via the web API. The mobile flow opens the '
+                       'visit, opens the Actions FAB -> AddActionsBottomSheet, adds a custom action '
+                       'named "PARITY-<runId> MobAct" with a High priority and Saves. setup-data NEVER '
+                       'creates this action, so a PASS proves the mobile->web write actually happened. '
+                       'DISTINCT "MobAct" name so it never collides with the 2b actions (Hi/Med/Lo).',
+        'steps': [
+            'Mobile (p12): open the visit; open the Quick-actions FAB -> "Actions"; tap "Add Custom Action".',
+            'Mobile: type the action name "PARITY-<runId> MobAct"; set priority High; Save the action; Save the bottom sheet.',
+            'Connection: GET /actions?visitId={id} -> an action named "PARITY-<runId> MobAct" is present (checkActionPresent).',
+            'Webapp: open the visit Actions card; screenshot the new action row.',
+        ],
+        'expected': 'GET /actions?visitId contains an action named "PARITY-<runId> MobAct"; the webapp Actions card shows it.',
+        'connection': 'GET /actions?visitId={id} -> some action .name == "PARITY-<runId> MobAct".',
     },
 }
 

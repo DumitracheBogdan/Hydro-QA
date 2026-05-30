@@ -50,6 +50,20 @@ export function checkInspectionActions(actions, expected) {
     details: `${present.length}/${(expected || []).length} inspection actions present via API (name+priority)` };
 }
 
+// 4e — a CUSTOM visit-level action ADDED ON MOBILE (Maestro p12: FAB -> Actions -> Add Custom Action
+// -> name + priority -> Save) must read back via GET /actions?visitId. mobile->web, scored on the
+// connection (API read-back, like 3a/3b) + flow-guarded by p12. NAME-only exact match — deliberately
+// unlike 2c (which also compares priority): the run-tagged custom name "PARITY-<runId> MobAct" is the
+// sole identity and it is set ONLY by the mobile flow (setup-data records the expected name but never
+// POSTs it, so a PASS proves the mobile->web write actually happened). Tolerates a null/undefined
+// actions list -> FAIL (no crash). An empty/undefined expected name is a FAIL (no vacuous pass — L6).
+export function checkActionPresent(actions, name) {
+  const list = Array.isArray(actions) ? actions : [];
+  const ok = name !== undefined && name !== "" && list.some((a) => a && a.name === name);
+  return { id: "4e-mobile-action", direction: "Mobile->Web", status: ok ? "PASS" : "FAIL",
+    details: `action name="${name}" ${ok ? "present" : "absent"} in ${list.length} visit actions (API read-back)` };
+}
+
 // 2h — every sample type added via the web API (PATCH /inspections {samples}) must land in the
 // inspection's laboratorySamples (web->mobile propagation). Per-sample: each expected sampleTypeId
 // must be present. (Adding samples is safe; we NEVER trigger Submit-to-Normec/ALS.)
@@ -97,6 +111,9 @@ export const EXPECTED_IDS = [
   // (inspections.length >= 2). 2j: the visit's BOOKING status set on the webapp -> reads back
   // status='confirmed'. Both web->mobile, additive, scored on the connection (API GET).
   "2i-add-inspection", "2j-visit-status",
+  // 4e: a CUSTOM visit-level action ADDED ON MOBILE (p12) -> reads back via GET /actions?visitId.
+  // mobile->web (the user's "add on mobile, see on web"), scored on the connection + flow-guarded.
+  "4e-mobile-action",
 ];
 
 // Checks reported but NOT hard-gated — the realistic half of the split done-bar (Decision 2).
@@ -118,9 +135,18 @@ export const EXPECTED_IDS = [
 // inspections.length==2; PATCH status='confirmed' round-trips AND the visit stays searchable
 // (filter + calendar-filter), with visitStatus/inspectionStatus untouched. Promote (remove here)
 // once CI is green.
+// 4e (new mobile->web action check) also starts here until a CI run proves it green — reported but
+// never red the gate, so it cannot break the existing 17 checks. UNLIKE 4a-4d/2i/2j (API-set, scored
+// on a deterministic API round-trip), 4e is the FIRST check whose VALUE is set by a Maestro mobile
+// flow that adds a CUSTOM action (FAB -> Actions -> Add Custom Action -> name + priority -> Save). The
+// mobile selectors (FAB contentDescription "Actions" vs the card-header text "Actions"; the inline
+// NewActionWidget Save vs the bottom-sheet footer Save vs the visit-level Save) are unverified on the
+// CI emulator, so the flow is the flaky part. The API read-back comparator (checkActionPresent) is
+// deterministic and tested; promote 4e to the gate (remove here) once CI shows p12 sets+reads green.
 export const KNOWN_FLAKY = new Set([
   "4a-inspection-notes", "4b-booking-info", "4c-item-reference", "4d-item-location",
   "2i-add-inspection", "2j-visit-status",
+  "4e-mobile-action",
 ]);
 
 // Assemble the scored summary. `checks` is whatever materialized (mobile results + api checks).
@@ -155,6 +181,10 @@ const FLOW_GUARDED = {
   "3b-visit-info": "p03",
   "3c-risk": "p04",
   "3e-site-induction": "p03b",
+  // 4e is mobile->web (action ADDED on mobile via p12, read back via API): in reuse mode a silently
+  // failed p12 must not stale-pass off a prior run's matching "MobAct" action — same fail-open the
+  // 3a/3b/3e guards close, generalized to the run-tagged 4e.
+  "4e-mobile-action": "p12",
 };
 export function applyFlowGuards(checks, flowStatus) {
   if (!flowStatus) return checks;
@@ -203,6 +233,15 @@ async function main() {
   // GET /visits. Generic scalar check (status === expected). NEVER asserts visitStatus/inspectionStatus.
   if (ctx.expected.bookingStatus)
     apiChecks.push(checkScalarField("2j-visit-status", "Web->Mobile (API)", visit, "status", ctx.expected.bookingStatus));
+
+  // 4e — a CUSTOM visit-level action ADDED ON MOBILE (p12) read back via GET /actions?visitId.
+  // mobile->web (add on mobile, see on web). Scored by name-only presence (checkActionPresent);
+  // guarded by p12 in reuse mode. setup-data records the expected name but NEVER POSTs it, so a PASS
+  // proves the mobile flow actually wrote the action. Normalize the response like the 2c path.
+  if (ctx.expected.mobileActionName) {
+    const va = await c.get(`/actions?visitId=${ctx.visitId}`).catch(() => []);
+    apiChecks.push(checkActionPresent(Array.isArray(va) ? va : va?.items ?? [], ctx.expected.mobileActionName));
+  }
 
   // 4b — site accessInfo (booking info) PATCHed web->mobile (GET /sites/{siteId}). siteId is the
   // VISIT's siteId persisted by setup (NOT fx.siteId, which may resolve a different site in reuse

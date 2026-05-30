@@ -122,6 +122,13 @@ export function buildExpected(runId) {
     siteInduction: {
       "Site Induction required & Completed": "Yes - Induction completed",
     },
+    // mobile->web (p12 / check 4e): a CUSTOM visit-level action ADDED ON MOBILE (the user's "add on
+    // mobile, see on web"). RECORD-ONLY — this name is NEVER POSTed in setup (unlike the 2b Hi/Med/Lo
+    // actions, which the web creates). The mobile flow (p12) is the ONLY writer, so a PASS on
+    // checkActionPresent(GET /actions?visitId, mobileActionName) proves the mobile->web write happened.
+    // DISTINCT "MobAct" suffix so it never collides with the 2b actions (Hi/Med/Lo) on the same visit;
+    // adding it is additive (POST /actions) — it does not disturb 2b.
+    mobileActionName: `${tag} MobAct`,
   };
 }
 

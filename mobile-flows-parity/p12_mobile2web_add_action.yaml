@@ -1,0 +1,76 @@
+appId: com.hydrocert.app
+name: "PARITY p12 - mobile-to-web add custom action"
+tags: [parity, mobile2web]
+---
+# 4e — ADD a CUSTOM visit-level action ON MOBILE (the user's "add on mobile, see on web"). Route:
+# open the run's visit -> Quick-actions FAB -> "Actions" sub-button -> AddActionsBottomSheet ->
+# "Add Custom Action" -> type name -> set priority High -> Save action -> Save the sheet. Verified
+# afterwards web-side via GET /actions?visitId (checkActionPresent). NAME is run-tagged + carries the
+# DISTINCT "MobAct" suffix so it never collides with the 2b actions (Hi/Med/Lo) on the same visit.
+- runFlow: _shared/open_tagged_visit.yaml
+# Land on the Visit Details tab (the FAB lives on TaskDetailsScreen, visible from any tab, but anchor
+# here for determinism — same first step as p01b/p02 which also act on the visit screen).
+- tapOn:
+    text: "Visit Details"
+# Expand the layered QuickActionsFab (main button contentDescription "Quick actions"), then let the
+# expand animation settle before tapping a sub-button (R4: the FAB is layered — tap main, wait, tap sub).
+- tapOn:
+    text: "Quick actions"
+- waitForAnimationToEnd:
+    timeout: 4000
+# Tap the "Actions" sub-button (contentDescription "Actions") -> opens AddActionsBottomSheet. The
+# read-only card header is ALSO "Actions" (text); the FAB overlay sits on top after expansion, so the
+# topmost "Actions" is the sub-button. The bottom sheet's "Add Custom Action" below disambiguates: if
+# the wrong "Actions" were hit, "Add Custom Action" would not appear and the next step would time out.
+- tapOn:
+    text: "Actions"
+- extendedWaitUntil:
+    visible: "Add Custom Action"
+    timeout: 12000
+- tapOn:
+    text: "Add Custom Action"
+# Inline NewActionWidget appears with a text field (placeholder "Enter action..."). Type the run-tagged
+# custom name, then dismiss the keyboard so the widget's Save / priority controls are reachable.
+- extendedWaitUntil:
+    visible: "Enter action.*"
+    timeout: 10000
+- tapOn:
+    text: "Enter action.*"
+- inputText: "PARITY-${RUN_ID} MobAct"
+- hideKeyboard
+# Save the custom action out of the inline NewActionWidget into the sheet's selected list. The widget's
+# own Save is the first "Save"-labelled control to appear after typing; anchor ^Save$ so it does not
+# match a longer label. Tolerated: if the widget commits on keyboard-done, this Save is a harmless no-op
+# guarded by `optional` so a single-Save build does not fail the flow here.
+- tapOn:
+    text: "^Save$"
+    optional: true
+# Set the new action's priority. The priority chip defaults to "Not Set"/"Low"; tap it to open the
+# LOW/MEDIUM/HIGH/NOT_SET dropdown, then pick High. Anchor ^High$ so it does not also match a label
+# that merely contains "High". Best-effort (optional): name presence is what 4e scores; priority is a
+# nice-to-have on this run-tagged custom row and the dropdown geometry is the least-stable part.
+- tapOn:
+    text: "Not Set|Low|Priority|Medium|High"
+    optional: true
+- tapOn:
+    text: "^High$"
+    optional: true
+# Persist the sheet -> viewModel.updateVisitActions() -> PATCH /visits/{id}.actions[]. This footer Save
+# is the bottom-sheet Save; after the inline widget closed, the next ^Save$ is the footer. Scroll to it
+# in case the sheet content pushed it below the fold, then tap.
+- scrollUntilVisible:
+    element: { text: "^Save$" }
+    direction: DOWN
+    timeout: 20000
+    speed: 30
+- tapOn: "^Save$"
+# Async save: the sheet dismisses and the visit screen re-renders. Scroll back up to the Actions card
+# and assert the new action row is present on the visit (mobile-side proof; web read-back scores 4e).
+- extendedWaitUntil:
+    visible: "Actions"
+    timeout: 12000
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} MobAct.*" }
+    direction: DOWN
+    timeout: 15000
+- assertVisible: ".*PARITY-${RUN_ID} MobAct.*"

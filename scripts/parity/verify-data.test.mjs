@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, checkInspectionCount, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
+import { checkSignature, checkFields, checkInspectionActions, checkVisitText, checkSamples, checkScalarField, checkInspectionCount, checkActionPresent, extractFormValue, buildSummary, EXPECTED_IDS, KNOWN_FLAKY, applyFlowGuards } from "./verify-data.mjs";
 
 const inspection = {
   inspectionForms: [
@@ -241,6 +241,64 @@ test("EXPECTED_IDS includes the 2 new web->mobile checks (2i/2j)", () => {
   for (const id of ["2i-add-inspection", "2j-visit-status"]) {
     assert.ok(EXPECTED_IDS.includes(id), `${id} must be in EXPECTED_IDS`);
   }
+});
+
+// --- 4e: a CUSTOM visit-level action ADDED ON MOBILE (p12) must read back via GET /actions?visitId.
+// mobile->web, scored by API read-back (like 3a/3b) + flow-guarded by p12. New comparator
+// checkActionPresent — NAME-only exact match (deliberately unlike 2c, which also compares priority):
+// the mobile flow's run-tagged name "PARITY-<runId> MobAct" is the sole identity, and it is set ONLY
+// by the mobile flow (setup-data records the expected name but never POSTs it). ---
+test("checkActionPresent PASSes when an action with the expected name is present (4e)", () => {
+  const actions = [{ name: "PARITY-R Hi" }, { name: "PARITY-R MobAct" }, { name: "PARITY-R Lo" }];
+  const r = checkActionPresent(actions, "PARITY-R MobAct");
+  assert.equal(r.status, "PASS");
+  assert.equal(r.id, "4e-mobile-action");
+});
+test("checkActionPresent FAILs when no action carries the expected name (4e)", () => {
+  const actions = [{ name: "PARITY-R Hi" }, { name: "PARITY-R Lo" }];
+  assert.equal(checkActionPresent(actions, "PARITY-R MobAct").status, "FAIL");
+});
+test("checkActionPresent FAILs on an empty actions array (no vacuous pass) (4e)", () => {
+  assert.equal(checkActionPresent([], "PARITY-R MobAct").status, "FAIL");
+});
+test("checkActionPresent FAILs (no crash) on a null/undefined actions list (4e)", () => {
+  assert.equal(checkActionPresent(null, "PARITY-R MobAct").status, "FAIL");
+  assert.equal(checkActionPresent(undefined, "PARITY-R MobAct").status, "FAIL");
+});
+test("checkActionPresent FAILs on an empty/undefined expected name (no vacuous pass) (4e/L6)", () => {
+  assert.equal(checkActionPresent([{ name: "PARITY-R MobAct" }], "").status, "FAIL");
+  assert.equal(checkActionPresent([{ name: "PARITY-R MobAct" }], undefined).status, "FAIL");
+});
+test("checkActionPresent matches the name EXACTLY (a stray space does not pass) (4e)", () => {
+  // exact === : "PARITY-R MobAct" must not match "PARITY-R  MobAct" (double space) or a substring
+  assert.equal(checkActionPresent([{ name: "PARITY-R  MobAct" }], "PARITY-R MobAct").status, "FAIL");
+  assert.equal(checkActionPresent([{ name: "PARITY-R MobAct EXTRA" }], "PARITY-R MobAct").status, "FAIL");
+});
+
+// --- 4e is pinned in EXPECTED_IDS (denominator) ---
+test("EXPECTED_IDS includes the new mobile->web check (4e)", () => {
+  assert.ok(EXPECTED_IDS.includes("4e-mobile-action"), "4e-mobile-action must be in EXPECTED_IDS");
+});
+
+// --- 4e starts in KNOWN_FLAKY (until CI shows the mobile flow sets+reads green) so it can't red the gate ---
+test("4e is in KNOWN_FLAKY (until CI-green) so a failure does not red the gate (4e)", () => {
+  assert.equal(KNOWN_FLAKY.has("4e-mobile-action"), true, "4e-mobile-action must be KNOWN_FLAKY until CI-green");
+  // a failing 4e leaves the gate green (the existing 17 are unaffected)
+  const checks = EXPECTED_IDS.map((id) => ({ id, status: id === "4e-mobile-action" ? "FAIL" : "PASS", details: "" }));
+  const s = buildSummary({ runId: "R", visitRef: "V" }, checks);
+  assert.equal(s.gateFailed, false); // 4e flaky -> does not gate
+  assert.equal(s.failed, 1);         // but is still reported failed
+});
+
+// --- 4e is flow-guarded by p12: a silently-failed mobile flow (in reuse mode) must not stale-pass
+// off a prior run's matching action. Mirrors the 3a->p02 / 3e->p03b guard. ---
+test("applyFlowGuards forces 4e FAIL when its mobile flow p12 failed (4e)", () => {
+  const guarded = applyFlowGuards([{ id: "4e-mobile-action", status: "PASS", details: "ok" }], { p12: 1 });
+  assert.equal(guarded[0].status, "FAIL", "4e should FAIL when p12 failed");
+});
+test("applyFlowGuards leaves 4e untouched when p12 passed (4e)", () => {
+  const guarded = applyFlowGuards([{ id: "4e-mobile-action", status: "PASS", details: "ok" }], { p12: 0 });
+  assert.equal(guarded[0].status, "PASS");
 });
 
 // --- the 2 new checks start in KNOWN_FLAKY (until CI-green) so they cannot red the gate ---

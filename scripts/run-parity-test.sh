@@ -126,10 +126,19 @@ run_flow mobile-flows-parity/p03_mobile2web_visit_info.yaml; P03=$?
 run_flow mobile-flows-parity/p03b_mobile2web_site_induction.yaml; P03B=$?
 run_flow mobile-flows-parity/p04_mobile2web_risk_assessment.yaml; P04=$?
 run_flow mobile-flows-parity/p05_mobile2web_visit_text.yaml; P05=$?
+# 4e — a CUSTOM visit-level action ADDED ON MOBILE (the user's "add on mobile, see on web"). This is
+# mobile->web, so unlike the photo-only p06-p11 it MUST actually set on mobile (NO `|| true`) — it is
+# SCORED via API read-back (checkActionPresent on GET /actions?visitId) and GUARDED by this exit code
+# (p12) in reuse mode (4e is KNOWN_FLAKY, so a failure never reds the gate while the flow is unproven).
+# Run LAST in Phase 2: p12 is the FIRST flow to drive the visit-level AddActionsBottomSheet Save, which
+# routes through SaveTaskDetailsUseCase -> a full PATCH /visits/{id}; running it after p02/p05 (whose
+# saved values the fresh API fetch carries, so the re-PATCH is idempotent) keeps it from preceding the
+# hard-gated 3a/3d on the same visit.
+run_flow mobile-flows-parity/p12_mobile2web_add_action.yaml; P12=$?
 # Record Phase-2 flow exit codes so verify-data can guard fixed-value checks (e.g. 3e) whose API
-# read-back alone can't detect a silently-failed flow in reuse mode (M4).
-node -e "require('fs').writeFileSync('parity-flow-status.json',JSON.stringify({p02:$P02,p03:$P03,p03b:$P03B,p04:$P04,p05:$P05}))"
-echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05"
+# read-back alone can't detect a silently-failed flow in reuse mode (M4). p12 guards 4e (4e->p12).
+node -e "require('fs').writeFileSync('parity-flow-status.json',JSON.stringify({p02:$P02,p03:$P03,p03b:$P03B,p04:$P04,p05:$P05,p12:$P12}))"
+echo "flow-status: p02=$P02 p03=$P03 p03b=$P03B p04=$P04 p05=$P05 p12=$P12"
 
 # ---- Phase 2.4: 2i — add the SECOND inspection NOW (after every mobile flow that drills into an
 #      inspection). Deferred to here on purpose: the shared mobile open_inspection.yaml taps the
