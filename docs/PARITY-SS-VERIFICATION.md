@@ -41,3 +41,40 @@ Checks are sound (0 parity bugs). To make the dual-UI EVIDENCE clean for a QA re
 shots (2k web expand + p03b/p05/p08/p09/p13/p14 mobile end-on-target-card) — all photo-only / non-gating, but
 each mobile change needs a CI run to verify (can't test the emulator locally). 2j web booking-status + p10
 timing are inherent (document). Nothing here blocks the dropdown deliverable.
+
+---
+
+## FIXES APPLIED (2026-05-31) — verified against the mobile source, pending CI re-shoot
+
+### Photo fixes (the field DOES render — the shot just missed it)
+- **2k web** (`webapp-shots.mjs`): Lab Results shows a Test BATCH row named by a dynamic code, so the old
+  expand of "Potable/Domestic" missed it. Now expands the batch row first (anchor "Sample Date"), then the
+  sample, then shoots the note.
+- **p05** (visit-text, mobile→web): after Save the screen returns to the Actions area; appended a photo-only
+  (all `optional`) re-open of the Visit Details card + scroll to the typed value. Cannot affect the gated write.
+- **p03b** (site-induction, mobile→web): same — appended an optional re-open of Visit Information + scroll to
+  the Site Induction field after Save.
+- **p09** (booking-info): the mobile summary renders the access-info VALUE directly
+  (`TaskDetailsSummaryTab.kt:247` → `getAccessInfo()`), so now scrolls to the actual value text
+  `PARITY-<runId> booking` instead of a "Booking/Access" heading the old version never matched.
+
+### NEW render gaps surfaced by the ultra-check (the field does NOT render on mobile → can't be photo'd)
+Genuine product observations (the CHECK passes on API; the WEB shot evidences it; mobile has no surface).
+The flows now capture a clean inspection/visit photo + a documented note instead of asserting a value that
+never renders:
+- **4d item-location (p08):** mobile `LocationCard` renders `itemDetail` (=2g) with a `location` fallback,
+  and `itemReference` shows in the inspection title (=4c) — but **`itemLocation` has no mobile surface**
+  (`TankInspectionScreen.kt`). 4d = API + WEB only.
+- **2l engineers (p14):** the mobile app has **no engineers list/chip UI** at all (no render composable).
+  2l = API + WEB only (web header shows both engineers).
+- **2k sample-note (p13):** same gap as 2h — the parity jobType has **no mobile Water-Sampling UI section**.
+  2k = API + WEB only (web Lab Results shows the sample + note).
+  → These 3 (plus the existing `2c`/F-01 inspection-actions gap) are candidates for a single qa-case
+  "fields set via API/web that the mobile app does not render."
+
+### Inherent (not fixable from QA)
+- **2j web status:** the web visit detail shows the WORKFLOW status badge ("Not started"), not the BOOKING
+  status (`visit.status='confirmed'`, which 2j sets + the API verifies + the mobile p11 shot shows). The web
+  doesn't surface booking status as a badge → 2j is API + MOBILE evidenced.
+- **p10 add-inspection (mobile):** the 2nd inspection is added in Phase 2.5 AFTER p10 runs, so the mobile
+  photo (taken in Phase 1) correctly shows 1; 2i is API + WEB evidenced (web shows 2).

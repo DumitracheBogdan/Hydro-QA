@@ -1,22 +1,20 @@
 appId: com.hydrocert.app
-name: "PARITY p14 - web-to-mobile second engineer (visit Engineers chips)"
+name: "PARITY p14 - web-to-mobile second engineer (visit screen)"
 tags: [parity, web2mobile]
 ---
 # A SECOND engineer was added to the visit via the web API in phase 0 (check 2l, PATCH /visits/{id}
 # {engineerIds:[existing, second]}). It reads back on GET /visits.visitEngineers (write field
 # engineerIds, read field visitEngineers — the drift note, probe-verified 2026-05-30). SCORED via API
-# (checkEngineerCount on GET /visits.visitEngineers.length >= 2); this flow exists ONLY to capture
-# MOBILE-side photo evidence ({flow}-after.png) and runs `|| true` in the orchestrator (mirror
-# p10/p11). GUARDRAIL: the setup PATCH KEEPS the existing engineer (parity.bot — the mobile QA login
-# this flow logs in as), so the visit still surfaces for parity.bot; this flow only opens the visit and
-# screenshots the Engineers chips with a static, optional scroll — never a hard assertVisible on the
-# 2nd engineer name, so a non-render degrades to one clean photo instead of burning a retry. Promote to
-# the assert pattern once a CI run confirms the 2nd engineer chip renders.
+# (checkEngineerCount on GET /visits.visitEngineers.length >= 2); this flow captures the MOBILE-side
+# photo only ({flow}-after.png) and runs `|| true` in the orchestrator.
+#
+# RENDER GAP (verified 2026-05-31 against tmp-hydrocert-android): the mobile app has NO engineers
+# list/chip UI — there is no engineer-render composable on the visit screen (the visit summary shows
+# Purchase Ord. / Site Code / Visit Ref. / access info / actions, but not an engineers list). So 2l is
+# API + WEB evidenced only (the web visit header shows BOTH engineers). GUARDRAIL: the setup PATCH KEEPS
+# parity.bot (the mobile QA login) so the visit still surfaces. This flow captures a CLEAN visit-screen
+# photo instead of scrolling for a non-existent Engineers section. Documented in
+# docs/PARITY-SS-VERIFICATION.md.
 - runFlow: _shared/open_tagged_visit.yaml
-- scrollUntilVisible:
-    element: { text: "Engineer.*" }
-    direction: DOWN
-    timeout: 15000
-    optional: true
 - waitForAnimationToEnd:
     timeout: 4000

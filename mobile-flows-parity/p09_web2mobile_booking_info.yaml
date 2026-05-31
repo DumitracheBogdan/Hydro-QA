@@ -4,14 +4,15 @@ tags: [parity, web2mobile]
 ---
 # site.accessInfo was PATCHed onto the SITE record via API in phase 0 (check 4b, PATCH /sites/{id}).
 # SCORED via API (checkScalarField on GET /sites/{siteId}.accessInfo); this flow captures the
-# MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator. The booking/access
-# info is a different screen and its mobile render is NOT yet CI-confirmed ("may show"), so this
-# mirrors p01f (2h, photo-only): scroll to a static heading with optional:true and screenshot —
-# never a hard assertVisible on the dynamic value, so a non-render degrades to one clean photo
-# instead of burning a retry. Promote to the p01a (assert) pattern once a CI run confirms it renders.
+# MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator.
+#
+# The mobile visit summary renders the access info VALUE directly (TaskDetailsSummaryTab.kt:247 ->
+# taskDetails.getAccessInfo()), so scroll to the ACTUAL value text (not a "Booking/Access" heading,
+# which the previous version missed -> the after-shot landed on the Actions card). optional:true so a
+# non-render degrades to one clean photo instead of burning a retry.
 - runFlow: _shared/open_tagged_visit.yaml
 - scrollUntilVisible:
-    element: { text: "Booking|Access" }
+    element: { text: ".*PARITY-${RUN_ID} booking.*" }
     direction: DOWN
     timeout: 20000
     optional: true

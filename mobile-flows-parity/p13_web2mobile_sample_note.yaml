@@ -1,24 +1,19 @@
 appId: com.hydrocert.app
-name: "PARITY p13 - web-to-mobile per-sample note (Water Sampling sample note)"
+name: "PARITY p13 - web-to-mobile per-sample note (inspection screen)"
 tags: [parity, web2mobile]
 ---
 # A NOTE was POSTed to the FIRST laboratorySample of the inspection via the web API in phase 0 (check
 # 2k, POST /laboratory-samples/{sampleId}/notes {noteText}). It reads back on GET
 # /laboratory-samples/{id}.sampleNote.noteText (the flat .notes field stays null — probe-verified
-# 2026-05-30). SCORED via API (checkSampleNote on GET /laboratory-samples/{sampleId}); this flow exists
-# ONLY to capture MOBILE-side photo evidence ({flow}-after.png) and runs `|| true` in the orchestrator
-# (mirror p01f/p06-p11). Open the inspection, scroll to the Water Sampling section, and screenshot the
-# expanded sample where the note would render — never a hard assertVisible on the note text, so a
-# non-render degrades to one clean photo instead of burning a retry. GUARDRAIL: read-only navigation —
-# never taps "Submit Samples" (that would transmit to Normec/ALS — forbidden).
+# 2026-05-30). SCORED via API (checkSampleNote on GET /laboratory-samples/{sampleId}); this flow captures
+# the MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator.
+#
+# RENDER GAP (same as 2h): the parity jobType 658f27c1 has NO mobile Water-Sampling UI section (it needs
+# a requiresWaterSample jobType), so there is no mobile surface to show the per-sample note. So 2k is API
+# + WEB evidenced only (the web Lab Results tab shows the sample + its note). This flow captures a CLEAN
+# inspection-screen photo instead of scrolling for a non-existent Water Sampling section. GUARDRAIL:
+# read-only navigation — NEVER taps "Submit Samples" (would transmit to Normec/ALS — forbidden).
+# Documented in docs/PARITY-SS-VERIFICATION.md.
 - runFlow: _shared/open_inspection.yaml
-- scrollUntilVisible:
-    element: { text: "Water Sampling" }
-    direction: DOWN
-    timeout: 20000
-    optional: true
-- tapOn:
-    text: "Water Sampling"
-    optional: true
 - waitForAnimationToEnd:
     timeout: 4000

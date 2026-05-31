@@ -24,3 +24,16 @@ tags: [parity, mobile2web]
 - tapOn: "^Save$"
 - waitForAnimationToEnd:
     timeout: 5000
+# Evidence positioning (photo-only, all optional so it can NEVER fail the gated write above): after
+# Save the screen returns to the inspection Actions area, so re-open Visit Information and scroll back to
+# the Site Induction field, so the after-shot shows the dropdown value instead of the Actions screen.
+- tapOn:
+    text: "Visit Information"
+    optional: true
+- scrollUntilVisible:
+    element: { text: "Site Induction required & Completed" }
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000

@@ -1,14 +1,18 @@
 appId: com.hydrocert.app
-name: "PARITY p08 - web-to-mobile inspection item location (LocationCard)"
+name: "PARITY p08 - web-to-mobile item location (inspection screen)"
 tags: [parity, web2mobile]
 ---
-# inspection.itemLocation was PATCHed onto the inspection via API in phase 0 (check 4d). The mobile
-# LocationCard renders itemLocation read-only (shown as Asset Location), mirroring 2g/itemDetail.
-# SCORED via API (checkScalarField on GET /inspections.itemLocation); this flow captures the
-# MOBILE-side photo only ({flow}-after.png) and runs `|| true` in the orchestrator.
+# inspection.itemLocation was PATCHed onto the inspection via API in phase 0 (check 4d). SCORED via API
+# (checkScalarField on GET /inspections.itemLocation); this flow captures the MOBILE-side photo only
+# ({flow}-after.png) and runs `|| true` in the orchestrator.
+#
+# RENDER GAP (verified 2026-05-31 against tmp-hydrocert-android TankInspectionScreen.kt): the mobile
+# inspection screen does NOT render itemLocation. The LocationCard shows `itemDetail` (= check 2g) with a
+# fallback to `location`, and itemReference shows in the inspection TITLE (= check 4c/p07) — but
+# itemLocation (4d) has no mobile surface. So 4d is API + WEB evidenced only (the web inspection header
+# shows "Asset Location"). This flow therefore captures a CLEAN inspection-screen photo (header item-ref
+# + item-detail card) instead of asserting a value that never renders — no failed assert, no wasted
+# retry. Documented in docs/PARITY-SS-VERIFICATION.md.
 - runFlow: _shared/open_inspection.yaml
-- scrollUntilVisible:
-    element: { text: ".*PARITY-${RUN_ID} item-loc.*" }
-    direction: DOWN
-    timeout: 20000
-- assertVisible: ".*PARITY-${RUN_ID} item-loc.*"
+- waitForAnimationToEnd:
+    timeout: 4000

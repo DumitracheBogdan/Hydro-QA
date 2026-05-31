@@ -163,9 +163,15 @@ async function main() {
         .catch(() => page.getByText("Lab Results", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));
       await page.waitForTimeout(1200);
       await shot(page, "2h-samples");
-      // 2k — per-sample note: still on the Lab Results tab, expand the FIRST sample row to reveal its
-      // note, then screenshot. Best-effort (the note lands on .sampleNote.noteText; 2k is scored via API).
+      // 2k — per-sample note. Lab Results shows a Test BATCH row named by a DYNAMIC code (e.g.
+      // "1. WXVMGKZ ... Sample Date 31/05/2026"), so the previous expand of "Potable/Domestic" missed it
+      // (the row stayed collapsed). Expand the batch row FIRST (anchor on the stable "Sample Date" text),
+      // then the sample, then screenshot the note. Best-effort (the note is nested 2 levels deep; 2k is
+      // scored via API checkSampleNote).
+      await page.getByText(/Sample Date/i).first().click({ timeout: 6000 }).catch(() => {});
+      await page.waitForTimeout(800);
       await expandCard(page, "Potable/Domestic");
+      await page.waitForTimeout(500);
       await shotAt(page, "Note", "2k-sample-note").catch(() => shot(page, "2k-sample-note"));
     }
     log("DONE phase=" + PHASE);

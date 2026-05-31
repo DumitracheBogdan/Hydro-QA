@@ -51,3 +51,22 @@ tags: [parity, mobile2web]
 - tapOn: "^Save$"
 - waitForAnimationToEnd:
     timeout: 5000
+# Evidence positioning (photo-only, all optional so it can NEVER fail the gated write above): after
+# Save the screen returns to the visit top (Actions area), so re-open the Visit Details card and scroll
+# to the typed value, so the after-shot shows the visit-text instead of the post-save Actions screen.
+- scrollUntilVisible:
+    element: { text: "Description" }
+    direction: UP
+    timeout: 12000
+    optional: true
+- tapOn:
+    text: "Visit Details"
+    below: { text: "Description" }
+    optional: true
+- scrollUntilVisible:
+    element: { text: ".*PARITY-${RUN_ID} watersys.*" }
+    direction: DOWN
+    timeout: 10000
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
