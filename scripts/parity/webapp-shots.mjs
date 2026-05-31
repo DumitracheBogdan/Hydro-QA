@@ -167,8 +167,12 @@ async function main() {
       // "Sample Date" text) so BOTH shots show real content: 2h = the expanded batch's sample rows,
       // 2k = the per-sample note (nested one level deeper). 2h/2k are scored via API; these are evidence.
       await page.getByText(/Sample Date/i).first().click({ timeout: 6000 }).catch(() => {});
-      await page.waitForTimeout(900);
-      await shot(page, "2h-samples"); // now shows the expanded batch with its sample rows
+      // Wait for the batch to ACTUALLY expand (the "Samples (N)" header appears) before shooting 2h —
+      // a fixed 900ms was too early (the batch rendered collapsed in the 2h shot even though it had
+      // expanded by the later 2k shot, which showed "Samples (16)" + the note). Condition-based wait.
+      await page.getByText(/Samples \(/i).first().waitFor({ state: "visible", timeout: 6000 }).catch(() => {});
+      await page.waitForTimeout(500);
+      await shot(page, "2h-samples"); // expanded batch -> Samples (16) + the sample-type rows
       await expandCard(page, "Potable/Domestic");
       await page.waitForTimeout(500);
       await shotAt(page, "Note", "2k-sample-note").catch(() => shot(page, "2k-sample-note"));
