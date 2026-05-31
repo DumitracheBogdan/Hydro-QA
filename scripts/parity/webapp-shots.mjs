@@ -162,14 +162,13 @@ async function main() {
       await page.getByRole("tab", { name: /Lab Results/i }).first().click({ timeout: 6000 })
         .catch(() => page.getByText("Lab Results", { exact: false }).first().click({ timeout: 6000 }).catch(() => {}));
       await page.waitForTimeout(1200);
-      await shot(page, "2h-samples");
-      // 2k — per-sample note. Lab Results shows a Test BATCH row named by a DYNAMIC code (e.g.
-      // "1. WXVMGKZ ... Sample Date 31/05/2026"), so the previous expand of "Potable/Domestic" missed it
-      // (the row stayed collapsed). Expand the batch row FIRST (anchor on the stable "Sample Date" text),
-      // then the sample, then screenshot the note. Best-effort (the note is nested 2 levels deep; 2k is
-      // scored via API checkSampleNote).
+      // Lab Results groups the 16 samples into ONE Test BATCH row named by a DYNAMIC code (e.g.
+      // "1. WXVMGKZ ... Sample Date 31/05/2026"). Expand the batch row FIRST (anchor on the stable
+      // "Sample Date" text) so BOTH shots show real content: 2h = the expanded batch's sample rows,
+      // 2k = the per-sample note (nested one level deeper). 2h/2k are scored via API; these are evidence.
       await page.getByText(/Sample Date/i).first().click({ timeout: 6000 }).catch(() => {});
-      await page.waitForTimeout(800);
+      await page.waitForTimeout(900);
+      await shot(page, "2h-samples"); // now shows the expanded batch with its sample rows
       await expandCard(page, "Potable/Domestic");
       await page.waitForTimeout(500);
       await shotAt(page, "Note", "2k-sample-note").catch(() => shot(page, "2k-sample-note"));

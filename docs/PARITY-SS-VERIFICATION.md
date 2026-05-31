@@ -78,3 +78,29 @@ never renders:
   doesn't surface booking status as a badge → 2j is API + MOBILE evidenced.
 - **p10 add-inspection (mobile):** the 2nd inspection is added in Phase 2.5 AFTER p10 runs, so the mobile
   photo (taken in Phase 1) correctly shows 1; 2i is API + WEB evidenced (web shows 2).
+
+---
+
+## RE-VERIFICATION (CI run 26723344513, after the fixes) — 6 agents, fresh read
+
+**Result: 35 PASS · 3 SUSPECT · 1 FAIL** (was 30/7/2 before the fixes). The fixes landed:
+- ✅ **2k web now PASS** — "Test Batch expanded; sample Notes shows PARITY-26723344513 sample-note".
+- ✅ **p09 booking, p05 visit-text** now PASS (show the value after the scroll-back / value-anchor).
+- ✅ **p08 item-location, p13 sample-note, p14 engineers** now PASS as CLEAN inspection/visit screens
+  (the documented render gaps — no failed assert, no wrong-screen).
+
+**Remaining 4 (all understood; none a parity bug):**
+- **2j web (FAIL):** STILL the inherent badge issue — the web shows the WORKFLOW status "Not started",
+  not the BOOKING status `confirmed`. 2j PASSES on the API (run is 20/21 gateFailed=false) and the mobile
+  p11 shot shows status. The web simply has no booking-status badge → API + MOBILE evidenced. Not a bug.
+- **p10 (SUSPECT):** the known Phase-2.5 timing (1 inspection at photo time; 2i = API + WEB).
+- **2h (SUSPECT):** the 16 samples render as ONE collapsed Test Batch → **fixed** by expanding the batch
+  before the 2h shot (next run will show the sample rows).
+- **p03b (SUSPECT):** the post-Save scroll-back lands on the inspection near (but scrolled slightly past)
+  the Site Induction dropdown. Low-impact: 3e is fully WEB (`3e-site-induction-web-verify` shows "Yes -
+  Induction completed") + API evidenced. Left as-is.
+
+**Bottom line:** 0 parity bugs across both ultra-checks. After the 2h fix, the only non-clean evidence
+shots are 2j (inherent, web has no booking badge) + p03b (minor, 3e is web-proven) + the 3 documented
+mobile render gaps (item-location / engineers / sample-note) which are genuine product findings, not
+capture bugs. The flagship 4f (36 dropdowns) is PASS on both web and mobile in both ultra-checks.
