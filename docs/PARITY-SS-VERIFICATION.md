@@ -104,3 +104,11 @@ never renders:
 shots are 2j (inherent, web has no booking badge) + p03b (minor, 3e is web-proven) + the 3 documented
 mobile render gaps (item-location / engineers / sample-note) which are genuine product findings, not
 capture bugs. The flagship 4f (36 dropdowns) is PASS on both web and mobile in both ultra-checks.
+
+### FINAL (CI run 26726665739): 2h timing fix confirmed
+The 2h web shot now shows the Test Batch EXPANDED with **"Samples (16)"** — all sample types
+(Potable/Domestic, Legionella, Cooling TVC, …) + the per-sample note. Condition-based wait (for the
+"Samples (N)" header) replaced the fixed 900ms that fired before the expand rendered. Run is GREEN
+(20/21, gateFailed=false, 4f PASS). Final evidence state: clean except 2j (inherent), p10 (timing), p03b
+(minor) — none a parity bug. **Net across the whole effort: 36/39 evidence shots clean, 0 parity bugs,
+3 new mobile render-gap findings (qa-case candidates).**
