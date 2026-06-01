@@ -3,6 +3,24 @@ name: "Parity Shared - Open tagged visit by reference"
 tags: [shared, navigation]
 ---
 - runFlow: login.yaml
+# SYNC HARDENING (mobile-sync flake fix): a freshly API-created visit is not always in the post-login
+# visits load (the app pulls visits on login; an intermittent sync-timing gap left the visit absent for
+# the whole run -> EVERY mobile flow failed at "View Visit Details not found"). Pull-to-refresh
+# (HomeScreen.kt:310 PullToRefreshBox -> refreshTasks()) re-fetches from the backend so the visit
+# surfaces. Best-effort + SELF-RECOVERING so it can never break the shared flow: the swipe pulls the
+# list down; the optional scroll-up then guarantees "Type to search" is back in view before the search.
+# run_flow already retries the whole flow once on failure, so a transient miss gets a 2nd refresh+search.
+- swipe:
+    start: 50%, 45%
+    end: 50%, 92%
+- waitForAnimationToEnd:
+    timeout: 8000
+- scrollUntilVisible:
+    element:
+      text: "Type to search.*"
+    direction: UP
+    timeout: 8000
+    optional: true
 # Search for the run's visit by reference (VISIT_REF), then open it.
 - tapOn:
     text: "Type to search.*"
