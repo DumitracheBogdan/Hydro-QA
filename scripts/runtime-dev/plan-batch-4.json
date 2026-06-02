@@ -1,0 +1,902 @@
+[
+  {
+    "visitRef": "VN013742",
+    "uuid": "6adbf675-647f-4df6-94b2-07782fe5f44c",
+    "decisions": [
+      {
+        "inspectionId": "3448288e-38c2-4cf0-98a3-b2db0c846f79",
+        "inspectionRef": "IN032818",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": null,
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013747",
+    "uuid": "974f2128-6c53-4d1c-a480-d60b06b9c92d",
+    "decisions": [
+      {
+        "inspectionId": "f57137f4-d5b3-4e50-951a-f9650be98b4a",
+        "inspectionRef": "IN032828",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": null,
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN012753",
+    "uuid": "e55ac3c3-4f3c-4b0f-a37e-1feda5a56232",
+    "decisions": [
+      {
+        "inspectionId": "6c2f4d80-4816-4772-a84f-d839d76f5bd8",
+        "inspectionRef": "IN027926",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Roof Plant Room West",
+        "skip": true
+      },
+      {
+        "inspectionId": "fad0fb46-86c3-47d6-836c-b5d0bddc0a98",
+        "inspectionRef": "IN027927",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Roof Plant Room East",
+        "skip": true
+      },
+      {
+        "inspectionId": "90884f2b-2cfc-493c-9d27-5bae300b60db",
+        "inspectionRef": "IN027929",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Basement Plant Room West",
+        "skip": true
+      },
+      {
+        "inspectionId": "c35ae48f-7750-4bb2-a8eb-092d4ef37dc5",
+        "inspectionRef": "IN027933",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Basement Plant Room East",
+        "skip": true
+      },
+      {
+        "inspectionId": "75709c2c-c54a-4199-b54b-39378263a352",
+        "inspectionRef": "IN027934",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Roof Plant Room West",
+        "skip": true
+      },
+      {
+        "inspectionId": "d2a219f5-ea6a-4991-a635-33b0bae7dc30",
+        "inspectionRef": "IN027935",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Roof Plant Room East",
+        "skip": true
+      },
+      {
+        "inspectionId": "0debc9de-575c-48f1-b153-63b436b7ddc7",
+        "inspectionRef": "IN027936",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Basement Plant Room West",
+        "skip": true
+      },
+      {
+        "inspectionId": "bb962182-144b-4d06-a4f1-37f46bda6426",
+        "inspectionRef": "IN027937",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Basement Plant Room East",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN012777",
+    "uuid": "e0fc8fc5-3077-4c81-bc90-b07cbf0892b5",
+    "decisions": [
+      {
+        "inspectionId": "2061efb1-1ee3-4a3b-b793-664c5c4a0203",
+        "inspectionRef": "IN028038",
+        "jobType": "Water feature - On site chem testing form",
+        "itemLocation": "WF - Disinfection chemical testing",
+        "samples": [
+          {
+            "sampleTypeId": "5e1afb4e-aa05-4900-bf06-35da02049599",
+            "sampleTypeName": "Water Feature Micro",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Water feature sampling",
+        "unresolved": false
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013753",
+    "uuid": "e3ec16eb-f24f-4bd7-a545-ad4c517ca954",
+    "decisions": [
+      {
+        "inspectionId": "da336f78-f32d-4bec-831a-0f8e927d6e1d",
+        "inspectionRef": "IN032851",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": null,
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN012681",
+    "uuid": "3ca562c4-06a6-4fa0-872b-7d23076e2e97",
+    "decisions": [
+      {
+        "inspectionId": "d5523433-b3ca-48ee-8ccb-ecf015e7cc15",
+        "inspectionRef": "IN027530",
+        "jobType": "pH and Conductivity Checks",
+        "itemLocation": null,
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: pH and Conductivity Checks"
+      }
+    ]
+  },
+  {
+    "visitRef": "V157777",
+    "uuid": "110bf66f-e85e-4c12-a0e5-6bcb11157b5a",
+    "decisions": [
+      {
+        "inspectionId": "8ad0d92e-39ab-4d2f-9dd3-294749aae439",
+        "inspectionRef": "I650600",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifier 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "220a1921-b1e8-416b-81fd-90bfa2f55ed6",
+        "inspectionRef": "I650601",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifier 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "566261cb-1010-4e61-b116-91b855390fb0",
+        "inspectionRef": "I650597",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Calorifier 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "10978c32-8fc2-4b24-8412-eb4dbfb14c1e",
+        "inspectionRef": "I650596",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Calorifier 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "44b20e74-9388-4933-97fe-a95755c500c3",
+        "inspectionRef": "I650602",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST - Basement Break Tank",
+        "skip": true
+      },
+      {
+        "inspectionId": "9863bdab-5b87-43b3-bf50-acdfc4e558a0",
+        "inspectionRef": "I650603",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST - Roof Tank 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "d981dde3-6c7a-4523-8351-36b9c9e6a419",
+        "inspectionRef": "I650604",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST - Roof Tank 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "d65ba134-624e-4ba5-bc84-0e187cbeb398",
+        "inspectionRef": "I650598",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Staff Welfare Facilities - TBC",
+        "skip": true
+      },
+      {
+        "inspectionId": "90b70275-0af8-4cdb-89d6-6922d859b567",
+        "inspectionRef": "I650599",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Flat - TBC",
+        "skip": true
+      },
+      {
+        "inspectionId": "4b57f00d-660a-4e8b-951c-78b0877c1612",
+        "inspectionRef": "I650613",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "AST Unit",
+        "skip": true
+      },
+      {
+        "inspectionId": "498e0e39-df17-4f02-941d-86b45ae259c8",
+        "inspectionRef": "I650614",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "AST Unit",
+        "skip": true
+      },
+      {
+        "inspectionId": "8438519d-adb2-4a22-b3f5-355fec359bd5",
+        "inspectionRef": "I650615",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "AST Unit",
+        "skip": true
+      },
+      {
+        "inspectionId": "aa5336e4-51e7-4adc-bb6f-4e323da81eaf",
+        "inspectionRef": "I650616",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "AST Unit",
+        "skip": true
+      },
+      {
+        "inspectionId": "3da323f9-0510-42a3-9789-8f0d72b4d505",
+        "inspectionRef": "I650617",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "AST Unit",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V158173",
+    "uuid": "55503c61-0088-4697-ad56-d03b838d25a3",
+    "decisions": [
+      {
+        "inspectionId": "8c88cbf6-939f-4701-8bc0-fd8dfb55db80",
+        "inspectionRef": "I652681",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Drinking Water/Potable Tank 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "655cac36-658c-4bc6-b3e6-071564a5a050",
+        "inspectionRef": "I652682",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Drinking Water/Potable Tank 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "476cf456-538b-487f-b335-88e2e87c1f6f",
+        "inspectionRef": "I652683",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Non-potable Cold Water Storage Tank 3",
+        "skip": true
+      },
+      {
+        "inspectionId": "73c189b4-fb03-47f7-a4a5-52299ebcaf88",
+        "inspectionRef": "I788735",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "fb983622-39e2-4d1d-a483-abc473a6f345",
+        "inspectionRef": "I788736",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "80f9306e-f405-49b1-9c85-45800e0cc83b",
+        "inspectionRef": "I788737",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "6b9db4c8-49e5-4377-89c9-b7b56cf5aa07",
+        "inspectionRef": "I788738",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "0c0d744e-1a92-4946-93b3-ad15a1f5f59b",
+        "inspectionRef": "I788739",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "75c15f2c-9ba6-4d80-9b15-494b80ac09f6",
+        "inspectionRef": "I788740",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "1657c477-6749-4a0b-b0eb-cc5e1d8c6785",
+        "inspectionRef": "I788741",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      },
+      {
+        "inspectionId": "8d919382-f849-4149-a429-396137eb7199",
+        "inspectionRef": "I788742",
+        "jobType": "Domestic Sample",
+        "itemLocation": "H - Sample Location",
+        "unresolved": true,
+        "reasonClass": "unresolved_ambiguous_intent",
+        "reasoning": "Cannot determine sample type from notes and itemLocation"
+      }
+    ]
+  },
+  {
+    "visitRef": "V155826",
+    "uuid": "77515ca0-46dd-4295-b1c6-9f7e16660e10",
+    "decisions": [
+      {
+        "inspectionId": "bbd19bc3-04bd-4b31-a1fc-51d5f78b42a4",
+        "inspectionRef": "I641752",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Cal 3 - Basement Plant Room",
+        "skip": true
+      },
+      {
+        "inspectionId": "6cff45cf-8e54-4fc4-a207-5048c902e460",
+        "inspectionRef": "I671518",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "CAL 2 - Basement Plant Room",
+        "skip": true
+      },
+      {
+        "inspectionId": "7fa3d878-b566-4fce-a955-48ee6ef83f86",
+        "inspectionRef": "I671519",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "CAL 1 - Basement Plant Room",
+        "skip": true
+      },
+      {
+        "inspectionId": "d25a727a-a013-4c8e-bb61-680097fcd58e",
+        "inspectionRef": "I641747",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof - CWST 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "d08fd84e-6bd8-4f18-8186-114f3d0eaaba",
+        "inspectionRef": "I641766",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof - CWST 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "43e3df23-16c8-4aaa-ace4-2ec328cf3ce0",
+        "inspectionRef": "I641743",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "CAL 1 - Basement Plant Room",
+        "skip": true
+      },
+      {
+        "inspectionId": "aee35d17-e95d-4540-a5df-d29b368ea724",
+        "inspectionRef": "I641745",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Main Kitchen - Sink 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "88f1f2e5-e71f-4b5e-b495-782ca0b952c6",
+        "inspectionRef": "I641746",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Main Kitchen - WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "4f9b886d-a1b3-48b9-85b9-4f062cd82c46",
+        "inspectionRef": "I641753",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Lower Kitchen - Sink 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "ad4dd8ec-c9af-4f91-b7e8-ce2fa4f09db5",
+        "inspectionRef": "I641754",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Lower Kitchen - WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "baffa7e0-a7a1-46a0-bf5b-c4ecd14a42f9",
+        "inspectionRef": "I641755",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "1st Floor Bar Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "26940b23-54ca-4e93-8693-7e4da98a0d3a",
+        "inspectionRef": "I641757",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Reception Accessible WC WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "f5f49dfc-ddb6-41f4-9723-5c39d605e19a",
+        "inspectionRef": "I641758",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "B1 Front - Ladies WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "29e784d9-582f-43d7-9873-fe38eabad371",
+        "inspectionRef": "I641759",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "B1 Front - Mens WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "4a0d5fde-57b8-4adb-9057-ccb6d6687d69",
+        "inspectionRef": "I641760",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "B1 Back - Ladies WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "03fe2990-d6a3-454e-a03e-7252e9020a83",
+        "inspectionRef": "I641761",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "B1 Back - Mens WHB",
+        "skip": true
+      },
+      {
+        "inspectionId": "1ede4344-1de6-4f91-a2b8-16f3ba863644",
+        "inspectionRef": "I641762",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "1st Floor Staff Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "1816032b-5093-4f6e-a45a-dd621f0423be",
+        "inspectionRef": "I641744",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "CAL 2 - Basement Plant Room",
+        "skip": true
+      },
+      {
+        "inspectionId": "66b0d2f2-9bd8-43e5-b8bb-3808226902a5",
+        "inspectionRef": "I641756",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Reception WHB 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "328f8e0a-99dd-45ee-819b-5928cbe8742a",
+        "inspectionRef": "I641763",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "2nd Floor Staff Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "dc796643-24da-422b-8cf9-44726a511e2c",
+        "inspectionRef": "I641764",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "B1 Liverpool Suite - Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "332fae19-d608-4b3a-863f-f8fc1d357160",
+        "inspectionRef": "I641765",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Garage Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "a41380b4-3474-46fd-a601-fe8fd674e84c",
+        "inspectionRef": "I641767",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Office Kitchenette",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V186149",
+    "uuid": "926067fc-a71e-43d4-8d84-c1baf5ecdc9f",
+    "decisions": [
+      {
+        "inspectionId": "689d394a-4367-4a9e-bfe4-350f08dacd76",
+        "inspectionRef": "I802259",
+        "jobType": "Closed System Basic Information form",
+        "itemLocation": "CS Basic Info",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Closed System Basic Information form"
+      }
+    ]
+  },
+  {
+    "visitRef": "V187037",
+    "uuid": "7078fce1-bd9b-455e-8fe8-65b8c0bb41a5",
+    "decisions": [
+      {
+        "inspectionId": "e23459e7-07d2-48fd-aca6-c70cd7818d0a",
+        "inspectionRef": "I808935",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Soft Water Tank Clean",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Cold water storage tank - Clean and Spray disinfection form"
+      },
+      {
+        "inspectionId": "08035c9e-92b5-4b78-b86a-4e6fae06d49b",
+        "inspectionRef": "I808936",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Soft Water Tank Clean",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Cold water storage tank - Clean and Spray disinfection form"
+      }
+    ]
+  },
+  {
+    "visitRef": "V187212",
+    "uuid": "afcce14f-cda8-4bfd-a474-b9623eac4e63",
+    "decisions": [
+      {
+        "inspectionId": "12324030-1afe-4c25-a346-15a8e74341af",
+        "inspectionRef": "I809928",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Soft Water Tank 2",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Cold water storage tank - Clean and Spray disinfection form"
+      }
+    ]
+  },
+  {
+    "visitRef": "V187619",
+    "uuid": "86c93c8b-0c62-413c-9f23-ba6a19353e15",
+    "decisions": [
+      {
+        "inspectionId": "22c419e1-06ef-485a-ab10-49563980a06c",
+        "inspectionRef": "I812995",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Holding tank - process water",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Cold water storage tank - Clean and Spray disinfection form"
+      },
+      {
+        "inspectionId": "b7d82dab-a217-444b-995d-909ae6c2ebc4",
+        "inspectionRef": "I812996",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Laboratory CWST",
+        "unresolved": true,
+        "reasonClass": "unresolved_unknown_jobtype",
+        "reasoning": "Unknown jobType: Cold water storage tank - Clean and Spray disinfection form"
+      }
+    ]
+  },
+  {
+    "visitRef": "V154131",
+    "uuid": "ab1c66c5-0549-4715-b4ea-af8c0381c9d0",
+    "decisions": [
+      {
+        "inspectionId": "5c3661da-ea3e-49b5-8233-aafc4092ad89",
+        "inspectionRef": "I632103",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Sub - Basement Boiler room - Cal 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "62b065ff-c761-4342-bae7-69bdc4ffad70",
+        "inspectionRef": "I632104",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Sub - Basement Boiler room - Cal 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "f43fe5e5-3af8-47fe-972f-61e09e195573",
+        "inspectionRef": "I808077",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof tank room - CWST 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "319a6749-1e87-4900-a3dd-e57771fb576c",
+        "inspectionRef": "I808078",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof tank room - CWST 2",
+        "skip": true
+      },
+      {
+        "inspectionId": "3414268b-7121-45f3-9c8b-ca9c6dd415b5",
+        "inspectionRef": "I808079",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof tank room - CWST 3",
+        "skip": true
+      },
+      {
+        "inspectionId": "bd7a7958-6deb-412b-b9dd-9d62063bc4a8",
+        "inspectionRef": "I808080",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Roof tank room - CWST 4",
+        "skip": true
+      },
+      {
+        "inspectionId": "1764e951-9154-4b77-9f84-6d5e9c213905",
+        "inspectionRef": "I632105",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Porters Flat - Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "ce14bf50-90ab-4bb3-98fc-861921dd0ac5",
+        "inspectionRef": "I632106",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Porters Flat - Bath room WHB",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V186842",
+    "uuid": "323cb5a4-7a26-4fc2-b52a-0169ec28d451",
+    "decisions": [
+      {
+        "inspectionId": "3b40105b-510b-4f1d-bd8a-dc945ebb314d",
+        "inspectionRef": "I807567",
+        "jobType": "Softener Servicing",
+        "itemLocation": "Softener Service",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V170823",
+    "uuid": "5b75fbf5-6126-42a0-91e3-f4e0a3407ac7",
+    "decisions": [
+      {
+        "inspectionId": "06a90f97-7e81-4fc8-9697-55900604cbc0",
+        "inspectionRef": "I734109",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": null,
+        "skip": true
+      },
+      {
+        "inspectionId": "53da4642-9262-429c-8f22-ce7ec6e77b67",
+        "inspectionRef": "I734104",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": null,
+        "skip": true
+      },
+      {
+        "inspectionId": "cc25bc43-9f6c-47f3-a15c-0d877486851f",
+        "inspectionRef": "I734105",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": null,
+        "skip": true
+      },
+      {
+        "inspectionId": "e2359bb7-3686-49b6-9dc2-67933fcb5a8f",
+        "inspectionRef": "I735005",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "35483967-7040-4e41-8def-737e8923b40d",
+        "inspectionRef": "I735006",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "afca712d-b1f9-4588-ba76-f3cb7a58773d",
+        "inspectionRef": "I735007",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "9f9959df-f55b-4f5a-85d3-4a005f5f4bdc",
+        "inspectionRef": "I735004",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "fe594125-9d7b-4304-9789-350130c11369",
+        "inspectionRef": "I735009",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "f365a130-9274-47cc-b8d5-c823d327ca2b",
+        "inspectionRef": "I735010",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "adc1c9b0-74f7-42a5-90bd-1ae19d7334a7",
+        "inspectionRef": "I735011",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "34f71db4-65d8-49c0-b75d-240f74451e31",
+        "inspectionRef": "I735008",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "tbc",
+        "skip": true
+      },
+      {
+        "inspectionId": "23a4e173-077f-4e32-87ff-64905bc3267e",
+        "inspectionRef": "I734100",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": null,
+        "skip": true
+      },
+      {
+        "inspectionId": "e2bdbccf-c308-47a8-9c2a-049f0b1a4d05",
+        "inspectionRef": "I734098",
+        "jobType": "Showerhead descaling",
+        "itemLocation": null,
+        "skip": true
+      },
+      {
+        "inspectionId": "c4da86fa-13b2-4ea2-a33b-2cbf353776a4",
+        "inspectionRef": "I734102",
+        "jobType": "Showerhead descaling",
+        "itemLocation": null,
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V155944",
+    "uuid": "7bea4d4c-cbdf-44e0-917b-dc9a3ea953f1",
+    "decisions": [
+      {
+        "inspectionId": "4c534bb1-d4f8-4fd0-96c8-0c019639c372",
+        "inspectionRef": "I801706",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V182833",
+    "uuid": "c64b8c94-4c9c-44d4-b160-bffbff9a1426",
+    "decisions": [
+      {
+        "inspectionId": "04c29b90-ea33-4385-97a4-798f543448d4",
+        "inspectionRef": "I780099",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "9d30e8d6-3793-4348-be8c-abe039480c8c",
+        "inspectionRef": "I780100",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Cat 5 Tank",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013305",
+    "uuid": "4febcbdc-df20-4327-9060-5cd4005a7e73",
+    "decisions": [
+      {
+        "inspectionId": "f8fbc7da-225d-4f35-b337-8fc8b1513a02",
+        "inspectionRef": "IN030823",
+        "jobType": "Calorifier/Water Heater temperatures",
+        "itemLocation": "Basement Hot Water Calorifier",
+        "skip": true
+      },
+      {
+        "inspectionId": "2da06659-542b-4ca4-9156-b8f97168e496",
+        "inspectionRef": "IN030816",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Basement Accessible Toilet Hand Basin",
+        "skip": true
+      },
+      {
+        "inspectionId": "8ab3a63b-e426-47c3-877a-0c0032812b0e",
+        "inspectionRef": "IN030817",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Ground Floor Cleaner's Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "053242bb-e01c-482a-8256-3653e9fc5a01",
+        "inspectionRef": "IN030818",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "1st Floor Cleaner's Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "7ee3a482-0925-4cef-bc44-32d61e76217a",
+        "inspectionRef": "IN030819",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "2nd Floor Cleaner's Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "9870eefb-5b4e-49b7-87e1-a75e4e242055",
+        "inspectionRef": "IN030820",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "3rd Floor Cleaner's Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "a70531ec-1a24-4125-aa38-9929b9d0fc19",
+        "inspectionRef": "IN030821",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "4th Floor Cleaner's Sink",
+        "skip": true
+      },
+      {
+        "inspectionId": "ed9575af-a8d7-4fae-9010-324ccd05c988",
+        "inspectionRef": "IN030822",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "5th Floor Cleaner's Sink",
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013773",
+    "uuid": "4e46ab6c-daef-430a-bb68-4b588681f6e2",
+    "decisions": [
+      {
+        "inspectionId": "2f8a6314-457e-44ef-98d2-77b4c0e2df8c",
+        "inspectionRef": "IN032902",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": null,
+        "skip": true
+      }
+    ]
+  },
+  {
+    "visitRef": "V158124",
+    "uuid": "4e3de223-b1e2-48b6-8a9e-c059a454ab1f",
+    "decisions": [
+      {
+        "inspectionId": "cd5451a8-22f2-4272-af8c-775ced38a16d",
+        "inspectionRef": "I652517",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Split Tank - GF plant room - Tank 1",
+        "skip": true
+      },
+      {
+        "inspectionId": "228f2fff-05ac-408e-8566-28940bc71bbf",
+        "inspectionRef": "I652519",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "GF Cat 5",
+        "skip": true
+      },
+      {
+        "inspectionId": "5c923ad8-2d93-40ca-9965-fc8efed1e171",
+        "inspectionRef": "I652518",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Split Tank - GF plant room - Tank 2",
+        "skip": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,684 @@
+[
+  {
+    "visitRef": "VN013743",
+    "uuid": "22121f49-bef6-4e64-bbbe-fc5f755eee2e",
+    "decisions": [
+      {
+        "inspectionId": "2a769383-1a1e-489d-a82e-c218c4aea0e1",
+        "inspectionRef": "IN032820",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": "",
+        "deleteSampleIds": [],
+        "samples": [],
+        "confidence": "HIGH",
+        "reasoning": "FIX from manager: Skip-override job type: Cooling Tower Disinfection form (one per system)",
+        "skip": true,
+        "unresolved": false
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V187503",
+    "uuid": "3bfc2bdf-4db6-4514-9db4-9b73ee0cc725",
+    "decisions": [
+      {
+        "inspectionId": "385974f0-304c-4276-a100-3c8909e29487",
+        "inspectionRef": "I812539",
+        "jobType": "Cooling Tower Cleaning form ( One per tower)",
+        "itemLocation": "Cooling Tower 2",
+        "deleteSampleIds": [],
+        "samples": [],
+        "confidence": "HIGH",
+        "reasoning": "FIX from manager: Skip-override job type: Cooling Tower Cleaning form ( One per tower)",
+        "skip": true,
+        "unresolved": false
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN012752",
+    "uuid": "6cdc472d-73d1-4cc4-9fc9-7c8200fe690c",
+    "decisions": [
+      {
+        "inspectionId": "77924d61-d8b1-4148-b622-d5de7bbe33a7",
+        "inspectionRef": "IN027920",
+        "jobType": "",
+        "itemLocation": "CT Chemical info",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      },
+      {
+        "inspectionId": "acc5f7bf-8d74-48c4-a824-720664d2c8bc",
+        "inspectionRef": "IN027921",
+        "jobType": "",
+        "itemLocation": "CT 2",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      },
+      {
+        "inspectionId": "8bfafc07-e49b-4aec-8f0a-b9e94146480e",
+        "inspectionRef": "IN027922",
+        "jobType": "",
+        "itemLocation": "CT Chemical info",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      },
+      {
+        "inspectionId": "b976311e-f8d6-4fe9-bd69-50f181e44504",
+        "inspectionRef": "IN027923",
+        "jobType": "",
+        "itemLocation": "CT 4",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN012766",
+    "uuid": "547ce0d3-f36c-4a11-809a-ee8655794d99",
+    "decisions": [
+      {
+        "inspectionId": "b6f4dafa-72c5-4be5-9110-a3128b2d4708",
+        "inspectionRef": "IN028017",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "External Bib tap",
+        "skip": true,
+        "reasoning": "Skip-override job type: Outlet Temperature monitoring"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN013754",
+    "uuid": "2aaa4bb7-ff1c-429c-9abe-83dada106751",
+    "decisions": [
+      {
+        "inspectionId": "11d1abbf-9c0e-4b7e-8e09-dc5b07646d2a",
+        "inspectionRef": "IN032853",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": "",
+        "deleteSampleIds": [],
+        "samples": [],
+        "confidence": "HIGH",
+        "reasoning": "FIX from manager: Skip-override job type: Cooling Tower Disinfection form (one per system)",
+        "skip": true,
+        "unresolved": false
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN013479",
+    "uuid": "063fe0af-6211-4313-87f4-8abdde76ea79",
+    "decisions": [
+      {
+        "inspectionId": "4f3c77ff-7aec-41ec-bca3-2d66cac8c953",
+        "inspectionRef": "IN031590",
+        "jobType": "Vehicle Checklist",
+        "itemLocation": "",
+        "deleteSampleIds": [],
+        "samples": [],
+        "confidence": "HIGH",
+        "reasoning": "FIX from manager: Skip-override job type: Vehicle Checklist",
+        "skip": true,
+        "unresolved": false
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V157548",
+    "uuid": "c5d2904e-c9bc-475d-a6f9-50c24242cb62",
+    "decisions": [
+      {
+        "inspectionId": "7bc4ab90-ec69-4853-b0e4-1992e5ee9ace",
+        "inspectionRef": "I649467",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1 - location tbc",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "9d9416b6-6b6e-4f76-b174-e7d5c70562ca",
+        "inspectionRef": "I649468",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 2  - location tbc",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "bd97b980-c45b-426e-81e6-850b3849486d",
+        "inspectionRef": "I649470",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Cat 5",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V157890",
+    "uuid": "1198dbfe-d840-4ce5-9d50-7ffdf68f695e",
+    "decisions": [
+      {
+        "inspectionId": "0518ad93-1182-4f84-a19a-78ea56c848f5",
+        "inspectionRef": "I803931",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Ice Machine",
+        "samples": [
+          {
+            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
+            "sampleTypeName": "Legionella",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention Ice Machine LP sampling"
+      },
+      {
+        "inspectionId": "bcd1dc3d-271b-45d1-a467-e83c1577793c",
+        "inspectionRef": "I803932",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Ice Machine",
+        "samples": [
+          {
+            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
+            "sampleTypeName": "Legionella",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention Ice Machine LP sampling"
+      },
+      {
+        "inspectionId": "c43ef606-e89b-4ee3-8f11-848e1e910311",
+        "inspectionRef": "I803933",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Ice Machine",
+        "samples": [
+          {
+            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
+            "sampleTypeName": "Legionella",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention Ice Machine LP sampling"
+      },
+      {
+        "inspectionId": "f8a7bd29-5da1-4af7-8900-647459b94675",
+        "inspectionRef": "I803934",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Ice Machine",
+        "samples": [
+          {
+            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
+            "sampleTypeName": "Legionella",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention Ice Machine LP sampling"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V132226",
+    "uuid": "71ef3d21-a0c6-4ddf-9cdc-b5c05be81ba9",
+    "decisions": [
+      {
+        "inspectionId": "649460d4-7c59-44d5-9876-d42fcff6a4f7",
+        "inspectionRef": "I512570",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "Feed Water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      },
+      {
+        "inspectionId": "4b5d8ba1-3151-494b-95fb-4a64108162c5",
+        "inspectionRef": "I512571",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "Feed Water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      },
+      {
+        "inspectionId": "96e8a197-5cf1-4f9f-b48b-950609af500d",
+        "inspectionRef": "I512572",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "LTHW Feed Water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      },
+      {
+        "inspectionId": "070a195a-ae87-4485-abc0-163a4f160894",
+        "inspectionRef": "I512573",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "CHW Feed water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      },
+      {
+        "inspectionId": "83770d1c-9506-4919-aa95-7ba6fc858bf7",
+        "inspectionRef": "I512574",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "Condense Feed water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      },
+      {
+        "inspectionId": "71eed238-6dfd-4e7e-834d-20e3b3f68592",
+        "inspectionRef": "I512596",
+        "jobType": "Water Meter Reading",
+        "itemLocation": "Feed Water",
+        "skip": true,
+        "reasoning": "Skip-override job type: Water Meter Reading"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V186146",
+    "uuid": "54b17e55-c955-4a8a-be2b-e31f57ed8f2b",
+    "decisions": [
+      {
+        "inspectionId": "827ba0d7-b2c8-4535-a1e4-3551e0e4efcc",
+        "inspectionRef": "I802258",
+        "jobType": "Closed System Basic Information form",
+        "itemLocation": "CS Basic Info",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V187140",
+    "uuid": "9ce0c4e7-61cb-4495-9a02-2873a282496d",
+    "decisions": [
+      {
+        "inspectionId": "4abc903d-c5ac-4a94-b888-c49fd6d11e7c",
+        "inspectionRef": "I809513",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "856b16c4-63e4-4734-ac68-0466bb0ca06a",
+        "inspectionRef": "I809514",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 2",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V187369",
+    "uuid": "c0db0e83-0f25-43ff-ad57-b2b077906d98",
+    "decisions": [
+      {
+        "inspectionId": "3a141dc6-94c1-4e8b-aa65-09fa2dc1b697",
+        "inspectionRef": "I811495",
+        "jobType": "Domestic Sample",
+        "itemLocation": "cold water outlet - Building 60",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "1735296d-6ec9-4566-ae8a-185da89ebb99",
+        "inspectionRef": "I811496",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Lower Reservoir Output",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "fef7d7eb-fbbd-4e20-8e20-74299e2055bc",
+        "inspectionRef": "I811497",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Upper Reservoir Output",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "a7fe0899-00a7-4030-8e11-eb6aeea1040d",
+        "inspectionRef": "I811498",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Nucleus Building - cold water outlet",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "f483216b-a2ce-486d-a8cb-b6698659a189",
+        "inspectionRef": "I811499",
+        "jobType": "Domestic Sample",
+        "itemLocation": "cold water outlet - Mansion House",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "8a72f2cf-0a6c-4434-82f0-370fc70c4381",
+        "inspectionRef": "I811500",
+        "jobType": "Domestic Sample",
+        "itemLocation": "cold water outlet - Science Village",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      },
+      {
+        "inspectionId": "6f40dcb1-ddd7-48e7-b4e1-823558c18ad6",
+        "inspectionRef": "I811501",
+        "jobType": "Domestic Sample",
+        "itemLocation": "cold water outlet - Garden Cottage",
+        "samples": [
+          {
+            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
+            "sampleTypeName": "Potable/Domestic",
+            "quantity": 1
+          }
+        ],
+        "confidence": "HIGH",
+        "reasoning": "Notes mention micro sampling with POTABLE or DOMESTIC"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V187586",
+    "uuid": "6bae1de2-2aea-4f02-9a9f-6a62510a42f7",
+    "decisions": [
+      {
+        "inspectionId": "8a071350-460f-4291-aa34-0ff093e4db1c",
+        "inspectionRef": "I812900",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Cat 5 tank 2",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V185713",
+    "uuid": "2c9f4874-a7e5-42e5-96bb-dd68f95f5ea7",
+    "decisions": [
+      {
+        "inspectionId": "d565be05-db87-492c-8af7-f4f2d742f4bb",
+        "inspectionRef": "I799598",
+        "jobType": "Closed System Basic Information form",
+        "itemLocation": "CS Basic Info",
+        "skip": true,
+        "reasoning": "Unknown/informational job type"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V186890",
+    "uuid": "37ea6961-6cb7-41ce-8c1d-492b52fac6c5",
+    "decisions": [
+      {
+        "inspectionId": "4b969333-52f9-4a98-b229-6957a1a5643c",
+        "inspectionRef": "I808045",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "7799373b-2c62-4ee6-aa14-c817fe6badb4",
+        "inspectionRef": "I808046",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V179987",
+    "uuid": "f3966dd1-9b37-427f-9b8c-4845a17e6b5b",
+    "decisions": [
+      {
+        "inspectionId": "cf394533-0330-41f3-b6c2-0ffb5d86725f",
+        "inspectionRef": "I767993",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 1 - Clean and disinfection",
+        "unresolved": true,
+        "reasoning": "jobType \"Cold water storage tank - Clean and Spray disinfection form\" not recognized",
+        "confidence": "HIGH"
+      },
+      {
+        "inspectionId": "274a3d8a-71cc-433f-bbb5-cbf92685fbd6",
+        "inspectionRef": "I767994",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 2 - Clean and disinfection",
+        "unresolved": true,
+        "reasoning": "jobType \"Cold water storage tank - Clean and Spray disinfection form\" not recognized",
+        "confidence": "HIGH"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN013608",
+    "uuid": "822ea5d1-2429-42a2-907a-f1620120e816",
+    "decisions": [
+      {
+        "inspectionId": "c7dbc286-6ee7-44db-a07c-1fa8940f343b",
+        "inspectionRef": "IN032147",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "18b39bdd-b02e-44ab-8eb8-2afa4862b0e0",
+        "inspectionRef": "IN032148",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "d5e765b3-94dd-43b6-8403-f3b61e1f69a2",
+        "inspectionRef": "IN032151",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "848b2073-dc03-4ed1-ba1d-7ba022c10a75",
+        "inspectionRef": "IN032155",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "b89e49b0-076a-4d5e-b71d-91e11df27845",
+        "inspectionRef": "IN032160",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "c00323bd-2612-4fcd-a215-b392a0478ad3",
+        "inspectionRef": "IN032162",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Calorifiers",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      },
+      {
+        "inspectionId": "32024ab9-d847-4b5b-b30c-51078805cad7",
+        "inspectionRef": "IN032159",
+        "jobType": "Showerhead descaling",
+        "itemLocation": "Shower - spray shower kitchen",
+        "skip": true,
+        "reasoning": "Skip-override job type: Showerhead descaling"
+      },
+      {
+        "inspectionId": "3601ad7f-8270-42e1-8fe5-4539624118a0",
+        "inspectionRef": "IN032164",
+        "jobType": "Showerhead descaling",
+        "itemLocation": "Shower - staff",
+        "skip": true,
+        "reasoning": "Skip-override job type: Showerhead descaling"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "VN013697",
+    "uuid": "e8abdb27-cfa6-44b6-b7fb-60456a123cbe",
+    "decisions": [
+      {
+        "inspectionId": "1c8f6097-1c4c-41c4-826d-b1901ef34c46",
+        "inspectionRef": "IN032571",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Ground Floor Male WC Hand Basin",
+        "skip": true,
+        "reasoning": "Skip-override job type: Outlet Temperature monitoring"
+      },
+      {
+        "inspectionId": "f20da30a-6768-465e-bb0f-31d4a52e1a88",
+        "inspectionRef": "IN032572",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "First Floor Accessible Toilet Hand Basin",
+        "skip": true,
+        "reasoning": "Skip-override job type: Outlet Temperature monitoring"
+      },
+      {
+        "inspectionId": "b7d9cced-bbec-4f69-8e88-937ea6910143",
+        "inspectionRef": "IN032573",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Second Floor Male WC Hand Basin",
+        "skip": true,
+        "reasoning": "Skip-override job type: Outlet Temperature monitoring"
+      },
+      {
+        "inspectionId": "4e6b6e14-2dd5-4ad7-9ef0-cc96e5a9d933",
+        "inspectionRef": "IN032574",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "Ground Floor Shower Room",
+        "skip": true,
+        "reasoning": "Skip-override job type: Outlet Temperature monitoring"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V158580",
+    "uuid": "89ae37f2-0190-4b7f-8b54-3b529aa58828",
+    "decisions": [
+      {
+        "inspectionId": "d72b7e47-a806-4f09-b52b-c84be2da44a6",
+        "inspectionRef": "I654602",
+        "jobType": "Calorifier/Water Heater drain Flush",
+        "itemLocation": "Mansion House - single water heater.",
+        "skip": true,
+        "reasoning": "Skip-override job type: Calorifier/Water Heater drain Flush"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V176179",
+    "uuid": "486dd313-1a72-46ec-acdb-a65a61a8ac30",
+    "decisions": [
+      {
+        "inspectionId": "9e8edea0-96d5-4d74-bc24-db1d11840989",
+        "inspectionRef": "I812642",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Basement CWST 1",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "435e7935-b9ce-43c1-983c-c777731acc02",
+        "inspectionRef": "I812643",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Basement CWST 2",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      },
+      {
+        "inspectionId": "2e83663a-c39c-4875-a6d7-beb8d88f78a5",
+        "inspectionRef": "I812644",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Basement Potable Tank",
+        "skip": true,
+        "reasoning": "Skip-override job type: Cold Water Storage Tank inspection"
+      }
+    ],
+    "catalogGaps": []
+  },
+  {
+    "visitRef": "V187615",
+    "uuid": "f0627b5b-371e-4c38-bd9b-5fc0335291f2",
+    "decisions": [
+      {
+        "inspectionId": "97ab1ed7-d96e-4b13-b139-fb970319854b",
+        "inspectionRef": "I812993",
+        "jobType": "Closed System Chemical Dosing",
+        "itemLocation": "LTHW",
+        "skip": true,
+        "reasoning": "Skip-override job type: Closed System Chemical Dosing"
+      }
+    ],
+    "catalogGaps": []
+  }
+]

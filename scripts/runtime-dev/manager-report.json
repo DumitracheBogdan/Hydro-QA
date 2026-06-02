@@ -1,0 +1,40 @@
+{
+  "iteration": 2,
+  "errors": [],
+  "lowConfidenceReview": [],
+  "approvedPatches": 45,
+  "totalReviewed": 571,
+  "perBatchTotals": {
+    "1": {
+      "patched": 0,
+      "unresolved": 26,
+      "skipped": 86,
+      "errors": 0
+    },
+    "2": {
+      "patched": 31,
+      "unresolved": 6,
+      "skipped": 73,
+      "errors": 0
+    },
+    "3": {
+      "patched": 2,
+      "unresolved": 0,
+      "skipped": 114,
+      "errors": 0
+    },
+    "4": {
+      "patched": 1,
+      "unresolved": 15,
+      "skipped": 89,
+      "errors": 0
+    },
+    "5": {
+      "patched": 11,
+      "unresolved": 2,
+      "skipped": 42,
+      "errors": 0
+    }
+  },
+  "catalogGaps": []
+}

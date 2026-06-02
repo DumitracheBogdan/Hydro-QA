@@ -1,0 +1,18 @@
+{
+  "Potable/Domestic": "47773ece-608d-4171-af15-83dbf1c65dc8",
+  "Legionella": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
+  "Cooling TVC": "f154febb-35b2-4481-9b39-6b464e0a948c",
+  "Water Feature TVC": "3fb2ce83-2e32-460c-95fe-659060381cce",
+  "Water Feature Micro": "5e1afb4e-aa05-4900-bf06-35da02049599",
+  "Greywater": "49138b7e-ad98-4857-98ec-f82ad4cf6510",
+  "Bsria Bacti": "10d3a2af-8b26-4716-935b-0511eb6b2e01",
+  "Bsria Validation": "b269750e-c4c9-4338-8ab8-6266cc012cc5",
+  "Chem Basic": "35223297-ff15-4678-bcb2-4c45a9f64672",
+  "Chem Remote Basic": "7eea3814-9e18-4d44-83b3-4686cd033dc3",
+  "Chem Remote Full": "65f62022-b3e7-41fb-bf4a-270be76c75db",
+  "Chem Validation": "b1d13f77-b19e-405d-90ef-907dcb2486ec",
+  "Rapid Chem Basic": "fad8291f-c286-404a-9469-25ada35579a0",
+  "Rapid Chem Remote Full": "fb6b8206-f29a-43c1-a0cb-4de15ec5ca17",
+  "Rapid Chem Remote Basic": "604f468f-a154-4c5f-bd98-56ee85d35274",
+  "Other - see notes": "a83a5059-89c3-40ff-9fff-5264caf60392"
+}
