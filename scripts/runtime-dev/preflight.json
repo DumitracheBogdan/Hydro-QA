@@ -1,24 +1,24 @@
 {
-  "startedAt": "2026-06-04T07:24:55.250Z",
+  "startedAt": "2026-06-08T08:10:26.239Z",
   "apiBase": "https://hydrocert-dev-api-exajhpd0brg2bcar.ukwest-01.azurewebsites.net",
   "windowDays": 3,
   "authOk": true,
   "catalogSize": 16,
   "windowMode": "relative",
   "window": {
-    "startDate": "2026-06-01T07:24:57.541Z",
-    "endDate": "2026-06-04T07:24:57.541Z"
+    "startDate": "2026-06-05T08:10:28.802Z",
+    "endDate": "2026-06-08T08:10:28.802Z"
   },
-  "calendarCount": 943,
+  "calendarCount": 163,
   "engineerFilter": null,
-  "eligibleCount": 98,
+  "eligibleCount": 75,
   "filteredOutByEngineer": 0,
   "batchSizes": [
-    20,
-    20,
-    20,
-    19,
-    19
+    15,
+    15,
+    15,
+    15,
+    15
   ],
-  "endedAt": "2026-06-04T07:28:41.770Z"
+  "endedAt": "2026-06-08T08:11:18.129Z"
 }

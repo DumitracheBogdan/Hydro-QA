@@ -2,26 +2,98 @@
   "errors": [],
   "lowConfidenceReview": [
     {
-      "visitRef": "V158173",
-      "inspectionId": "75c15f2c-9ba6-4d80-9b15-494b80ac09f6",
-      "summary": "Notes call for '4 x LP from showers/HWS outlets' but only 2 LP inspections available. Worker correctly allocated available slots to Legionella but budget shortfall exists."
+      "visitRef": "V153373",
+      "inspectionId": "90ef469b-7657-4c46-87bc-04070ac823d3",
+      "summary": "CT Monthly Logbook Check marked unresolved - should likely be skip:true as notes indicate this is logbook maintenance, not sampling. Already has cooling samples in filledInspections."
     },
     {
-      "visitRef": "V155515",
-      "inspectionId": "aba851ea-1659-457a-bb02-2cd2bc7b0452",
-      "summary": "Notes contain clear DS tokens ('x 3 LP and x 3 Micro', '1 x LP from each tank', '1 x Micro from each tank') but worker missed them. Manual review needed to determine if these could have been resolved."
+      "visitRef": "VN013772",
+      "inspectionId": "e86980fe-9cee-4018-98ef-d00eabead8c3",
+      "summary": "pH and Conductivity Checks marked unresolved - should be skip:true as auto-generated internal check, not lab sampling"
     },
     {
-      "visitRef": "V170823", 
-      "inspectionId": "cc25bc43-9f6c-47f3-a15c-0d877486851f",
-      "summary": "Notes contain extensive DS schedule ('4 x Micro, 9 x LP', '1 x CWST in summer', '3 x Calorifier drains') but worker marked unresolved_no_notes. Manual review needed."
+      "visitRef": "VN013766",
+      "inspectionId": "dac331a9-4cab-42c8-98db-84cb44ab2955",
+      "summary": "Vehicle Checklist marked unresolved - should be skip:true as auto-generated internal check"
     },
     {
-      "visitRef": "V158594",
-      "inspectionId": "970ca47e-604e-48e2-8bba-40370c6017a0", 
-      "summary": "Visit has extensive notes about pool operations and multiple locations but worker marked all as unresolved_no_notes. May contain extractable patterns for some inspections."
+      "visitRef": "VN012686",
+      "inspectionId": "40685675-9e9e-4100-96d6-f2fa039618e1",
+      "summary": "Ladder Checklist marked unresolved - should be skip:true as auto-generated internal check"
+    },
+    {
+      "visitRef": "VN013771",
+      "inspectionId": "99acc699-dc2d-4be0-8d51-0c1e5c2212cb",
+      "summary": "pH and Conductivity Checks marked unresolved - should be skip:true as auto-generated internal check"
+    },
+    {
+      "visitRef": "VN013765",
+      "inspectionId": "a34defb2-0188-4c9f-84c5-b848b771cd06",
+      "summary": "Vehicle Checklist marked unresolved - should be skip:true as auto-generated internal check"
+    },
+    {
+      "visitRef": "VN012687",
+      "inspectionId": "c5897f2e-470a-48c3-aed7-92e7ba984d69",
+      "summary": "Ladder Checklist marked unresolved - should be skip:true as auto-generated internal check"
+    },
+    {
+      "visitRef": "VN012936",
+      "inspectionId": "4defed7b-8fef-48d6-ba14-354804a68b5c",
+      "summary": "Missing jobType with CT on-site testing location - should be skip:true as on-site chemical testing, not lab sampling"
+    },
+    {
+      "visitRef": "VN012925",
+      "inspectionId": "fb9d9b0a-780e-4fbb-89dc-73ba822a0262",
+      "summary": "Missing jobType and notes with cooling tower location CT 2 - should be skip:true as on-site testing"
+    },
+    {
+      "visitRef": "VN012925",
+      "inspectionId": "e0d17f38-35b8-4bb7-ab41-0fb8ff16485e",
+      "summary": "Missing jobType and notes with cooling tower location CT 4 - should be skip:true as on-site testing"
+    },
+    {
+      "visitRef": "VN012956",
+      "inspectionId": "92a85cc0-72c6-4033-b95d-c15d0b3f56d1",
+      "summary": "Missing jobType with CT Chemical info location - should be skip:true as informational data collection"
+    },
+    {
+      "visitRef": "VN012956",
+      "inspectionId": "5bcc764b-6475-4f19-9959-0e6d248eccd4",
+      "summary": "Missing jobType with cooling system feed water location - should be skip:true as on-site testing"
+    },
+    {
+      "visitRef": "V187431",
+      "inspectionId": "5643e5c0-3318-4411-b993-db553a3a4d56",
+      "summary": "Closed System Chemical Dosing marked unresolved - should be skip:true as operational dosing procedure, not sampling"
+    },
+    {
+      "visitRef": "VN013928",
+      "inspectionId": "7c2069d8-7279-47c5-91f9-93a8ccbe8bc3",
+      "summary": "Cooling Tower Disinfection form marked unresolved - should be skip:true as operational disinfection, not lab sampling"
+    },
+    {
+      "visitRef": "VN013767",
+      "inspectionId": "14f65382-6bdb-405f-83e8-94817a26ab00",
+      "summary": "Equipment and PPE marked unresolved - should be skip:true as internal administrative check"
+    },
+    {
+      "visitRef": "VN013768",
+      "inspectionId": "3627bdef-ee17-4eb6-9a1b-4245635e6690",
+      "summary": "Equipment and PPE marked unresolved - should be skip:true as internal administrative check"
+    },
+    {
+      "visitRef": "VN012684",
+      "inspectionId": "f1b47ea7-b81e-4b13-a907-cf162c11264f",
+      "summary": "Equipment and PPE marked unresolved - should be skip:true as internal administrative check"
+    },
+    {
+      "visitRef": "VN012685",
+      "inspectionId": "8aee98b5-6a81-4321-9b31-0f16438fb081",
+      "summary": "Equipment and PPE marked unresolved - should be skip:true as internal administrative check"
     }
   ],
-  "approvedPatches": 10,
-  "totalReviewed": 143
+  "approvedPatches": 11,
+  "totalReviewed": 202,
+  "notes": "Fix-loop iter 1 successful. V187908 errors resolved. Final patched=11, unresolved=18, skipped=173, errors=0.",
+  "fixLoopIterations": 1
 }

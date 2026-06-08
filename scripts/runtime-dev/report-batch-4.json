@@ -3,196 +3,296 @@
   "dryRun": false,
   "visits": [
     {
-      "visitRef": "V98055",
-      "uuid": "98f14265-b1cf-4220-b4f3-777b0f6cd55f",
+      "visitRef": "VN012841",
+      "uuid": "7bb43739-70be-413a-8c05-f3019125b922",
       "decisions": [
         {
-          "inspectionId": "8517cb71-1929-496e-a234-d1d05ab6bec1",
-          "inspectionRef": "I462424",
-          "jobType": "Corrosion Coupon",
-          "itemLocation": "Stainless Steel",
+          "inspectionId": "98118bb1-4989-46e1-b1b0-2e7b19b6c9b5",
+          "inspectionRef": "IN028253",
+          "jobType": "Calorifier/Water Heater temperatures",
+          "itemLocation": "Basement Boiler room Calorifier 1 (Left)",
           "skip": true,
-          "reasoning": "Corrosion Coupon not in catalog, typically maintenance work",
+          "reasoning": "Calorifier/Water Heater temperatures is on SKIP-OVERRIDE list",
           "confidence": "HIGH",
           "status": "skipped"
         },
         {
-          "inspectionId": "a8ec75c6-1a45-4052-a425-ec9b7a49c031",
-          "inspectionRef": "I462425",
-          "jobType": "Corrosion Coupon",
-          "itemLocation": "Copper",
+          "inspectionId": "23fbe270-6594-4d1f-830f-7598ce083a26",
+          "inspectionRef": "IN028255",
+          "jobType": "Calorifier/Water Heater temperatures",
+          "itemLocation": "Basement Boiler room Calorifier 2 (Right)",
           "skip": true,
-          "reasoning": "Corrosion Coupon not in catalog, typically maintenance work",
+          "reasoning": "Calorifier/Water Heater temperatures is on SKIP-OVERRIDE list",
           "confidence": "HIGH",
           "status": "skipped"
         },
         {
-          "inspectionId": "58fe0f9d-086a-47d7-9998-c9b767624f05",
-          "inspectionRef": "I376810",
-          "jobType": "Corrosion Coupon",
-          "itemLocation": "Mild Steel",
+          "inspectionId": "9d5cad22-1b08-4b99-94e3-628ff2020c42",
+          "inspectionRef": "IN028254",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Basement Bin Store Bib",
           "skip": true,
-          "reasoning": "Corrosion Coupon not in catalog, typically maintenance work",
+          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
           "confidence": "HIGH",
           "status": "skipped"
-        },
-        {
-          "inspectionId": "8ccbee6e-3b56-4653-95bc-6be7e84e799d",
-          "inspectionRef": "I376811",
-          "jobType": "Corrosion Coupon",
-          "itemLocation": "Copper",
-          "skip": true,
-          "reasoning": "Corrosion Coupon not in catalog, typically maintenance work",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "cf4ff2e4-b13a-4651-b0d6-2a54ae23a06f",
-          "inspectionRef": "I376802",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "Mezzanine Floor CWST 1 - Micro",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "aca53e95-11ba-4e87-a24a-d4f8de361bb9",
-          "inspectionRef": "I376803",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "Mezzanine Floor CWST 2 - Micro",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "d96d4ae6-508f-4879-9671-2171a23f1089",
-          "inspectionRef": "I376805",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "6th Floor Tank Room - CWST 4 - Micro",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "f3c624b1-3d26-4533-a38e-a52fab07efc1",
-          "inspectionRef": "I376804",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "6th Floor Tank Room - CWST 3 - Micro",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "e7eda0ab-8779-49ee-b940-9b00f0432935",
-          "inspectionRef": "I518269",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 3",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "b86c978e-aba2-4c00-a4ab-f06787e6200b",
-          "inspectionRef": "I518271",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 2",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "d91569ec-2b1c-49df-a5f7-5b23aad64c57",
-          "inspectionRef": "I518270",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 6",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "8fe8f2e7-aadd-43b4-96c4-152f84cbb068",
-          "inspectionRef": "I518272",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 4",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "5d14c3ac-4f12-4a52-afa5-87b9aeb2282c",
-          "inspectionRef": "I518273",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 1",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "952057fa-7e53-422d-84eb-ebeae3faa065",
-          "inspectionRef": "I518274",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 5",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "07c7cf9c-9c14-4352-b41a-28855d58cbb8",
-          "inspectionRef": "I518275",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 7",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
-        },
-        {
-          "inspectionId": "96e3dc41-9b4b-432a-b514-f5d475741457",
-          "inspectionRef": "I518276",
-          "jobType": "Domestic Sample",
-          "itemLocation": "Lead Sample 8",
-          "unresolved": true,
-          "reasonClass": "unresolved_catalog_gap",
-          "reasoning": "ItemLocation suggests Lead sampling but catalog lacks Lead sample type",
-          "status": "unresolved"
         }
       ]
     },
     {
-      "visitRef": "V185938",
-      "uuid": "500ebfe1-827a-4fc4-a3d4-ead212103c7f",
+      "visitRef": "VN013732",
+      "uuid": "8ca72f5a-dccb-4816-b65d-04ca46a908b9",
       "decisions": [
         {
-          "inspectionId": "9785c237-d820-4634-a747-eb518b31b1b6",
-          "inspectionRef": "I801050",
-          "jobType": "Closed System Basic Information form",
-          "itemLocation": "CS Basic Info",
+          "inspectionId": "8dd93727-1c79-4423-9f62-3ba3a8628c8d",
+          "inspectionRef": "IN032798",
+          "jobType": "Water feature - On site chem testing form",
+          "itemLocation": "Navigator - On Site Testing",
+          "skip": true,
+          "reasoning": "Water feature On site chem testing form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013692",
+      "uuid": "b8f31134-79ff-4c4d-9d40-b228c89b8d79",
+      "decisions": [
+        {
+          "inspectionId": "07603e63-346f-45a4-bf29-51419119903f",
+          "inspectionRef": "IN032544",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "West Block Basement Staff WC and WHB -",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "7d671b15-bf2c-45d4-b0b6-ed2cf42513a1",
+          "inspectionRef": "IN032545",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Tower Basement Staff Female WHB",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "e871f19e-0204-484c-95a0-9447fbe78605",
+          "inspectionRef": "IN032546",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Tower Basement Staff Male WHB",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "2abcee81-8f7a-47c0-9091-b02f8d37e79f",
+          "inspectionRef": "IN032547",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Mezzanine - Disabled WC WHB",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "3060b84a-bf8c-434d-bf66-1adece593e26",
+          "inspectionRef": "IN032548",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Mezzanine - Contractors Kitchen",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "17b0e5a7-f52f-41c9-97ad-4cfa90aa6e13",
+          "inspectionRef": "IN032549",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "West Block Basement Staff Kitchen",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "c5e36bc9-b461-4f50-9b8b-38f946931023",
+          "inspectionRef": "IN032550",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Tower Basement Kitchen Sink",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "04e43d0d-afbc-4ef0-952c-0d49456483a4",
+          "inspectionRef": "IN032551",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "West Block Garden Bib Tap",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "5f3369d1-2c99-486d-8d21-32296bd4dc9a",
+          "inspectionRef": "IN032552",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Mezzanine - Meeting Room Kitchen",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "aeb77f66-d063-4f47-98bf-b7c1216e7446",
+          "inspectionRef": "IN032553",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Mezzanine - Staff WC WHB",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "d5fcffa7-d8a2-4dca-97c5-cd465112df70",
+          "inspectionRef": "IN032554",
+          "jobType": "Little used outlet flushing",
+          "itemLocation": "Mezzanine Shower",
+          "skip": true,
+          "reasoning": "Little used outlet flushing is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013684",
+      "uuid": "59f99df1-26d6-44af-82d0-ed6114a4f68c",
+      "decisions": [
+        {
+          "inspectionId": "5cc91d8a-462b-4e23-afc6-fed21265b3fe",
+          "inspectionRef": "IN032501",
+          "jobType": "Water feature - On site chem testing form",
+          "itemLocation": "bench A water feature",
+          "skip": true,
+          "reasoning": "Water feature On site chem testing form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "a0f10039-6b0a-4599-8b59-3133da8f17e5",
+          "inspectionRef": "IN032502",
+          "jobType": "Water feature - On site chem testing form",
+          "itemLocation": "bench C water feature",
+          "skip": true,
+          "reasoning": "Water feature On site chem testing form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "79a31a7d-38e8-4f33-8a05-91bfe70ea27c",
+          "inspectionRef": "IN032503",
+          "jobType": "Water feature - On site chem testing form",
+          "itemLocation": "bench D water feature",
+          "skip": true,
+          "reasoning": "Water feature On site chem testing form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "1db9a16f-23d0-4b74-b207-a7e0da4c080f",
+          "inspectionRef": "IN032504",
+          "jobType": "Water feature - On site chem testing form",
+          "itemLocation": "bench B water feature",
+          "skip": true,
+          "reasoning": "Water feature On site chem testing form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "V187923",
+      "uuid": "705cb531-202b-4706-99fd-5ec96f55bf3b",
+      "decisions": [
+        {
+          "inspectionId": "fd706c24-a5b9-4e5d-a7c6-fd3a2da4866c",
+          "inspectionRef": "I814655",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": "Roof Void - CWST",
+          "skip": true,
+          "reasoning": "Cold water storage tank Clean and Spray disinfection form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "V187431",
+      "uuid": "1983763e-22de-4426-8dba-aa96b7aed42d",
+      "decisions": [
+        {
+          "inspectionId": "5643e5c0-3318-4411-b993-db553a3a4d56",
+          "inspectionRef": "I811970",
+          "jobType": "Closed System Chemical Dosing",
+          "itemLocation": null,
           "unresolved": true,
           "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "Unknown jobType 'Closed System Basic Information form' not in catalog or SKIP-OVERRIDE list",
+          "reasoning": "Closed System Chemical Dosing is an operational dosing procedure, not a laboratory sample collection. Notes mention post-dose sampling requirements but those would need separate Closed System sample inspection slots.",
           "status": "unresolved"
         }
       ]
     },
     {
-      "visitRef": "V184391",
-      "uuid": "6d59a57e-5022-4a7c-b5e0-d2b757f582d1",
+      "visitRef": "V187953",
+      "uuid": "61087297-e876-4a24-86f1-dd5988db079f",
       "decisions": [
         {
-          "inspectionId": "8707f13f-9d5a-4cec-b83b-37c3463587b7",
-          "inspectionRef": "I790600",
+          "inspectionId": "5ecbdd32-3174-4c55-8067-041030736064",
+          "inspectionRef": "I814999",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": null,
+          "skip": true,
+          "reasoning": "Cold water storage tank Clean and Spray disinfection form is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN012876",
+      "uuid": "3231c690-5d4d-49b8-bc44-d45433d3a2c9",
+      "decisions": [
+        {
+          "inspectionId": "2afc88c8-f85f-4211-990a-85389f15beb7",
+          "inspectionRef": "IN028430",
           "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Bib Tap",
+          "itemLocation": "Ground Floor External Bib Tap",
+          "skip": true,
+          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "39361a3a-b6b8-4be0-b521-2bb7cfa00755",
+          "inspectionRef": "IN028431",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Lower Ground Floor Cupboard Bib Tap",
+          "skip": true,
+          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "9bfca27f-b829-4cf5-ba56-99f9d60a1de4",
+          "inspectionRef": "IN028432",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Ground Floor Laundry Room Sink",
           "skip": true,
           "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
           "confidence": "HIGH",
@@ -201,416 +301,132 @@
       ]
     },
     {
-      "visitRef": "V187586",
-      "uuid": "6bae1de2-2aea-4f02-9a9f-6a62510a42f7",
+      "visitRef": "VN013928",
+      "uuid": "91199b6b-369f-44d3-8996-d333d0f25208",
       "decisions": [
         {
-          "inspectionId": "8a071350-460f-4291-aa34-0ff093e4db1c",
-          "inspectionRef": "I812900",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "Cat 5 tank 2",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V187322",
-      "uuid": "1001267c-6cdd-4695-8a65-daa2f4cce7dd",
-      "decisions": [
-        {
-          "inspectionId": "607f79a9-b0a2-4753-9152-c7b81b81ef84",
-          "inspectionRef": "I811260",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 1",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "3d8d962a-c52c-4754-9938-e00337f0140a",
-          "inspectionRef": "I811261",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 2",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V186149",
-      "uuid": "926067fc-a71e-43d4-8d84-c1baf5ecdc9f",
-      "decisions": [
-        {
-          "inspectionId": "689d394a-4367-4a9e-bfe4-350f08dacd76",
-          "inspectionRef": "I802259",
-          "jobType": "Closed System Basic Information form",
-          "itemLocation": "CS Basic Info",
+          "inspectionId": "7c2069d8-7279-47c5-91f9-93a8ccbe8bc3",
+          "inspectionRef": "IN033713",
+          "jobType": "Cooling Tower Disinfection form (one per system)",
+          "itemLocation": null,
           "unresolved": true,
           "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "Unknown jobType 'Closed System Basic Information form' not in catalog or SKIP-OVERRIDE list",
+          "reasoning": "Cooling Tower Disinfection form is an operational disinfection procedure, not a laboratory sample collection. No appropriate lab sample types for this jobType.",
           "status": "unresolved"
         }
       ]
     },
     {
-      "visitRef": "V186890",
-      "uuid": "37ea6961-6cb7-41ce-8c1d-492b52fac6c5",
+      "visitRef": "VN012934",
+      "uuid": "eb9670a8-76ce-45e6-bd79-31867845b323",
       "decisions": [
         {
-          "inspectionId": "4b969333-52f9-4a98-b229-6957a1a5643c",
-          "inspectionRef": "I808045",
-          "jobType": "Cold Water Storage Tank inspection",
+          "inspectionId": "8c35dc3d-f62c-4889-be8f-873be6153a16",
+          "inspectionRef": "IN028753",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Car Park Bib Tap",
+          "skip": true,
+          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
+          "confidence": "HIGH",
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN012925",
+      "uuid": "9986f8b0-d007-46ad-953d-25c132d33a3a",
+      "decisions": [
+        {
+          "inspectionId": "fb9d9b0a-780e-4fbb-89dc-73ba822a0262",
+          "inspectionRef": "IN028730",
+          "jobType": null,
+          "itemLocation": "CT 2",
+          "unresolved": true,
+          "reasonClass": "unresolved_no_notes",
+          "reasoning": "No notes and no jobType specified. itemLocation 'CT 2' suggests cooling tower but insufficient context to determine if lab sampling or on-site testing.",
+          "status": "unresolved"
+        },
+        {
+          "inspectionId": "e0d17f38-35b8-4bb7-ab41-0fb8ff16485e",
+          "inspectionRef": "IN028731",
+          "jobType": null,
+          "itemLocation": "CT 4",
+          "unresolved": true,
+          "reasonClass": "unresolved_no_notes",
+          "reasoning": "No notes and no jobType specified. itemLocation 'CT 4' suggests cooling tower but insufficient context to determine if lab sampling or on-site testing.",
+          "status": "unresolved"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN012956",
+      "uuid": "476ce60b-4afc-4ca5-9104-a35815b5f3ac",
+      "decisions": [
+        {
+          "inspectionId": "92a85cc0-72c6-4033-b95d-c15d0b3f56d1",
+          "inspectionRef": "IN028849",
+          "jobType": null,
+          "itemLocation": "CT Chemical info",
+          "unresolved": true,
+          "reasonClass": "unresolved_no_notes",
+          "reasoning": "No notes and no jobType specified. itemLocation 'CT Chemical info' suggests informational data collection rather than lab sampling.",
+          "status": "unresolved"
+        },
+        {
+          "inspectionId": "5bcc764b-6475-4f19-9959-0e6d248eccd4",
+          "inspectionRef": "IN028850",
+          "jobType": null,
+          "itemLocation": "Cooling system feed water",
+          "unresolved": true,
+          "reasonClass": "unresolved_no_notes",
+          "reasoning": "No notes and no jobType specified. itemLocation suggests cooling system but unclear if lab sampling or on-site testing.",
+          "status": "unresolved"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013769",
+      "uuid": "1fe112f3-5d6b-4ee8-aff2-6a8c9b7400a6",
+      "decisions": [
+        {
+          "inspectionId": "3800b905-c0f7-4954-96cb-e39001b516dc",
+          "inspectionRef": "IN032897",
+          "jobType": "Ladder Checklist",
           "itemLocation": null,
           "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
+          "reasoning": "Auto-generated internal check for ladder inspection - no lab samples involved",
           "confidence": "HIGH",
           "status": "skipped"
-        },
+        }
+      ]
+    },
+    {
+      "visitRef": "VN012688",
+      "uuid": "04dffbee-6dee-4bfd-a036-8dbd8183c295",
+      "decisions": [
         {
-          "inspectionId": "7799373b-2c62-4ee6-aa14-c817fe6badb4",
-          "inspectionRef": "I808046",
-          "jobType": "Cold Water Storage Tank inspection",
+          "inspectionId": "eff74743-d268-43e6-a931-6f82e4762034",
+          "inspectionRef": "IN027537",
+          "jobType": "pH and Conductivity Checks",
           "itemLocation": null,
           "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
+          "reasoning": "Auto-generated internal check for pH/conductivity - no lab samples involved",
           "confidence": "HIGH",
           "status": "skipped"
         }
       ]
     },
     {
-      "visitRef": "V187140",
-      "uuid": "9ce0c4e7-61cb-4495-9a02-2873a282496d",
+      "visitRef": "VN012683",
+      "uuid": "7412dd66-d436-48a5-b36b-afc6855b08e6",
       "decisions": [
         {
-          "inspectionId": "4abc903d-c5ac-4a94-b888-c49fd6d11e7c",
-          "inspectionRef": "I809513",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 1",
+          "inspectionId": "256487d5-9c93-4a32-aa8f-1c9525d674c6",
+          "inspectionRef": "IN027532",
+          "jobType": "Vehicle Checklist",
+          "itemLocation": null,
           "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "856b16c4-63e4-4734-ac68-0466bb0ca06a",
-          "inspectionRef": "I809514",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 2",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V182833",
-      "uuid": "c64b8c94-4c9c-44d4-b160-bffbff9a1426",
-      "decisions": [
-        {
-          "inspectionId": "04c29b90-ea33-4385-97a4-798f543448d4",
-          "inspectionRef": "I780099",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 1",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "9d30e8d6-3793-4348-be8c-abe039480c8c",
-          "inspectionRef": "I780100",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "Cat 5 Tank",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN013697",
-      "uuid": "e8abdb27-cfa6-44b6-b7fb-60456a123cbe",
-      "decisions": [
-        {
-          "inspectionId": "1c8f6097-1c4c-41c4-826d-b1901ef34c46",
-          "inspectionRef": "IN032571",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Ground Floor Male WC Hand Basin",
-          "skip": true,
-          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "f20da30a-6768-465e-bb0f-31d4a52e1a88",
-          "inspectionRef": "IN032572",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "First Floor Accessible Toilet Hand Basin",
-          "skip": true,
-          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "b7d9cced-bbec-4f69-8e88-937ea6910143",
-          "inspectionRef": "IN032573",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Second Floor Male WC Hand Basin",
-          "skip": true,
-          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "4e6b6e14-2dd5-4ad7-9ef0-cc96e5a9d933",
-          "inspectionRef": "IN032574",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Ground Floor Shower Room",
-          "skip": true,
-          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V158580",
-      "uuid": "89ae37f2-0190-4b7f-8b54-3b529aa58828",
-      "decisions": [
-        {
-          "inspectionId": "d72b7e47-a806-4f09-b52b-c84be2da44a6",
-          "inspectionRef": "I654602",
-          "jobType": "Calorifier/Water Heater drain Flush",
-          "itemLocation": "Mansion House - single water heater.",
-          "skip": true,
-          "reasoning": "Calorifier/Water Heater drain Flush is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V187613",
-      "uuid": "af6233f8-3c42-4832-a7a4-89f1ff1bac72",
-      "decisions": [
-        {
-          "inspectionId": "553cd4c5-2a62-4d47-86d9-fbba05432bb7",
-          "inspectionRef": "I812992",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "LTHW",
-          "skip": true,
-          "reasoning": "Closed System Chemical Dosing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V187617",
-      "uuid": "e0394c41-8890-45bc-9f95-0e820c763af9",
-      "decisions": [
-        {
-          "inspectionId": "0324e631-af43-43c1-8489-755020291333",
-          "inspectionRef": "I812994",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "LTHW",
-          "skip": true,
-          "reasoning": "Closed System Chemical Dosing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V181856",
-      "uuid": "2aef5efa-f01a-4b67-b35c-dccccbf77504",
-      "decisions": [
-        {
-          "inspectionId": "1d45cd7e-3165-4d7f-b4a6-b6dfc99358ed",
-          "inspectionRef": "I812229",
-          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
-          "itemLocation": "Domestic CWST 1",
-          "skip": true,
-          "reasoning": "Cold water storage tank - Clean and Spray disinfection form is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V181484",
-      "uuid": "60f16b6d-3e87-4b36-b98b-7ef9eb7eb053",
-      "decisions": [
-        {
-          "inspectionId": "313beb71-d1f0-406c-9693-148cf6100466",
-          "inspectionRef": "I813336",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST - Basement Tank 1",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "0892670d-c019-4e8b-93c8-c437cda66834",
-          "inspectionRef": "I813337",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST -Basement Tank 2",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "46b76a54-0c83-4fdd-a7f7-4510db6535da",
-          "inspectionRef": "I813338",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST - Roof Plant Room Tank 1",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "9ac7a3fb-9226-460c-924d-b132d4459fe4",
-          "inspectionRef": "I813339",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST - Roof Plant Room Tank 2",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "a272c9e3-fe21-4c15-be34-286b68a575e5",
-          "inspectionRef": "I813340",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST - Roof Plant Room - Cat 5",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V187707",
-      "uuid": "be558214-b343-4b9d-84db-0d6c2161b42e",
-      "decisions": [
-        {
-          "inspectionId": "76b3fb1b-9ca8-473a-83e8-e479a8540fa4",
-          "inspectionRef": "I813364",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "Retail CHW systems",
-          "skip": true,
-          "reasoning": "Closed System Chemical Dosing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "c63e681e-923a-4d7c-83ab-ee4dd1d62b63",
-          "inspectionRef": "I813365",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "Office CHW",
-          "skip": true,
-          "reasoning": "Closed System Chemical Dosing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V187597",
-      "uuid": "5e79abf5-edb8-480c-a648-6490e85ac0b9",
-      "decisions": [
-        {
-          "inspectionId": "b3a3f308-199d-47fc-ad7f-308c4befdd78",
-          "inspectionRef": "I812988",
-          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
-          "itemLocation": "Domestic CWST 2",
-          "skip": true,
-          "reasoning": "Cold water storage tank - Clean and Spray disinfection form is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN013610",
-      "uuid": "ebf9e662-58f6-4fae-84b7-355e291a6d03",
-      "decisions": [
-        {
-          "inspectionId": "b3281aad-c900-4f56-ad30-1fffc489c60f",
-          "inspectionRef": "IN032176",
-          "jobType": "Hydrogen Peroxide dosing system Testing",
-          "itemLocation": "East side - Roof tank room Pump",
-          "skip": true,
-          "reasoning": "Hydrogen Peroxide / Chlorine Dioxide dosing system testing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "370acf5b-b0bc-4c58-815a-1460eb431c63",
-          "inspectionRef": "IN032177",
-          "jobType": "Hydrogen Peroxide dosing system Testing",
-          "itemLocation": "West side - Roof tank room Pump",
-          "skip": true,
-          "reasoning": "Hydrogen Peroxide / Chlorine Dioxide dosing system testing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "a8bdab62-9a92-41b9-babe-b5667acbe23d",
-          "inspectionRef": "IN032175",
-          "jobType": "Hydrogen Peroxide Outlet Testing",
-          "itemLocation": "Basement - Staff WC - HB",
-          "skip": true,
-          "reasoning": "Hydrogen Peroxide / Chlorine Dioxide dosing system testing is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V155808",
-      "uuid": "45770504-87ce-4ed4-b636-3e00c2fde5f0",
-      "decisions": [
-        {
-          "inspectionId": "45aacf22-dc16-44fe-930f-f8af60ed4c63",
-          "inspectionRef": "I641623",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 1 - Linked",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "5fe1e34a-d172-4d26-a9e1-21b6111fa7cd",
-          "inspectionRef": "I641624",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CWST 2 - Linked",
-          "skip": true,
-          "reasoning": "Cold Water Storage Tank inspection is on SKIP-OVERRIDE list",
-          "confidence": "HIGH",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "fbae6082-1ffa-4451-9c2d-26a49c77d3d8",
-          "inspectionRef": "I641613",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "STAFF WELFARE FACILITIES - kitchen sink",
-          "skip": true,
-          "reasoning": "Outlet Temperature monitoring is on SKIP-OVERRIDE list",
+          "reasoning": "Auto-generated internal check for vehicle inspection - no lab samples involved",
           "confidence": "HIGH",
           "status": "skipped"
         }
@@ -620,8 +436,8 @@
   "totals": {
     "patched": 0,
     "deleted": 0,
-    "unresolved": 10,
+    "unresolved": 6,
     "errors": 0,
-    "skipped": 40
+    "skipped": 28
   }
 }
