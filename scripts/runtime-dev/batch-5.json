@@ -1,494 +1,122 @@
 [
   {
-    "visitRef": "VN012848",
-    "uuid": "0ddd2c92-6a1b-4976-b85b-ae82ea32d35a",
-    "title": "Scheduled visit for Inhabit Hotel - Queens Gardens",
+    "visitRef": "VN013756",
+    "uuid": "5ca96c46-5dae-444d-ad56-bdb020d9209a",
+    "title": "Scheduled visit for 4 Connaught Place (SA)",
     "monthName": null,
     "monthShort": null,
     "notes": null,
     "emptyInspections": [
       {
-        "id": "12dc6eba-7e0e-4e9b-bb62-5ef803fc51b7",
-        "inspectionRef": "IN028304",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Calorifier 1",
-        "itemDetail": "Cal 1 - Calorifier - Calorifier 1",
-        "createdAt": "2026-05-06T01:01:33.288Z",
-        "currentSamples": []
-      },
-      {
-        "id": "ba757452-0841-4dc5-8e14-dc38851eae5d",
-        "inspectionRef": "IN028310",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Calorifier 2",
-        "itemDetail": "Cal 2 - Calorifier - Calorifier 2",
-        "createdAt": "2026-05-06T01:01:33.883Z",
-        "currentSamples": []
-      },
-      {
-        "id": "8da575fd-32b1-44ca-8dcb-a110c8d72104",
-        "inspectionRef": "IN028303",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Kitchen -Sink",
-        "itemDetail": "Sink - Outlet Location - Basement - Kitchen -Sink",
-        "createdAt": "2026-05-06T01:01:33.205Z",
-        "currentSamples": []
-      },
-      {
-        "id": "3c7c938f-6409-4d79-af15-2cca80176912",
-        "inspectionRef": "IN028305",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Kitchen - WHB",
-        "itemDetail": "WHB - Outlet Location - Basement - Kitchen - WHB",
-        "createdAt": "2026-05-06T01:01:33.374Z",
-        "currentSamples": []
-      },
-      {
-        "id": "852a56e8-20cf-491c-bad7-982cd751bd85",
-        "inspectionRef": "IN028306",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 2 - WHB",
-        "itemDetail": "WHB - Outlet Location - Basement - WC 2 - WHB",
-        "createdAt": "2026-05-06T01:01:33.467Z",
-        "currentSamples": []
-      },
-      {
-        "id": "0ada9e79-7219-42da-b878-e7c725d88b76",
-        "inspectionRef": "IN028307",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 1 - WHB",
-        "itemDetail": "WHB - Outlet Location - Basement - WC 1 - WHB",
-        "createdAt": "2026-05-06T01:01:33.556Z",
-        "currentSamples": []
-      },
-      {
-        "id": "23f987a0-ac17-46bd-851d-357a951ab42d",
-        "inspectionRef": "IN028308",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 3 - WHB",
-        "itemDetail": "WHB - Outlet Location - Basement - WC 3 - WHB",
-        "createdAt": "2026-05-06T01:01:33.664Z",
-        "currentSamples": []
-      },
-      {
-        "id": "f9f4f03c-d00c-45b0-be58-7d4b9a1931b7",
-        "inspectionRef": "IN028309",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Ground floor - Bar - sink",
-        "itemDetail": "Sink - Outlet Location - Ground floor - Bar - sink",
-        "createdAt": "2026-05-06T01:01:33.793Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN013729",
-    "uuid": "889b8731-0310-4ca8-828f-ebc9e735b10e",
-    "title": "Scheduled visit for LBC - Cottons Centre",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "00d403cb-377b-4a8e-b48c-3b7e4d760787",
-        "inspectionRef": "IN032791",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "CWST",
-        "itemDetail": "CWST - Hydrogen Peroxide Outlet Testing - CWST",
-        "createdAt": "2026-05-30T01:02:29.285Z",
-        "currentSamples": []
-      },
-      {
-        "id": "b22f8f1f-f6f2-4974-af50-c0eabf2b7fb8",
-        "inspectionRef": "IN032792",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "nearest sentinel point",
-        "itemDetail": "nearest sentinel point - Hydrogen Peroxide Outlet Testing - nearest sentinel point",
-        "createdAt": "2026-05-30T01:02:29.347Z",
-        "currentSamples": []
-      },
-      {
-        "id": "5fb242a1-1de5-4f0e-88e8-9799b4f8101a",
-        "inspectionRef": "IN032793",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "furthest sentinel point",
-        "itemDetail": "furthest sentinel point - Hydrogen Peroxide Outlet Testing - furthest sentinel point",
-        "createdAt": "2026-05-30T01:02:29.408Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN013688",
-    "uuid": "f1434e5a-06a1-4b56-af32-e67139b97588",
-    "title": "Scheduled visit for Queensbury Court (SA)",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "22635d14-720c-4478-9f6e-e5d194f71c00",
-        "inspectionRef": "IN032527",
+        "id": "cdab39cc-b520-497d-9d8e-766d82a3a153",
+        "inspectionRef": "IN032856",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "Electrical Shower",
-        "itemDetail": "Electrical Shower - Little Used Outlet - Electrical Shower",
-        "createdAt": "2026-05-30T01:01:16.871Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "V187910",
-    "uuid": "2043e05f-5908-4d14-a3bb-91cf25f5e1d6",
-    "title": "130 Shaftesbury Avenue - SA",
-    "monthName": null,
-    "monthShort": null,
-    "notes": "LTHW System Remedial Dosing\n\nTo dose the LTHW system with a buffered solution\n\n1 X pH Reducer Buffer 5.1 - 5 litres to be dosed into LTHW system.\n\n\nNo dosing pot on the system we can dose via the side stream filter",
-    "emptyInspections": [
-      {
-        "id": "802a48dd-56d5-4f19-99aa-95264ea0918a",
-        "inspectionRef": "I814633",
-        "jobType": "Closed System Chemical Dosing",
-        "itemLocation": "LTHW",
-        "itemDetail": "LTHW - Closed System Chemical Dosing - LTHW",
-        "createdAt": "2026-06-05T00:06:12.454Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "V187944",
-    "uuid": "ffec4696-5882-41a7-92f8-5e4b0675d804",
-    "title": "35 Lennox Gardens - Cluttons",
-    "monthName": null,
-    "monthShort": null,
-    "notes": "Clean and Spray Disinfect CWST 2\n\n35 Lennox Gardens - Cluttons\n\nTo attend site and carry out a clean and spray disinfect of Roof void CWST 2.\n\nThe internal conditions of this tank were found to be contaminated, following our recent PPM visit in June as per our Microbiological Analysis Certificate.",
-    "emptyInspections": [
-      {
-        "id": "79834053-9718-4216-80d2-b11d7089c716",
-        "inspectionRef": "I814958",
-        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
-        "itemLocation": "Roof void - CWST 2",
-        "itemDetail": "CWST 2 - Spray Disinfection - CWST - Roof void - CWST 2",
-        "createdAt": "2026-06-05T00:01:34.754Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "V187906",
-    "uuid": "e1a01f7e-275e-4121-8107-c2a215daa2b3",
-    "title": "200 Aldersgate Street",
-    "monthName": null,
-    "monthShort": null,
-    "notes": "Additional domestic samples\n\n\nTo attend to site to take additional domestic samples from the tenant outlets on the Upper Ground South block.\n\n4 x LP (Suite = LPFILTERED) Samples from the tenant outlets on Upper Ground South block\n4 x micro (Suite = POTABLE or DOMESTIC) Samples from the tenant outlets on Upper Ground South block",
-    "emptyInspections": [
-      {
-        "id": "0df20e21-2b2f-45a9-ae7c-d3d6a9a2a5df",
-        "inspectionRef": "I815498",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
+        "itemLocation": "Tank drain valve",
+        "itemDetail": "Little Used Outlet - Tank drain valve",
+        "createdAt": "2026-06-01T01:01:21.213Z",
         "currentSamples": []
       },
       {
-        "id": "2116031b-91cf-47ba-b388-77edfe04eb65",
-        "inspectionRef": "I815499",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "0dd38754-286c-4ebd-ad20-eac8bca7d967",
-        "inspectionRef": "I815500",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "56e75831-6a8c-4ba7-bc9b-8c2b11db501f",
-        "inspectionRef": "I815501",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "158bdc38-81df-4d4c-9b79-c9ed0f1eefb1",
-        "inspectionRef": "I815502",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "d9207530-f4f8-4131-957f-b2edc0a10700",
-        "inspectionRef": "I815503",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "9b1ca2a6-bfff-480f-8828-5f5b3b6d41d7",
-        "inspectionRef": "I815504",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      },
-      {
-        "id": "acaf8abb-8f75-4124-aa43-9fd2e7be22cc",
-        "inspectionRef": "I815505",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "itemDetail": "Outlet Sampling - Sample Location",
-        "createdAt": "2026-06-06T00:01:37.267Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN012899",
-    "uuid": "17a30e9e-e370-4f07-b091-653791f28d61",
-    "title": "Scheduled visit for 27 Dover Street",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "7b3e4153-6f42-4e68-a618-b1c4729c51b7",
-        "inspectionRef": "IN028555",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "2nd floor male",
-        "itemDetail": "2nd floor male - Outlet Location - 2nd floor male",
-        "createdAt": "2026-05-07T01:02:06.266Z",
-        "currentSamples": []
-      },
-      {
-        "id": "c92bdce6-9f4c-459c-bca2-e8d72df1ee99",
-        "inspectionRef": "IN028556",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement shower room",
-        "itemDetail": "Basement shower room - Outlet Location - Basement shower room",
-        "createdAt": "2026-05-07T01:02:06.351Z",
-        "currentSamples": []
-      },
-      {
-        "id": "669f22dc-58d8-4385-8bd1-77b0d5f797d4",
-        "inspectionRef": "IN028557",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "4th floor wc",
-        "itemDetail": "4th floor wc - Outlet Location - 4th floor wc",
-        "createdAt": "2026-05-07T01:02:06.436Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN012878",
-    "uuid": "40a88b50-d7b1-4fe2-8c09-2c8d615367f9",
-    "title": "Scheduled visit for Crompton Court",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "f82702f9-d0e9-40ca-9aca-abb90f6addd8",
-        "inspectionRef": "IN028447",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Basement Boiler Room - Cal 1",
-        "itemDetail": "CAL 1 - Calorifier - Basement Boiler Room - Cal 1",
-        "createdAt": "2026-05-07T01:01:21.556Z",
-        "currentSamples": []
-      },
-      {
-        "id": "960a501e-c332-46d5-a029-9e7d2ecdd0a3",
-        "inspectionRef": "IN028448",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Basement Boiler Room - Cal 2",
-        "itemDetail": "CAL 2 - Calorifier - Basement Boiler Room - Cal 2",
-        "createdAt": "2026-05-07T01:01:21.662Z",
-        "currentSamples": []
-      },
-      {
-        "id": "b575852d-bde7-42f7-9aad-2d1c6a0ed2d1",
-        "inspectionRef": "IN028446",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Staff WC - WHB",
-        "itemDetail": "Outlet 1 - Outlet Location - Basement - Staff WC - WHB",
-        "createdAt": "2026-05-07T01:01:21.468Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN012918",
-    "uuid": "1af73101-b399-44e8-ab81-b078a8ade775",
-    "title": "Scheduled visit for 124 Beaufort Street",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "d7c71eda-7647-468b-8c01-1e2b1a9c5fed",
-        "inspectionRef": "IN028703",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Ground Floor Plantroom - Calorifier 1",
-        "itemDetail": "Calorifier 1 - Calorifier - Ground Floor Plantroom - Calorifier 1",
-        "createdAt": "2026-05-08T01:01:26.610Z",
-        "currentSamples": []
-      },
-      {
-        "id": "d3da0434-266f-4531-a4ca-a5894d79102e",
-        "inspectionRef": "IN028707",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Ground Floor Plantroom - Calorifier 2",
-        "itemDetail": "Calorifier 2 - Calorifier - Ground Floor Plantroom - Calorifier 2",
-        "createdAt": "2026-05-08T01:01:26.993Z",
-        "currentSamples": []
-      },
-      {
-        "id": "61de68ae-9533-416a-8fcb-9c5b003a8865",
-        "inspectionRef": "IN028701",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Bathroom 1 - WHB",
-        "itemDetail": "Outlet 2 - Outlet Location - Shared Bathroom 1 - WHB",
-        "createdAt": "2026-05-08T01:01:26.411Z",
-        "currentSamples": []
-      },
-      {
-        "id": "a396e34f-569e-49c2-9645-e2ade6578733",
-        "inspectionRef": "IN028702",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Kitchen 2 - Sink",
-        "itemDetail": "Outlet 3 - Outlet Location - Shared Kitchen 2 - Sink",
-        "createdAt": "2026-05-08T01:01:26.493Z",
-        "currentSamples": []
-      },
-      {
-        "id": "68b57a43-ce69-43fc-a3e3-a58182303f7d",
-        "inspectionRef": "IN028704",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Kitchen 1 - Sink",
-        "itemDetail": "Outlet 1 - Outlet Location - Shared Kitchen 1 - Sink",
-        "createdAt": "2026-05-08T01:01:26.751Z",
-        "currentSamples": []
-      },
-      {
-        "id": "2fa7d253-5078-4d9f-8c0d-90df2d5b4f19",
-        "inspectionRef": "IN028705",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Bathroom 2 - WHB",
-        "itemDetail": "Outlet 4 - Outlet Location - Shared Bathroom 2 - WHB",
-        "createdAt": "2026-05-08T01:01:26.832Z",
-        "currentSamples": []
-      },
-      {
-        "id": "70669ee5-f0a2-422b-9d1b-22889a230522",
-        "inspectionRef": "IN028706",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Ground Floor Bin Store - Bib Tap",
-        "itemDetail": "Outlet 5 - Outlet Location - Ground Floor Bin Store - Bib Tap",
-        "createdAt": "2026-05-08T01:01:26.913Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": []
-  },
-  {
-    "visitRef": "VN012932",
-    "uuid": "2e766cba-2703-4266-ab44-b7909c1ba7e8",
-    "title": "Scheduled visit for 10 Gresham Street - C&W",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "60c47fae-7bdf-4758-a4da-b747bced5b36",
-        "inspectionRef": "IN028750",
-        "jobType": "Water feature - On site chem testing form",
-        "itemLocation": "Water Feature Testing",
-        "itemDetail": "WF - Water Feature - Water Feature Testing",
-        "createdAt": "2026-05-08T01:02:00.877Z",
-        "currentSamples": []
-      }
-    ],
-    "filledInspections": [
-      {
-        "id": "ebe28928-98ab-4805-99c3-adafe34bf100",
-        "inspectionRef": "IN028749",
-        "jobType": "Pool/Spa Micro/LP Only Sampling",
-        "itemLocation": "Micro - WF",
-        "itemDetail": "Micro - Water Feature - Micro - WF",
-        "createdAt": "2026-05-08T01:02:00.777Z",
-        "currentSamples": [
-          "Potable/Domestic"
-        ]
-      }
-    ]
-  },
-  {
-    "visitRef": "VN013755",
-    "uuid": "b13a7da7-262b-451e-bc14-80208f0220d7",
-    "title": "Scheduled visit for 42 Connaught Street (SA)",
-    "monthName": null,
-    "monthShort": null,
-    "notes": null,
-    "emptyInspections": [
-      {
-        "id": "0ddff6e3-5c30-4dc0-bb5e-65dacaba8b4d",
-        "inspectionRef": "IN032854",
+        "id": "963f2b7d-5e3f-4d3f-904c-4d8fb787fcbc",
+        "inspectionRef": "IN032857",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "Basement bib tap",
-        "itemDetail": "Basement bib tap - Little Used Outlet - Basement bib tap",
-        "createdAt": "2026-06-01T01:01:14.208Z",
+        "itemLocation": "UV Bypass valve",
+        "itemDetail": "Little Used Outlet - UV Bypass valve",
+        "createdAt": "2026-06-01T01:01:21.294Z",
         "currentSamples": []
       },
       {
-        "id": "9b7e7dff-dfcf-4796-a62d-80bd6cdf38f9",
-        "inspectionRef": "IN032855",
+        "id": "2b349e68-82ae-4041-b07c-48ddd08d97f6",
+        "inspectionRef": "IN032858",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "CWST Mains Bypass Flush",
-        "itemDetail": "Bypass - Little Used Outlet - CWST Mains Bypass Flush",
-        "createdAt": "2026-06-01T01:01:14.408Z",
+        "itemLocation": "Drains on Pump-set",
+        "itemDetail": "Little Used Outlet - Drains on Pump-set",
+        "createdAt": "2026-06-01T01:01:21.389Z",
+        "currentSamples": []
+      },
+      {
+        "id": "33c15930-d45e-4a1c-bd36-8d78636f61ef",
+        "inspectionRef": "IN032859",
+        "jobType": "Little used outlet flushing",
+        "itemLocation": "CWST Bypass",
+        "itemDetail": "Little Used Outlet - CWST Bypass",
+        "createdAt": "2026-06-01T01:01:21.468Z",
+        "currentSamples": []
+      },
+      {
+        "id": "569eb9e6-3821-4e20-b5a3-f53344189214",
+        "inspectionRef": "IN032860",
+        "jobType": "Little used outlet flushing",
+        "itemLocation": "Expansion Vessel Flush - BCWS Pumps",
+        "itemDetail": "Little Used Outlet - Expansion Vessel Flush - BCWS Pumps",
+        "createdAt": "2026-06-01T01:01:21.635Z",
         "currentSamples": []
       }
     ],
     "filledInspections": []
   },
   {
-    "visitRef": "VN013767",
-    "uuid": "21577769-3222-455d-b414-2948ae3ebbc0",
-    "title": "Monthly Equipment and PPE-test",
+    "visitRef": "VN012939",
+    "uuid": "632b4870-1761-40ff-a09e-3ff9a973b629",
+    "title": "Scheduled visit for 77-85 Onslow Square",
+    "monthName": null,
+    "monthShort": null,
+    "notes": null,
+    "emptyInspections": [
+      {
+        "id": "4b307cdf-ce88-4ceb-a676-60200639a7aa",
+        "inspectionRef": "IN028759",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "External bib tap",
+        "itemDetail": "Outlet Location - External bib tap",
+        "createdAt": "2026-05-08T01:02:12.930Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "VN012925",
+    "uuid": "9986f8b0-d007-46ad-953d-25c132d33a3a",
+    "title": "Scheduled visit for Ropemaker Place - (SA)",
+    "monthName": null,
+    "monthShort": null,
+    "notes": null,
+    "emptyInspections": [
+      {
+        "id": "fb9d9b0a-780e-4fbb-89dc-73ba822a0262",
+        "inspectionRef": "IN028730",
+        "itemLocation": "CT 2",
+        "itemDetail": "CT 2 - CT System Water Onsite Testing - CT 2",
+        "createdAt": "2026-05-08T01:01:42.445Z",
+        "currentSamples": []
+      },
+      {
+        "id": "e0d17f38-35b8-4bb7-ab41-0fb8ff16485e",
+        "inspectionRef": "IN028731",
+        "itemLocation": "CT 4",
+        "itemDetail": "CT 4 - CT System Water Onsite Testing - CT 4",
+        "createdAt": "2026-05-08T01:01:42.487Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "VN012686",
+    "uuid": "5199b0b5-c25a-498d-9d3a-1a75c76013f1",
+    "title": "Monthly Ladder Checklist",
     "monthName": null,
     "monthShort": null,
     "notes": "Auto-generated internal check for 2026-06-08",
     "emptyInspections": [
       {
-        "id": "14f65382-6bdb-405f-83e8-94817a26ab00",
-        "inspectionRef": "IN032895",
-        "jobType": "Equipment and PPE",
+        "id": "40685675-9e9e-4100-96d6-f2fa039618e1",
+        "inspectionRef": "IN027535",
+        "jobType": "Ladder Checklist",
         "itemLocation": null,
         "itemDetail": null,
-        "createdAt": "2026-06-01T02:00:02.233Z",
+        "createdAt": "2026-04-29T11:37:35.198Z",
         "currentSamples": []
       }
     ],
@@ -515,40 +143,693 @@
     "filledInspections": []
   },
   {
-    "visitRef": "VN012684",
-    "uuid": "32ad7cf3-b330-4a48-9062-aa8dfd52b853",
-    "title": "Monthly Equipment and PPE testss",
+    "visitRef": "VN013772",
+    "uuid": "102e080c-2241-4b6b-9b67-a55050afe37d",
+    "title": "Weekly pH and Conductivity Checks",
     "monthName": null,
     "monthShort": null,
     "notes": "Auto-generated internal check for 2026-06-08",
     "emptyInspections": [
       {
-        "id": "f1b47ea7-b81e-4b13-a907-cf162c11264f",
-        "inspectionRef": "IN027533",
-        "jobType": "Equipment and PPE",
+        "id": "e86980fe-9cee-4018-98ef-d00eabead8c3",
+        "inspectionRef": "IN032900",
+        "jobType": "pH and Conductivity Checks",
         "itemLocation": null,
         "itemDetail": null,
-        "createdAt": "2026-04-29T11:37:34.198Z",
+        "createdAt": "2026-06-01T02:00:06.105Z",
         "currentSamples": []
       }
     ],
     "filledInspections": []
   },
   {
-    "visitRef": "VN012685",
-    "uuid": "89c4de8a-bcf3-4b53-9ca1-951299f3eb91",
-    "title": "Monthly Equipment and PPE",
+    "visitRef": "V188034",
+    "uuid": "45a3e496-28f1-4307-b19a-b1de1d4b866f",
+    "title": "Ropemaker Place - (SA)",
     "monthName": null,
     "monthShort": null,
-    "notes": "Auto-generated internal check for 2026-06-08",
+    "notes": "To attend site and carry out a clean and disinfect of the Harvest Rainwater Tanks 1 and 2. These tanks are both confined space cleans.\r\n\r\nTo drain, clean and disinfect cold water storage tank(s) only, inside normal hours, to L8, HSG274 and BS8558, including condition report.\r\n\r\nWorks will include post cleaning contact spray disinfection of the tank internals using BPR registered Silver Hydrogen Peroxide for 1 hour. Tank to be refilled with fresh water, checked for residual Hydrogen Peroxide, and returned to service.\r\n\r\nPLUS 1 X Independent Chemical Testing (laboratory) of BLACK SLUDGE for additional testing to include Fat and Grease plus Surfactants - SAMPLE TO BE SENT TO LATIS",
     "emptyInspections": [
       {
-        "id": "8aee98b5-6a81-4321-9b31-0f16438fb081",
-        "inspectionRef": "IN027534",
+        "id": "9e3adbf4-ddf6-40f0-b5f0-588a837f7134",
+        "inspectionRef": "I815494",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Rainwater Tank 2",
+        "itemDetail": "Rainwater - Spray Disinfection - CWST - Rainwater Tank 2",
+        "createdAt": "2026-06-06T00:00:18.098Z",
+        "currentSamples": []
+      },
+      {
+        "id": "2d90341f-17b4-4e79-90d1-54867e5e0370",
+        "inspectionRef": "I815495",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Rainwater Tank 1",
+        "itemDetail": "Rainwater - Spray Disinfection - CWST - Rainwater Tank 1",
+        "createdAt": "2026-06-06T00:00:18.098Z",
+        "currentSamples": []
+      },
+      {
+        "id": "037f18d8-bfc6-405c-adff-e4d08fcdb971",
+        "inspectionRef": "I815493",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample location",
+        "itemDetail": "Sample location",
+        "createdAt": "2026-06-06T00:00:18.098Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "V188067",
+    "uuid": "bf3ed54b-24d3-428e-aa62-f0f46ece9651",
+    "title": "City North - Watkins",
+    "monthName": null,
+    "monthShort": null,
+    "notes": "Cooling Tower Clean and Chlorination - Six Monthly - 2 Engineers, 2 days\r\n\r\nMay -Pack in - 2 days on site - 2 men Please take borescope pictures inside of all packing\r\n\r\n\r\nNov - Pack Out - 2 days on site - take borescope pictures inside of all packing",
+    "emptyInspections": [
+      {
+        "id": "301a556b-1f5f-447d-bc3c-e5378def806e",
+        "inspectionRef": "I815497",
+        "jobType": "Cooling Tower Cleaning form ( One per tower)",
+        "itemLocation": "Cooling Tower 2 - Clean",
+        "itemDetail": "CT - Cooling Tower - Cooling Tower 2 - Clean",
+        "createdAt": "2026-06-06T00:07:31.240Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "V157548",
+    "uuid": "c5d2904e-c9bc-475d-a6f9-50c24242cb62",
+    "title": "10 Bloomsbury Way",
+    "monthName": null,
+    "monthShort": null,
+    "notes": "March – Q – 4pts- CS – 1 X Chem Basic and 1 X BSRIA Bacti from the LTHW, CHW, and ESSENTIAL CHW Systems Main Circulation. 2 x Remote samples - 4 BSRIA BACTI and 4 Chem (REMOTE BASIC)\n\nJune – H – 6pts - TI, DS – 6 x Micro from CWS outlets/CWST, 6 x LP from showers, 3 x calorifiers and 1 x random HWS. CS – 1 X Chem Basic and 1 X BSRIA Bacti from the LTHW, CHW and ESSENTIAL CHW Systems Main Circulation. 2 x Remote samples - 4 BSRIA BACTI and 4 Chem (REMOTE BASIC)\n\nSep – Q – 4pts- CS –1 X Chem Basic and 1 X BSRIA Bacti from the LTHW, CHW and ESSENTIAL CHW Systems Main Circulation. 2 x Remote samples - 4 BSRIA BACTI and 4 Chem (REMOTE BASIC)\n\nDec – H – 6pts - TI, DS – 6 x Micro from CWS outlets/CWST, 6 x LP from showers, 3 x calorifiers and 1 x random HWS. CS – 1 X Chem Basic and 1 X BSRIA Bacti from the LTHW, CHW and ESSENTIAL CHW Systems Main Circulation. 2 x Remote samples - 4 BSRIA BACTI and 4 Chem (REMOTE BASIC)\n\n02/03/26-- any closed system micro samples need to go to Latis ONLY\n\nAlso add a note to Jim&#39;s diary for a week after to forward lab originals to Luke for uploading to the clients consultant portal (interim report not needed)",
+    "emptyInspections": [
+      {
+        "id": "7bc4ab90-ec69-4853-b0e4-1992e5ee9ace",
+        "inspectionRef": "I649467",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1 - location tbc",
+        "itemDetail": "CWST - Cold Water Storage Tank - CWST 1 - location tbc",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": []
+      },
+      {
+        "id": "9d9416b6-6b6e-4f76-b174-e7d5c70562ca",
+        "inspectionRef": "I649468",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 2  - location tbc",
+        "itemDetail": "CWST - Cold Water Storage Tank - CWST 2  - location tbc",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": []
+      },
+      {
+        "id": "bd97b980-c45b-426e-81e6-850b3849486d",
+        "inspectionRef": "I649470",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Cat 5",
+        "itemDetail": "Cat 5 - Cold Water Storage Tank - Cat 5",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": [
+      {
+        "id": "f934e377-8ad0-4b83-a0ad-6b42a9219ddf",
+        "inspectionRef": "I649451",
+        "jobType": "Closed system - main circ sample",
+        "itemLocation": "LTHW",
+        "itemDetail": "LTHW - Closed Water System Sampling - LTHW",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "8004ed20-9568-472c-be5d-40217f590c3d",
+        "inspectionRef": "I649452",
+        "jobType": "Closed system - main circ sample",
+        "itemLocation": "CHW",
+        "itemDetail": "PRIMARY CHW - Closed Water System Sampling - CHW",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "121440a0-801e-4985-8630-986301e4ff73",
+        "inspectionRef": "I649469",
+        "jobType": "Closed system - main circ sample",
+        "itemLocation": "CHW",
+        "itemDetail": "RETAIL CHW - Closed Water System Sampling - CHW",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "0db7ed29-3545-4774-9062-c57e06ebafb8",
+        "inspectionRef": "I649453",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "Remote Sample 1 - CHW",
+        "itemDetail": "Remote Sample - Closed Water System Sampling - Remote Sample 1 - CHW",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "3e61fd9d-5f6b-446e-bd20-cad3579b2063",
+        "inspectionRef": "I649454",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "Remote Sample 1 - LTHW",
+        "itemDetail": "Remote Sample - Closed Water System Sampling - Remote Sample 1 - LTHW",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "2b89a37b-a698-4588-8180-e60c177a22d8",
+        "inspectionRef": "I649471",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "Remote Sample 2 - LTHW",
+        "itemDetail": "LTHW - Closed Water System Sampling - Remote Sample 2 - LTHW",
+        "createdAt": "2026-05-23T00:02:34.271Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "8eb58c12-73b8-4183-b892-000a2e72d486",
+        "inspectionRef": "I649472",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "Remote Sample 2 - CHW",
+        "itemDetail": "CHW - Closed Water System Sampling - Remote Sample 2 - CHW",
+        "createdAt": "2026-05-23T00:02:34.271Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Bsria Bacti"
+        ]
+      },
+      {
+        "id": "2de25c32-c70f-4088-8cc2-01febac786eb",
+        "inspectionRef": "I649455",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 1",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 1",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "e726d9d4-b279-4b72-865b-3ccc7404da78",
+        "inspectionRef": "I649456",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 2",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 2",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "888c8ae2-3ff2-4599-b0b9-af61fcb8c3a6",
+        "inspectionRef": "I649457",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 3",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 3",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "a66c1308-7443-4a64-bd13-573b63205758",
+        "inspectionRef": "I649458",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 4",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 4",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "e6d487f7-817e-496c-a4fc-0528999bc0b8",
+        "inspectionRef": "I649459",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 5",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 5",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "e4f26c76-860e-43f6-af12-bca5d30061e2",
+        "inspectionRef": "I649460",
+        "jobType": "Domestic Sample",
+        "itemLocation": "LP Sample 6",
+        "itemDetail": "LP - Outlet Sampling - LP Sample 6",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      },
+      {
+        "id": "a0ffa125-f6ff-4268-a0c4-bda54a9ce1da",
+        "inspectionRef": "I649461",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 1",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 1",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "65fb8aa1-4108-4f09-bf99-c3d08bf4a3e2",
+        "inspectionRef": "I649462",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 2",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 2",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "d0d945b3-8d07-412e-a79f-7dcbaa610064",
+        "inspectionRef": "I649463",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 3",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 3",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "dd3a1a5c-f9be-4e56-814a-709e2d373f07",
+        "inspectionRef": "I649464",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 4",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 4",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "38810d58-a8c5-4b94-a7e8-6c810f4b0bd2",
+        "inspectionRef": "I649465",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 5",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 5",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "b314f055-699f-44f8-80d7-3f4df7ba9933",
+        "inspectionRef": "I649466",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Micro Sample 6",
+        "itemDetail": "Micro - Outlet Sampling - Micro Sample 6",
+        "createdAt": "2025-11-05T10:34:58.644Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      }
+    ]
+  },
+  {
+    "visitRef": "V188102",
+    "uuid": "e48a173a-9a7a-40e2-a2fd-49885feaa5d7",
+    "title": "71-73 Drayton Park - GPM",
+    "monthName": null,
+    "monthShort": null,
+    "notes": "CWST Clean and Spray Disinfect\r\n\r\n71-73 Drayton Park\r\n\r\nTo attend site and carry out a clean and spray disinfect of the CWST 11 - 73A tank room. \r\n\r\nThe internal conditions of this tank was found to be contaminated, following our recent PPM visit in February as per visit report V145792.",
+    "emptyInspections": [
+      {
+        "id": "5d4c1551-4ac4-42af-a0b4-fc6be4b0b619",
+        "inspectionRef": "I815595",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 11 - 73A tank room",
+        "itemDetail": "CWST 11 - Spray Disinfection - CWST - CWST 11 - 73A tank room",
+        "createdAt": "2026-06-06T00:04:23.565Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "V188096",
+    "uuid": "0eb648fc-c194-458f-b1b9-c9dc028a03c0",
+    "title": "Birchwood Leisure Centre",
+    "monthName": null,
+    "monthShort": null,
+    "notes": "Legionella Sampling\n\nBirchwood Leisure Centre\n\nFurther to the works carried out to remove the Dead legs on site, it has been requested that legionella samples are taken from the following locations:\n\nChanging Rooms 4, 5 and 6 \n\nChanging Room 1 (Male)\n\nChanging Room 1 (Female)\n\nReception (Front) Male Shower\n\nStaff Room Sink (Hot)\n\nCWST 1 \n\nCWST 2 \n\nHWS Calorifier 1 Drain \n\nHWS Calorifier 2 Drain \n\nRandom Hot \n\nRandom Cold \n\n14 x LP (Suite = LPFILTERED)",
+    "emptyInspections": [
+      {
+        "id": "c7d71190-66b9-421d-a018-45a2b67af4e0",
+        "inspectionRef": "I815575",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "832bf11c-74dd-468d-8043-8144831bd52a",
+        "inspectionRef": "I815576",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "bad33547-0513-4b54-8287-a5851e04cd91",
+        "inspectionRef": "I815577",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "3085a3fe-9bde-4bb9-bb45-fcaceed265b2",
+        "inspectionRef": "I815578",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "9546ca1b-d454-4fd3-8361-6b2ce17903bf",
+        "inspectionRef": "I815579",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "192744a7-f471-4529-9640-ca45ebe0c7ed",
+        "inspectionRef": "I815580",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "1f96a620-4a59-4334-bef1-a3982bf6e970",
+        "inspectionRef": "I815581",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "f481ae95-9eb4-4f52-bc3c-1614cf8d76ae",
+        "inspectionRef": "I815582",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "bc0b1494-8f87-4090-9278-c0bc91839a47",
+        "inspectionRef": "I815583",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "b6c5f3d1-5ed9-4277-87da-e1f8e870dde7",
+        "inspectionRef": "I815584",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "c07eebac-f5ed-4d66-a9ab-dcf7584806f5",
+        "inspectionRef": "I815585",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "422d2061-5aae-4561-aecb-b3ed67209203",
+        "inspectionRef": "I815586",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "b34fa84b-c963-431b-a84e-d44e62a492e7",
+        "inspectionRef": "I815587",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      },
+      {
+        "id": "1e5d0b27-9c24-4dcc-9159-e6e27746be34",
+        "inspectionRef": "I815588",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "itemDetail": "Outlet Sampling - Sample Location",
+        "createdAt": "2026-06-06T00:04:29.543Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "V188265",
+    "uuid": "6ab4a08d-e623-49f5-b83b-d3db9871010e",
+    "title": "Arora Residential Tower - RNR",
+    "monthName": null,
+    "monthShort": null,
+    "notes": "Contract tank clean of linked boosted domestic CWST's\n\nNo Disruptions\n\nFull Day\n\nENSURE ANY LEAKS/SPILLAGES ARE CLEANED/VACCED UP\n\nALSO TAKE PHOTOS OF FLOOR AND DRAIN AREAS BEFORE CLEAN AND AFTER.",
+    "emptyInspections": [
+      {
+        "id": "4142a665-a089-493a-8ec2-ed748febc054",
+        "inspectionRef": "I816291",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 1 - linked pair boosted",
+        "itemDetail": "CWST 1 - Spray Disinfection - CWST - CWST 1 - linked pair boosted",
+        "createdAt": "2026-06-10T00:02:19.371Z",
+        "currentSamples": []
+      },
+      {
+        "id": "b6438226-7d3b-4e78-bd5c-8d61897c4085",
+        "inspectionRef": "I816292",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 2 - linked pair boosted",
+        "itemDetail": "CWST 2 - Spray Disinfection - CWST - CWST 2 - linked pair boosted",
+        "createdAt": "2026-06-10T00:02:19.371Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": []
+  },
+  {
+    "visitRef": "VN013972",
+    "uuid": "90ccb692-83a7-4d89-bb44-d48d8561fe62",
+    "title": "sd 09.06",
+    "visitDate": "2026-06-09",
+    "monthName": "June",
+    "monthShort": "Jun",
+    "notes": "",
+    "emptyInspections": [
+      {
+        "id": "403e87b2-f4e0-4967-a703-52d1fd20250c",
+        "inspectionRef": "IN033890",
         "jobType": "Equipment and PPE",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T08:13:19.218Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": [
+      {
+        "id": "e5558ec6-6edf-4cf0-b76e-a0c1a1ab6fce",
+        "inspectionRef": "IN033893",
+        "jobType": "Closed system - main circ sample",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T08:13:19.350Z",
+        "currentSamples": [
+          "Cooling TVC",
+          "Cooling TVC",
+          "Water Feature TVC"
+        ]
+      },
+      {
+        "id": "bdf04448-0ed2-4d2b-a786-1599a1620318",
+        "inspectionRef": "IN033892",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T08:13:19.346Z",
+        "currentSamples": [
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "c01018cf-871e-42eb-9a8e-3946b5251557",
+        "inspectionRef": "IN033891",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T08:13:19.218Z",
+        "currentSamples": [
+          "Legionella"
+        ]
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013975",
+    "uuid": "12cfddc0-3a52-4b2d-9b5c-92bb915b7f6c",
+    "title": "test",
+    "visitDate": "2026-06-09",
+    "monthName": "June",
+    "monthShort": "Jun",
+    "notes": "",
+    "emptyInspections": [
+      {
+        "id": "788abff0-4028-4d4a-8247-6bc0c1eb480d",
+        "inspectionRef": "IN033902",
+        "jobType": "Closed System Basic Information form",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.649Z",
+        "currentSamples": []
+      },
+      {
+        "id": "c12dc797-645d-4b71-920f-d00ae10f6aff",
+        "inspectionRef": "IN033898",
+        "jobType": "Closed System Chemical Dosing",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.327Z",
+        "currentSamples": []
+      },
+      {
+        "id": "42e602a0-b39a-4f0f-acfb-11457698e03f",
+        "inspectionRef": "IN033901",
+        "jobType": "Closed System Chemical Dosing",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.650Z",
+        "currentSamples": []
+      },
+      {
+        "id": "dd4e47d0-6f0c-40bc-baac-10654805ff48",
+        "inspectionRef": "IN033904",
+        "jobType": "Cooling Tower Cleaning form ( One per tower)",
         "itemLocation": null,
         "itemDetail": null,
-        "createdAt": "2026-04-29T11:37:34.763Z",
+        "createdAt": "2026-06-09T09:59:56.525Z",
+        "currentSamples": []
+      },
+      {
+        "id": "8d9a097a-9205-4652-80a2-226988c52662",
+        "inspectionRef": "IN033899",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.583Z",
+        "currentSamples": []
+      }
+    ],
+    "filledInspections": [
+      {
+        "id": "ceae8a4b-c2b7-46db-bd66-2ad5d5baead3",
+        "inspectionRef": "IN033900",
+        "jobType": "Closed system - Remote sample",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.607Z",
+        "currentSamples": [
+          "Chem Basic",
+          "Chem Basic",
+          "Potable/Domestic",
+          "Potable/Domestic",
+          "Potable/Domestic",
+          "Potable/Domestic",
+          "Potable/Domestic"
+        ]
+      },
+      {
+        "id": "b0823ce9-dc09-4a44-886d-17d127886c34",
+        "inspectionRef": "IN033903",
+        "jobType": "Closed System On-Site chem testing",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T09:03:24.666Z",
+        "currentSamples": [
+          "Cooling TVC",
+          "Legionella"
+        ]
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013976",
+    "uuid": "9d8309bb-8cca-44ac-abdc-a5ac8d7c17ba",
+    "title": "test visit specific notes",
+    "visitDate": "2026-06-09",
+    "monthName": "June",
+    "monthShort": "Jun",
+    "notes": "asd",
+    "emptyInspections": [
+      {
+        "id": "891a52d3-21e2-4790-b283-49f0c6628702",
+        "inspectionRef": "IN033906",
+        "jobType": "Health and Safty Risk Assessment",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T11:13:23.169Z",
+        "currentSamples": []
+      },
+      {
+        "id": "e146f07f-cf58-438c-a618-e9852b4d416e",
+        "inspectionRef": "IN033905",
+        "jobType": "Pool/Spa Micro/LP Only Sampling",
+        "itemLocation": "",
+        "itemDetail": null,
+        "createdAt": "2026-06-09T11:13:23.094Z",
         "currentSamples": []
       }
     ],

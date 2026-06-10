@@ -1,456 +1,109 @@
 [
   {
-    "visitRef": "VN012848",
-    "title": "Scheduled visit for Inhabit Hotel - Queens Gardens",
+    "visitRef": "VN013756",
+    "uuid": "5ca96c46-5dae-444d-ad56-bdb020d9209a",
     "decisions": [
       {
-        "inspectionId": "12dc6eba-7e0e-4e9b-bb62-5ef803fc51b7",
-        "inspectionRef": "IN028304",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Calorifier 1",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "ba757452-0841-4dc5-8e14-dc38851eae5d",
-        "inspectionRef": "IN028310",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Calorifier 2",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "8da575fd-32b1-44ca-8dcb-a110c8d72104",
-        "inspectionRef": "IN028303",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Kitchen -Sink",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "3c7c938f-6409-4d79-af15-2cca80176912",
-        "inspectionRef": "IN028305",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Kitchen - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "852a56e8-20cf-491c-bad7-982cd751bd85",
-        "inspectionRef": "IN028306",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 2 - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "0ada9e79-7219-42da-b878-e7c725d88b76",
-        "inspectionRef": "IN028307",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 1 - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "23f987a0-ac17-46bd-851d-357a951ab42d",
-        "inspectionRef": "IN028308",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - WC 3 - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "f9f4f03c-d00c-45b0-be58-7d4b9a1931b7",
-        "inspectionRef": "IN028309",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Ground floor - Bar - sink",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN013729",
-    "title": "Scheduled visit for LBC - Cottons Centre",
-    "decisions": [
-      {
-        "inspectionId": "00d403cb-377b-4a8e-b48c-3b7e4d760787",
-        "inspectionRef": "IN032791",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "CWST",
-        "skip": true,
-        "reasoning": "Hydrogen Peroxide Outlet Testing - variant of H2O2 dosing system testing, in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "b22f8f1f-f6f2-4974-af50-c0eabf2b7fb8",
-        "inspectionRef": "IN032792",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "nearest sentinel point",
-        "skip": true,
-        "reasoning": "Hydrogen Peroxide Outlet Testing - variant of H2O2 dosing system testing, in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "5fb242a1-1de5-4f0e-88e8-9799b4f8101a",
-        "inspectionRef": "IN032793",
-        "jobType": "Hydrogen Peroxide Outlet Testing",
-        "itemLocation": "furthest sentinel point",
-        "skip": true,
-        "reasoning": "Hydrogen Peroxide Outlet Testing - variant of H2O2 dosing system testing, in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN013688",
-    "title": "Scheduled visit for Queensbury Court (SA)",
-    "decisions": [
-      {
-        "inspectionId": "22635d14-720c-4478-9f6e-e5d194f71c00",
-        "inspectionRef": "IN032527",
+        "inspectionId": "cdab39cc-b520-497d-9d8e-766d82a3a153",
+        "inspectionRef": "IN032856",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "Electrical Shower",
+        "itemLocation": "Tank drain valve",
         "skip": true,
-        "reasoning": "Little used outlet flushing - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "V187910",
-    "title": "130 Shaftesbury Avenue - SA",
-    "decisions": [
-      {
-        "inspectionId": "802a48dd-56d5-4f19-99aa-95264ea0918a",
-        "inspectionRef": "I814633",
-        "jobType": "Closed System Chemical Dosing",
-        "itemLocation": "LTHW",
-        "skip": true,
-        "reasoning": "Closed System Chemical Dosing - variant of Chemical Dosing, in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "V187944",
-    "title": "35 Lennox Gardens - Cluttons",
-    "decisions": [
-      {
-        "inspectionId": "79834053-9718-4216-80d2-b11d7089c716",
-        "inspectionRef": "I814958",
-        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
-        "itemLocation": "Roof void - CWST 2",
-        "skip": true,
-        "reasoning": "Cold water storage tank Clean and Spray disinfection form - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "V187906",
-    "title": "200 Aldersgate Street",
-    "decisions": [
-      {
-        "inspectionId": "0df20e21-2b2f-45a9-ae7c-d3d6a9a2a5df",
-        "inspectionRef": "I815498",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
-            "sampleTypeName": "Legionella",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x LP (Suite = LPFILTERED)' and '4 x micro (Suite = POTABLE or DOMESTIC)'. Allocating first 4 DS to LP samples - slot 1/4.",
-        "unresolved": false
+        "reasoning": "jobType 'Little used outlet flushing' is in skip-override list"
       },
       {
-        "inspectionId": "2116031b-91cf-47ba-b388-77edfe04eb65",
-        "inspectionRef": "I815499",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
-            "sampleTypeName": "Legionella",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x LP (Suite = LPFILTERED)' - slot 2/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "0dd38754-286c-4ebd-ad20-eac8bca7d967",
-        "inspectionRef": "I815500",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
-            "sampleTypeName": "Legionella",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x LP (Suite = LPFILTERED)' - slot 3/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "56e75831-6a8c-4ba7-bc9b-8c2b11db501f",
-        "inspectionRef": "I815501",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152",
-            "sampleTypeName": "Legionella",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x LP (Suite = LPFILTERED)' - slot 4/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "158bdc38-81df-4d4c-9b79-c9ed0f1eefb1",
-        "inspectionRef": "I815502",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
-            "sampleTypeName": "Potable/Domestic",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x micro (Suite = POTABLE or DOMESTIC)' - slot 1/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "d9207530-f4f8-4131-957f-b2edc0a10700",
-        "inspectionRef": "I815503",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
-            "sampleTypeName": "Potable/Domestic",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x micro (Suite = POTABLE or DOMESTIC)' - slot 2/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "9b1ca2a6-bfff-480f-8828-5f5b3b6d41d7",
-        "inspectionRef": "I815504",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
-            "sampleTypeName": "Potable/Domestic",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x micro (Suite = POTABLE or DOMESTIC)' - slot 3/4.",
-        "unresolved": false
-      },
-      {
-        "inspectionId": "acaf8abb-8f75-4124-aa43-9fd2e7be22cc",
-        "inspectionRef": "I815505",
-        "jobType": "Domestic Sample",
-        "itemLocation": "Sample Location",
-        "samples": [
-          {
-            "sampleTypeId": "47773ece-608d-4171-af15-83dbf1c65dc8",
-            "sampleTypeName": "Potable/Domestic",
-            "quantity": 1
-          }
-        ],
-        "confidence": "HIGH",
-        "reasoning": "Notes specify '4 x micro (Suite = POTABLE or DOMESTIC)' - slot 4/4.",
-        "unresolved": false
-      }
-    ]
-  },
-  {
-    "visitRef": "VN012899",
-    "title": "Scheduled visit for 27 Dover Street",
-    "decisions": [
-      {
-        "inspectionId": "7b3e4153-6f42-4e68-a618-b1c4729c51b7",
-        "inspectionRef": "IN028555",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "2nd floor male",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "c92bdce6-9f4c-459c-bca2-e8d72df1ee99",
-        "inspectionRef": "IN028556",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement shower room",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "669f22dc-58d8-4385-8bd1-77b0d5f797d4",
-        "inspectionRef": "IN028557",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "4th floor wc",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN012878",
-    "title": "Scheduled visit for Crompton Court",
-    "decisions": [
-      {
-        "inspectionId": "f82702f9-d0e9-40ca-9aca-abb90f6addd8",
-        "inspectionRef": "IN028447",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Basement Boiler Room - Cal 1",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "960a501e-c332-46d5-a029-9e7d2ecdd0a3",
-        "inspectionRef": "IN028448",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Basement Boiler Room - Cal 2",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "b575852d-bde7-42f7-9aad-2d1c6a0ed2d1",
-        "inspectionRef": "IN028446",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Basement - Staff WC - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN012918",
-    "title": "Scheduled visit for 124 Beaufort Street",
-    "decisions": [
-      {
-        "inspectionId": "d7c71eda-7647-468b-8c01-1e2b1a9c5fed",
-        "inspectionRef": "IN028703",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Ground Floor Plantroom - Calorifier 1",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "d3da0434-266f-4531-a4ca-a5894d79102e",
-        "inspectionRef": "IN028707",
-        "jobType": "Calorifier/Water Heater temperatures",
-        "itemLocation": "Ground Floor Plantroom - Calorifier 2",
-        "skip": true,
-        "reasoning": "Calorifier/Water Heater temperatures - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "61de68ae-9533-416a-8fcb-9c5b003a8865",
-        "inspectionRef": "IN028701",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Bathroom 1 - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "a396e34f-569e-49c2-9645-e2ade6578733",
-        "inspectionRef": "IN028702",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Kitchen 2 - Sink",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "68b57a43-ce69-43fc-a3e3-a58182303f7d",
-        "inspectionRef": "IN028704",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Kitchen 1 - Sink",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "2fa7d253-5078-4d9f-8c0d-90df2d5b4f19",
-        "inspectionRef": "IN028705",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Shared Bathroom 2 - WHB",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      },
-      {
-        "inspectionId": "70669ee5-f0a2-422b-9d1b-22889a230522",
-        "inspectionRef": "IN028706",
-        "jobType": "Outlet Temperature monitoring",
-        "itemLocation": "Ground Floor Bin Store - Bib Tap",
-        "skip": true,
-        "reasoning": "Outlet Temperature monitoring - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN012932",
-    "title": "Scheduled visit for 10 Gresham Street - C&W",
-    "decisions": [
-      {
-        "inspectionId": "60c47fae-7bdf-4758-a4da-b747bced5b36",
-        "inspectionRef": "IN028750",
-        "jobType": "Water feature - On site chem testing form",
-        "itemLocation": "Water Feature Testing",
-        "skip": true,
-        "reasoning": "Water feature On site chem testing form - in SKIP-OVERRIDE list"
-      }
-    ]
-  },
-  {
-    "visitRef": "VN013755",
-    "title": "Scheduled visit for 42 Connaught Street (SA)",
-    "decisions": [
-      {
-        "inspectionId": "0ddff6e3-5c30-4dc0-bb5e-65dacaba8b4d",
-        "inspectionRef": "IN032854",
+        "inspectionId": "963f2b7d-5e3f-4d3f-904c-4d8fb787fcbc",
+        "inspectionRef": "IN032857",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "Basement bib tap",
+        "itemLocation": "UV Bypass valve",
         "skip": true,
-        "reasoning": "Little used outlet flushing - in SKIP-OVERRIDE list"
+        "reasoning": "jobType 'Little used outlet flushing' is in skip-override list"
       },
       {
-        "inspectionId": "9b7e7dff-dfcf-4796-a62d-80bd6cdf38f9",
-        "inspectionRef": "IN032855",
+        "inspectionId": "2b349e68-82ae-4041-b07c-48ddd08d97f6",
+        "inspectionRef": "IN032858",
         "jobType": "Little used outlet flushing",
-        "itemLocation": "CWST Mains Bypass Flush",
+        "itemLocation": "Drains on Pump-set",
         "skip": true,
-        "reasoning": "Little used outlet flushing - in SKIP-OVERRIDE list"
+        "reasoning": "jobType 'Little used outlet flushing' is in skip-override list"
+      },
+      {
+        "inspectionId": "33c15930-d45e-4a1c-bd36-8d78636f61ef",
+        "inspectionRef": "IN032859",
+        "jobType": "Little used outlet flushing",
+        "itemLocation": "CWST Bypass",
+        "skip": true,
+        "reasoning": "jobType 'Little used outlet flushing' is in skip-override list"
+      },
+      {
+        "inspectionId": "569eb9e6-3821-4e20-b5a3-f53344189214",
+        "inspectionRef": "IN032860",
+        "jobType": "Little used outlet flushing",
+        "itemLocation": "Expansion Vessel Flush - BCWS Pumps",
+        "skip": true,
+        "reasoning": "jobType 'Little used outlet flushing' is in skip-override list"
       }
     ]
   },
   {
-    "visitRef": "VN013767",
-    "title": "Monthly Equipment and PPE-test",
+    "visitRef": "VN012939",
+    "uuid": "632b4870-1761-40ff-a09e-3ff9a973b629",
     "decisions": [
       {
-        "inspectionId": "14f65382-6bdb-405f-83e8-94817a26ab00",
-        "inspectionRef": "IN032895",
-        "jobType": "Equipment and PPE",
+        "inspectionId": "4b307cdf-ce88-4ceb-a676-60200639a7aa",
+        "inspectionRef": "IN028759",
+        "jobType": "Outlet Temperature monitoring",
+        "itemLocation": "External bib tap",
+        "skip": true,
+        "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list (temp reading)"
+      }
+    ]
+  },
+  {
+    "visitRef": "VN012925",
+    "uuid": "9986f8b0-d007-46ad-953d-25c132d33a3a",
+    "decisions": [
+      {
+        "inspectionId": "fb9d9b0a-780e-4fbb-89dc-73ba822a0262",
+        "inspectionRef": "IN028730",
+        "jobType": "CT System Water Onsite Testing",
+        "itemLocation": "CT 2",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are null; cannot determine sample requirements for CT System Water Onsite Testing",
+        "samples": []
+      },
+      {
+        "inspectionId": "e0d17f38-35b8-4bb7-ab41-0fb8ff16485e",
+        "inspectionRef": "IN028731",
+        "jobType": "CT System Water Onsite Testing",
+        "itemLocation": "CT 4",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are null; cannot determine sample requirements for CT System Water Onsite Testing",
+        "samples": []
+      }
+    ]
+  },
+  {
+    "visitRef": "VN012686",
+    "uuid": "5199b0b5-c25a-498d-9d3a-1a75c76013f1",
+    "decisions": [
+      {
+        "inspectionId": "40685675-9e9e-4100-96d6-f2fa039618e1",
+        "inspectionRef": "IN027535",
+        "jobType": "Ladder Checklist",
         "itemLocation": null,
         "unresolved": true,
-        "reasonClass": "unresolved_unknown_jobtype",
-        "reasoning": "Equipment and PPE jobtype is not in standard catalog and has no clear sample type mapping"
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes mention 'Auto-generated internal check' but provide no sample requirements; unclear if Ladder Checklist requires samples",
+        "samples": []
       }
     ]
   },
   {
     "visitRef": "VN013768",
-    "title": "Monthly Equipment and PPE",
+    "uuid": "5c71f9fa-c8bb-44c5-a84e-c8e0b5756e2a",
     "decisions": [
       {
         "inspectionId": "3627bdef-ee17-4eb6-9a1b-4245635e6690",
@@ -458,38 +111,379 @@
         "jobType": "Equipment and PPE",
         "itemLocation": null,
         "unresolved": true,
-        "reasonClass": "unresolved_unknown_jobtype",
-        "reasoning": "Equipment and PPE jobtype is not in standard catalog and has no clear sample type mapping"
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes mention 'Auto-generated internal check' but provide no sample requirements; unclear if Equipment and PPE requires samples",
+        "samples": []
       }
     ]
   },
   {
-    "visitRef": "VN012684",
-    "title": "Monthly Equipment and PPE testss",
+    "visitRef": "VN013772",
+    "uuid": "102e080c-2241-4b6b-9b67-a55050afe37d",
     "decisions": [
       {
-        "inspectionId": "f1b47ea7-b81e-4b13-a907-cf162c11264f",
-        "inspectionRef": "IN027533",
-        "jobType": "Equipment and PPE",
+        "inspectionId": "e86980fe-9cee-4018-98ef-d00eabead8c3",
+        "inspectionRef": "IN032900",
+        "jobType": "pH and Conductivity Checks",
         "itemLocation": null,
         "unresolved": true,
-        "reasonClass": "unresolved_unknown_jobtype",
-        "reasoning": "Equipment and PPE jobtype is not in standard catalog and has no clear sample type mapping"
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes mention 'Auto-generated internal check' but provide no sample requirements; unclear if pH and Conductivity Checks requires samples",
+        "samples": []
       }
     ]
   },
   {
-    "visitRef": "VN012685",
-    "title": "Monthly Equipment and PPE",
+    "visitRef": "V188034",
+    "uuid": "45a3e496-28f1-4307-b19a-b1de1d4b866f",
     "decisions": [
       {
-        "inspectionId": "8aee98b5-6a81-4321-9b31-0f16438fb081",
-        "inspectionRef": "IN027534",
-        "jobType": "Equipment and PPE",
-        "itemLocation": null,
+        "inspectionId": "9e3adbf4-ddf6-40f0-b5f0-588a837f7134",
+        "inspectionRef": "I815494",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Rainwater Tank 2",
+        "skip": true,
+        "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list"
+      },
+      {
+        "inspectionId": "2d90341f-17b4-4e79-90d1-54867e5e0370",
+        "inspectionRef": "I815495",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "Rainwater Tank 1",
+        "skip": true,
+        "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list"
+      },
+      {
+        "inspectionId": "037f18d8-bfc6-405c-adff-e4d08fcdb971",
+        "inspectionRef": "I815493",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample location",
+        "samples": [{"sampleTypeId": "a83a5059-89c3-40ff-9fff-5264caf60392", "sampleTypeName": "Other - see notes", "quantity": 1}],
+        "confidence": "LOW",
+        "reasoning": "Notes mention 'PLUS 1 X Independent Chemical Testing (laboratory) of BLACK SLUDGE for additional testing to include Fat and Grease plus Surfactants - SAMPLE TO BE SENT TO LATIS'; specialty testing not in standard catalog; using Other fallback",
+        "unresolved": false
+      }
+    ]
+  },
+  {
+    "visitRef": "V188067",
+    "uuid": "bf3ed54b-24d3-428e-aa62-f0f46ece9651",
+    "decisions": [
+      {
+        "inspectionId": "301a556b-1f5f-447d-bc3c-e5378def806e",
+        "inspectionRef": "I815497",
+        "jobType": "Cooling Tower Cleaning form ( One per tower)",
+        "itemLocation": "Cooling Tower 2 - Clean",
         "unresolved": true,
         "reasonClass": "unresolved_unknown_jobtype",
-        "reasoning": "Equipment and PPE jobtype is not in standard catalog and has no clear sample type mapping"
+        "reasoning": "Notes describe cooling tower cleaning and borescope inspection but jobType is cleaning form, not sampling; unclear if samples needed for this cleaning activity",
+        "samples": []
+      }
+    ]
+  },
+  {
+    "visitRef": "V157548",
+    "uuid": "c5d2904e-c9bc-475d-a6f9-50c24242cb62",
+    "decisions": [
+      {
+        "inspectionId": "7bc4ab90-ec69-4853-b0e4-1992e5ee9ace",
+        "inspectionRef": "I649467",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 1 - location tbc",
+        "skip": true,
+        "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list (visual inspection)"
+      },
+      {
+        "inspectionId": "9d9416b6-6b6e-4f76-b174-e7d5c70562ca",
+        "inspectionRef": "I649468",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "CWST 2  - location tbc",
+        "skip": true,
+        "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list (visual inspection)"
+      },
+      {
+        "inspectionId": "bd97b980-c45b-426e-81e6-850b3849486d",
+        "inspectionRef": "I649470",
+        "jobType": "Cold Water Storage Tank inspection",
+        "itemLocation": "Cat 5",
+        "skip": true,
+        "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list (visual inspection)"
+      }
+    ]
+  },
+  {
+    "visitRef": "V188102",
+    "uuid": "e48a173a-9a7a-40e2-a2fd-49885feaa5d7",
+    "decisions": [
+      {
+        "inspectionId": "5d4c1551-4ac4-42af-a0b4-fc6be4b0b619",
+        "inspectionRef": "I815595",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 11 - 73A tank room",
+        "skip": true,
+        "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list"
+      }
+    ]
+  },
+  {
+    "visitRef": "V188096",
+    "uuid": "0eb648fc-c194-458f-b1b9-c9dc028a03c0",
+    "decisions": [
+      {
+        "inspectionId": "c7d71190-66b9-421d-a018-45a2b67af4e0",
+        "inspectionRef": "I815575",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "832bf11c-74dd-468d-8043-8144831bd52a",
+        "inspectionRef": "I815576",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "bad33547-0513-4b54-8287-a5851e04cd91",
+        "inspectionRef": "I815577",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "3085a3fe-9bde-4bb9-bb45-fcaceed265b2",
+        "inspectionRef": "I815578",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "9546ca1b-d454-4fd3-8361-6b2ce17903bf",
+        "inspectionRef": "I815579",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "192744a7-f471-4529-9640-ca45ebe0c7ed",
+        "inspectionRef": "I815580",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "1f96a620-4a59-4334-bef1-a3982bf6e970",
+        "inspectionRef": "I815581",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "f481ae95-9eb4-4f52-bc3c-1614cf8d76ae",
+        "inspectionRef": "I815582",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "bc0b1494-8f87-4090-9278-c0bc91839a47",
+        "inspectionRef": "I815583",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "b6c5f3d1-5ed9-4277-87da-e1f8e870dde7",
+        "inspectionRef": "I815584",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "c07eebac-f5ed-4d66-a9ab-dcf7584806f5",
+        "inspectionRef": "I815585",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "422d2061-5aae-4561-aecb-b3ed67209203",
+        "inspectionRef": "I815586",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "b34fa84b-c963-431b-a84e-d44e62a492e7",
+        "inspectionRef": "I815587",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      },
+      {
+        "inspectionId": "1e5d0b27-9c24-4dcc-9159-e6e27746be34",
+        "inspectionRef": "I815588",
+        "jobType": "Domestic Sample",
+        "itemLocation": "Sample Location",
+        "samples": [{"sampleTypeId": "e65f2c3a-d13c-4daf-a843-be1f0a4d2152", "sampleTypeName": "Legionella", "quantity": 1}],
+        "confidence": "HIGH",
+        "reasoning": "Notes explicitly call for '14 x LP (Suite = LPFILTERED)' for Legionella sampling from various locations; all 14 inspections should be Legionella",
+        "unresolved": false
+      }
+    ]
+  },
+  {
+    "visitRef": "V188265",
+    "uuid": "6ab4a08d-e623-49f5-b83b-d3db9871010e",
+    "decisions": [
+      {
+        "inspectionId": "4142a665-a089-493a-8ec2-ed748febc054",
+        "inspectionRef": "I816291",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 1 - linked pair boosted",
+        "skip": true,
+        "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list"
+      },
+      {
+        "inspectionId": "b6438226-7d3b-4e78-bd5c-8d61897c4085",
+        "inspectionRef": "I816292",
+        "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+        "itemLocation": "CWST 2 - linked pair boosted",
+        "skip": true,
+        "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list"
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013972",
+    "uuid": "90ccb692-83a7-4d89-bb44-d48d8561fe62",
+    "decisions": [
+      {
+        "inspectionId": "403e87b2-f4e0-4967-a703-52d1fd20250c",
+        "inspectionRef": "IN033890",
+        "jobType": "Equipment and PPE",
+        "itemLocation": "",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are empty; filledInspections contain various samples but unclear if empty Equipment and PPE inspection requires any samples",
+        "samples": []
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013975",
+    "uuid": "12cfddc0-3a52-4b2d-9b5c-92bb915b7f6c",
+    "decisions": [
+      {
+        "inspectionId": "788abff0-4028-4d4a-8247-6bc0c1eb480d",
+        "inspectionRef": "IN033902",
+        "jobType": "Closed System Basic Information form",
+        "itemLocation": "",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are empty; jobType 'Closed System Basic Information form' unclear if samples required",
+        "samples": []
+      },
+      {
+        "inspectionId": "c12dc797-645d-4b71-920f-d00ae10f6aff",
+        "inspectionRef": "IN033898",
+        "jobType": "Closed System Chemical Dosing",
+        "itemLocation": "",
+        "skip": true,
+        "reasoning": "jobType 'Closed System Chemical Dosing' is in skip-override list"
+      },
+      {
+        "inspectionId": "42e602a0-b39a-4f0f-acfb-11457698e03f",
+        "inspectionRef": "IN033901",
+        "jobType": "Closed System Chemical Dosing",
+        "itemLocation": "",
+        "skip": true,
+        "reasoning": "jobType 'Closed System Chemical Dosing' is in skip-override list"
+      },
+      {
+        "inspectionId": "dd4e47d0-6f0c-40bc-baac-10654805ff48",
+        "inspectionRef": "IN033904",
+        "jobType": "Cooling Tower Cleaning form ( One per tower)",
+        "itemLocation": null,
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are empty; jobType is cooling tower cleaning but unclear if samples required",
+        "samples": []
+      },
+      {
+        "inspectionId": "8d9a097a-9205-4652-80a2-226988c52662",
+        "inspectionRef": "IN033899",
+        "jobType": "Cooling Tower Disinfection form (one per system)",
+        "itemLocation": "",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes are empty; jobType is cooling tower disinfection but unclear if samples required",
+        "samples": []
+      }
+    ]
+  },
+  {
+    "visitRef": "VN013976",
+    "uuid": "9d8309bb-8cca-44ac-abdc-a5ac8d7c17ba",
+    "decisions": [
+      {
+        "inspectionId": "891a52d3-21e2-4790-b283-49f0c6628702",
+        "inspectionRef": "IN033906",
+        "jobType": "Health and Safty Risk Assessment",
+        "itemLocation": "",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes only contain 'asd' which provides no guidance; unclear if Health and Safety Risk Assessment requires samples",
+        "samples": []
+      },
+      {
+        "inspectionId": "e146f07f-cf58-438c-a618-e9852b4d416e",
+        "inspectionRef": "IN033905",
+        "jobType": "Pool/Spa Micro/LP Only Sampling",
+        "itemLocation": "",
+        "unresolved": true,
+        "reasonClass": "unresolved_no_notes",
+        "reasoning": "Notes only contain 'asd' which provides no sampling guidance for Pool/Spa jobType; unclear what type of sample needed",
+        "samples": []
       }
     ]
   }
