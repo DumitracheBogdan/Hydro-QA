@@ -3,196 +3,103 @@
   "dryRun": false,
   "visits": [
     {
-      "visitRef": "VN013694",
-      "uuid": "37240b86-4f2d-4de4-bd2c-5e57a8552970",
+      "visitRef": "VN012954",
+      "uuid": "86439690-a037-4b6a-a0cc-c3d66501bdfb",
       "decisions": [
         {
-          "inspectionId": "6f0194d7-0c9f-4b1d-886d-7b50836a6f5c",
-          "inspectionRef": "IN032558",
-          "jobType": "Calorifier/Water Heater temperatures",
-          "itemLocation": "Boiler room under no. 5 - Calorifier 1",
-          "skip": true,
-          "reasoning": "jobType 'Calorifier/Water Heater temperatures' is in skip-override list - temperature reading only, no lab samples",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "81948e99-4820-4022-9e92-d4b6091321d4",
-          "inspectionRef": "IN032559",
-          "jobType": "Calorifier/Water Heater temperatures",
-          "itemLocation": "Boiler room under no. 5 - Calorifier 2 (temp taken from hot tap off the flow pipework, as accurate temps can not be taken from the gal steel pipework)",
-          "skip": true,
-          "reasoning": "jobType 'Calorifier/Water Heater temperatures' is in skip-override list - temperature reading only, no lab samples",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "7fa05d7c-fe8f-46af-9d76-4a6d58398d7e",
-          "inspectionRef": "IN032560",
+          "inspectionId": "c84bd528-fcc4-491e-8f52-9dee41d031cd",
+          "inspectionRef": "IN028838",
           "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Basement vault",
+          "itemLocation": "Welfare Facilities 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN012932",
-      "uuid": "2e766cba-2703-4266-ab44-b7909c1ba7e8",
-      "decisions": [
+        },
         {
-          "inspectionId": "60c47fae-7bdf-4758-a4da-b747bced5b36",
-          "inspectionRef": "IN028750",
-          "jobType": "Water feature - On site chem testing form",
-          "itemLocation": "Water Feature Testing",
-          "skip": true,
-          "reasoning": "jobType 'Water feature - On site chem testing form' is in skip-override list - on-site testing only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN012931",
-      "uuid": "d38a32bf-9884-4958-bf69-34dd07a4622f",
-      "decisions": [
-        {
-          "inspectionId": "047d203a-b41b-48ab-878c-da8c7dac3369",
-          "inspectionRef": "IN028748",
+          "inspectionId": "0148ac88-9a7f-41d7-afa1-6fdb9fd9b2da",
+          "inspectionRef": "IN028839",
           "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Ground floor - Communal sink",
-          "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN012682",
-      "uuid": "ca00e51c-2434-411e-a329-fbb09c7d3767",
-      "decisions": [
-        {
-          "inspectionId": "85476cc0-a4cc-4379-97c8-f5dabd2b8fdb",
-          "inspectionRef": "IN027531",
-          "jobType": "Vehicle Checklist",
-          "itemLocation": null,
-          "unresolved": true,
-          "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "jobType 'Vehicle Checklist' not in skip-override list but unclear if requires samples - notes indicate auto-generated internal check. Cannot determine sample requirements.",
+          "itemLocation": "Residents Facility 1",
           "samples": [],
-          "status": "unresolved"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN012689",
-      "uuid": "74d03d51-90cd-4eeb-bf35-501863678220",
-      "decisions": [
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
         {
-          "inspectionId": "9ad8e182-027e-4806-a106-1779240b6a95",
-          "inspectionRef": "IN027538",
-          "jobType": "pH and Conductivity Checks",
-          "itemLocation": null,
-          "unresolved": true,
-          "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "jobType 'pH and Conductivity Checks' not in skip-override list but unclear if requires samples - notes indicate auto-generated internal check for pH/conductivity. Cannot determine sample requirements.",
+          "inspectionId": "ffbc4446-6a12-4ad2-afc5-d7e1865da811",
+          "inspectionRef": "IN028840",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "A1 bulk store",
           "samples": [],
-          "status": "unresolved"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN013766",
-      "uuid": "d40f5118-4bd9-41a4-a11e-a4fa4c1f94ac",
-      "decisions": [
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
         {
-          "inspectionId": "dac331a9-4cab-42c8-98db-84cb44ab2955",
-          "inspectionRef": "IN032894",
-          "jobType": "Vehicle Checklist",
-          "itemLocation": null,
-          "unresolved": true,
-          "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "jobType 'Vehicle Checklist' not in skip-override list but unclear if requires samples - notes indicate auto-generated internal check. Cannot determine sample requirements.",
+          "inspectionId": "5d6fb24b-8027-4048-9d4f-4ac6b95b05cf",
+          "inspectionRef": "IN028841",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "C2 bulk store",
           "samples": [],
-          "status": "unresolved"
-        }
-      ]
-    },
-    {
-      "visitRef": "V158368",
-      "uuid": "0b1b2737-5c3c-43ac-b8c6-953bd0fd9ec4",
-      "decisions": [
-        {
-          "inspectionId": "4c5600c7-563e-4080-8a14-410e556a723c",
-          "inspectionRef": "I653355",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "B3 Tank Room - CWST 1",
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list - visual inspection only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "41bba2df-7cc5-4e54-9e22-c85261138d14",
-          "inspectionRef": "I653356",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "B3 Tank Room - CWST 2",
+          "inspectionId": "e00ff610-3845-4736-ba3e-05a4b407dc62",
+          "inspectionRef": "IN028842",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "C1 bulk store",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list - visual inspection only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "d8584daf-08da-4af2-ab40-b42b2c754efd",
-          "inspectionRef": "I653357",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "Core A and C Core Roof Plant Room - Cat 5",
+          "inspectionId": "fde1dd69-ded7-4089-bfdf-4033ef509291",
+          "inspectionRef": "IN028843",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Welfare Facilities 1",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list - visual inspection only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "af2d4726-02fb-40d0-a962-77d86b815758",
-          "inspectionRef": "I653358",
-          "jobType": "Cold Water Storage Tank inspection",
-          "itemLocation": "CAT 5 tank 2",
+          "inspectionId": "fb274de3-ad8b-4821-a706-b1deb85280c6",
+          "inspectionRef": "IN028844",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "A2 bulk store",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Cold Water Storage Tank inspection' is in skip-override list - visual inspection only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V188099",
-      "uuid": "59dd8d97-0866-44aa-8d79-c19862334e72",
-      "decisions": [
-        {
-          "inspectionId": "b39be4d4-2061-4cac-8553-14692b69dd47",
-          "inspectionRef": "I815594",
-          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
-          "itemLocation": "CWST",
-          "skip": true,
-          "reasoning": "jobType 'Cold water storage tank - Clean and Spray disinfection form' is in skip-override list - disinfection action only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "VN012955",
-      "uuid": "5a47ddf6-b42f-4dcb-a0fd-939b13a047df",
-      "decisions": [
-        {
-          "inspectionId": "45029cf2-ddbc-4946-af00-6d4bfb37c04e",
-          "inspectionRef": "IN028846",
-          "jobType": "Calorifier/Water Heater temperatures",
-          "itemLocation": "LG/Basement Calorifier 1",
-          "skip": true,
-          "reasoning": "jobType 'Calorifier/Water Heater temperatures' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "48fd1035-701c-4b8f-af3e-9d3256a0bfb1",
-          "inspectionRef": "IN028847",
-          "jobType": "Calorifier/Water Heater temperatures",
-          "itemLocation": "LG/Basement Calorifier 2",
+          "inspectionId": "4c1f3fe3-51ae-47ab-9da9-4065407dfc64",
+          "inspectionRef": "IN028845",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Residents Facility 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Calorifier/Water Heater temperatures' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         }
       ]
@@ -206,114 +113,106 @@
           "inspectionRef": "I815241",
           "jobType": "Closed System Chemical Dosing",
           "itemLocation": "LTHW",
-          "skip": true,
-          "reasoning": "jobType 'Closed System Chemical Dosing' is in skip-override list - chemical dosing action only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V188054",
-      "uuid": "fb5983f7-d850-4830-b094-f7c4e86eefd8",
-      "decisions": [
-        {
-          "inspectionId": "5cc26885-2d0f-4841-a8df-f3719a3e8e96",
-          "inspectionRef": "I815465",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "LTHW",
-          "skip": true,
-          "reasoning": "jobType 'Closed System Chemical Dosing' is in skip-override list - chemical dosing action only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V188151",
-      "uuid": "9c364ec7-155c-4bb7-87df-3a1ed5bb0744",
-      "decisions": [
-        {
-          "inspectionId": "c30a47d9-361e-40d8-9551-ebe1967807ca",
-          "inspectionRef": "I815792",
-          "jobType": "Closed System Chemical Dosing",
-          "itemLocation": "LTHW",
-          "skip": true,
-          "reasoning": "jobType 'Closed System Chemical Dosing' is in skip-override list - chemical dosing action only, no lab samples",
-          "status": "skipped"
-        }
-      ]
-    },
-    {
-      "visitRef": "V188069",
-      "uuid": "33555d1a-9c47-45b8-88e1-3f3f24c56c3e",
-      "decisions": [
-        {
-          "inspectionId": "76d1c160-f286-4999-88ae-63728a4de29f",
-          "inspectionRef": "I815506",
-          "jobType": "Cooling Tower Cleaning form ( One per tower)",
-          "itemLocation": "Cooling Tower 3 - Clean",
-          "unresolved": true,
-          "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "jobType 'Cooling Tower Cleaning form' not in skip-override list. Notes describe cleaning procedure but unclear if requires lab samples. Cannot determine sample requirements.",
           "samples": [],
-          "status": "unresolved"
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Closed System Chemical Dosing is an action task (adding chemicals), not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
         }
       ]
     },
     {
-      "visitRef": "VN013973",
-      "uuid": "daf29939-0801-4776-8f32-5f07b706d66d",
+      "visitRef": "VN013964",
+      "uuid": "6623b6a7-be07-4a39-8a7d-640e5901f0e3",
       "decisions": [
         {
-          "inspectionId": "9e6d6c88-10d4-4427-b638-7648930e89c7",
-          "inspectionRef": "IN033895",
-          "jobType": "Closed System Basic Information form",
+          "inspectionId": "2d314dfb-7616-4ba7-b914-bac0a4ff2d64",
+          "inspectionRef": "IN033876",
+          "jobType": "Cold Water Storage Tank inspection",
           "itemLocation": "",
-          "unresolved": true,
-          "reasonClass": "unresolved_no_notes",
-          "reasoning": "Notes empty and itemLocation empty. Cannot determine sample requirements for 'Closed System Basic Information form' without context.",
           "samples": [],
-          "status": "unresolved"
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold Water Storage Tank inspection is a visual inspection task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
         }
       ]
     },
     {
-      "visitRef": "V188308",
-      "uuid": "d8184b09-e480-4da3-9c2b-023de058d60d",
+      "visitRef": "V188265",
+      "uuid": "6ab4a08d-e623-49f5-b83b-d3db9871010e",
       "decisions": [
         {
-          "inspectionId": "44b20cf3-9a3f-4cde-ae32-2b9b3d238a54",
-          "inspectionRef": "I816620",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Bibtap 1 (Garden)",
+          "inspectionId": "4142a665-a089-493a-8ec2-ed748febc054",
+          "inspectionRef": "I816291",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": "CWST 1 - linked pair boosted",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold water storage tank - Clean and Spray disinfection form is an action/cleaning task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "d0edf2e8-ad8c-4744-bb87-9ad04c9bd33d",
-          "inspectionRef": "I816621",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Bibtap 2 (Garden)",
+          "inspectionId": "b6438226-7d3b-4e78-bd5c-8d61897c4085",
+          "inspectionRef": "I816292",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": "CWST 2 - linked pair boosted",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold water storage tank - Clean and Spray disinfection form is an action/cleaning task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013965",
+      "uuid": "c7e61329-4f2b-4604-a6a1-734d64dcbc7b",
+      "decisions": [
+        {
+          "inspectionId": "c7f55264-f7f9-4f95-80d9-c6a0d16d21b8",
+          "inspectionRef": "IN033878",
+          "jobType": "Health and Safty Risk Assessment",
+          "itemLocation": "",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Health and Safty Risk Assessment is an administrative/risk assessment form, not lab sampling. Always skipped.",
+          "skip": true,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "V176905",
+      "uuid": "f284e670-6335-4f82-95ad-8314cd65faf6",
+      "decisions": [
+        {
+          "inspectionId": "a5f0da8d-aac0-4a80-bb76-d9e6ecc28e9b",
+          "inspectionRef": "I816130",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Basement - Expansion Vessel - Flush",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
           "status": "skipped"
         },
         {
-          "inspectionId": "48e1e643-5550-425f-8036-efbaaab413eb",
-          "inspectionRef": "I816622",
+          "inspectionId": "973502c7-0830-4143-b86a-6b52470d39cd",
+          "inspectionRef": "I816131",
           "jobType": "Outlet Temperature monitoring",
-          "itemLocation": "Bibtap 3 (Garden)",
+          "itemLocation": "Car Park - Butler's Sink",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
           "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
-          "status": "skipped"
-        },
-        {
-          "inspectionId": "ba83afe1-ff36-42b4-bfc0-a92fefebbb61",
-          "inspectionRef": "I816623",
-          "jobType": "Outlet Temperature monitoring",
-          "itemLocation": null,
-          "skip": true,
-          "reasoning": "jobType 'Outlet Temperature monitoring' is in skip-override list - temperature reading only, no lab samples",
+          "unresolved": false,
           "status": "skipped"
         }
       ]
@@ -327,10 +226,274 @@
           "inspectionRef": "I816235",
           "jobType": "Closed System Basic Information form",
           "itemLocation": "CS BASIC INFO",
-          "unresolved": true,
-          "reasonClass": "unresolved_unknown_jobtype",
-          "reasoning": "jobType 'Closed System Basic Information form' appears to be information gathering only. Notes mention 'obtain CS basic info' which suggests data collection rather than lab samples. Cannot determine sample requirements.",
           "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Closed System Basic Information form is an information collection form, not lab sampling. Always skipped.",
+          "skip": true,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "V188205",
+      "uuid": "a2867c7c-7b57-42b8-9684-d44be7d2a1e2",
+      "decisions": [
+        {
+          "inspectionId": "8f2c1fef-da51-40bb-9c53-a922c86f7eb2",
+          "inspectionRef": "I816119",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": "Hurlock CWST 1",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold water storage tank - Clean and Spray disinfection form is an action/cleaning task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "a81d5b35-1d81-456d-80a4-f4b51fffd6c4",
+          "inspectionRef": "I816120",
+          "jobType": "Cold water storage tank - Clean and Spray disinfection form",
+          "itemLocation": "Hurlock CWST 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold water storage tank - Clean and Spray disinfection form is an action/cleaning task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "V157777",
+      "uuid": "110bf66f-e85e-4c12-a0e5-6bcb11157b5a",
+      "decisions": [
+        {
+          "inspectionId": "8ad0d92e-39ab-4d2f-9dd3-294749aae439",
+          "inspectionRef": "I650600",
+          "jobType": "Calorifier/Water Heater drain Flush",
+          "itemLocation": "Calorifier 1",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Calorifier/Water Heater drain Flush is an action task (physical drain), not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "220a1921-b1e8-416b-81fd-90bfa2f55ed6",
+          "inspectionRef": "I650601",
+          "jobType": "Calorifier/Water Heater drain Flush",
+          "itemLocation": "Calorifier 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Calorifier/Water Heater drain Flush is an action task (physical drain), not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "566261cb-1010-4e61-b116-91b855390fb0",
+          "inspectionRef": "I650597",
+          "jobType": "Calorifier/Water Heater temperatures",
+          "itemLocation": "Calorifier 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Calorifier/Water Heater temperatures is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "10978c32-8fc2-4b24-8412-eb4dbfb14c1e",
+          "inspectionRef": "I650596",
+          "jobType": "Calorifier/Water Heater temperatures",
+          "itemLocation": "Calorifier 1",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Calorifier/Water Heater temperatures is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "44b20e74-9388-4933-97fe-a95755c500c3",
+          "inspectionRef": "I650602",
+          "jobType": "Cold Water Storage Tank inspection",
+          "itemLocation": "CWST - Basement Break Tank",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold Water Storage Tank inspection is a visual inspection task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "9863bdab-5b87-43b3-bf50-acdfc4e558a0",
+          "inspectionRef": "I650603",
+          "jobType": "Cold Water Storage Tank inspection",
+          "itemLocation": "CWST - Roof Tank 1",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold Water Storage Tank inspection is a visual inspection task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "d981dde3-6c7a-4523-8351-36b9c9e6a419",
+          "inspectionRef": "I650604",
+          "jobType": "Cold Water Storage Tank inspection",
+          "itemLocation": "CWST - Roof Tank 2",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold Water Storage Tank inspection is a visual inspection task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "d65ba134-624e-4ba5-bc84-0e187cbeb398",
+          "inspectionRef": "I650598",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Staff Welfare Facilities - TBC",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "90b70275-0af8-4cdb-89d6-6922d859b567",
+          "inspectionRef": "I650599",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "Flat - TBC",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "4b57f00d-660a-4e8b-951c-78b0877c1612",
+          "inspectionRef": "I650613",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "AST Unit",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "498e0e39-df17-4f02-941d-86b45ae259c8",
+          "inspectionRef": "I650614",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "AST Unit",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "8438519d-adb2-4a22-b3f5-355fec359bd5",
+          "inspectionRef": "I650615",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "AST Unit",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "aa5336e4-51e7-4adc-bb6f-4e323da81eaf",
+          "inspectionRef": "I650616",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "AST Unit",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "3da323f9-0510-42a3-9789-8f0d72b4d505",
+          "inspectionRef": "I650617",
+          "jobType": "Outlet Temperature monitoring",
+          "itemLocation": "AST Unit",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Outlet Temperature monitoring is a temperature reading task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013034",
+      "uuid": "8116c6c9-49e1-41d0-8994-415d1c1008e3",
+      "decisions": [
+        {
+          "inspectionId": "6e1e36e0-da35-4e84-9242-0a7ab42098f8",
+          "inspectionRef": "IN029250",
+          "jobType": "Spa/Pool - on-site testing",
+          "itemLocation": "Pool",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Spa/Pool - on-site testing is an on-site only task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        }
+      ]
+    },
+    {
+      "visitRef": "VN013998",
+      "uuid": "a5af27ec-c4bc-43dc-9ab1-a8e036feef3b",
+      "decisions": [
+        {
+          "inspectionId": "fba868c4-3288-49d7-ba5e-9b94c4cef833",
+          "inspectionRef": "IN034077",
+          "jobType": "Cooling Tower Disinfection form (one per system)",
+          "itemLocation": "",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cooling Tower Disinfection form is a procedure/action form, not lab sampling. Always skipped.",
+          "skip": true,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "a43307f2-2e36-429b-a176-3b536c75595f",
+          "inspectionRef": "IN034078",
+          "jobType": "Cold Water Storage Tank inspection",
+          "itemLocation": "",
+          "samples": [],
+          "confidence": "HIGH",
+          "reasoning": "SKIP-OVERRIDE: Cold Water Storage Tank inspection is a visual inspection task, not lab sampling. Always skipped.",
+          "skip": true,
+          "unresolved": false,
+          "status": "skipped"
+        },
+        {
+          "inspectionId": "f66b8c39-b216-443e-a292-7930a7606e16",
+          "inspectionRef": "IN034079",
+          "jobType": "Pool/Spa Micro/LP Only Sampling",
+          "itemLocation": "",
+          "samples": [],
+          "confidence": "LOW",
+          "reasoning": "Pool/Spa Micro/LP Only Sampling with empty itemLocation and no notes guidance. Cannot determine if Micro or LP sample type without booker-encoded labels or notes specification.",
+          "skip": false,
+          "unresolved": true,
+          "reasonClass": "unresolved_no_notes",
           "status": "unresolved"
         }
       ]
@@ -339,8 +502,8 @@
   "totals": {
     "patched": 0,
     "deleted": 0,
-    "unresolved": 6,
+    "unresolved": 1,
     "errors": 0,
-    "skipped": 19
+    "skipped": 35
   }
 }

@@ -2,16 +2,24 @@
   "errors": [],
   "lowConfidenceReview": [
     {
-      "visitRef": "V188219",
-      "inspectionId": "a2fb75e1-436e-490c-8506-233cbc76cb82",
-      "issue": "SPA suite mapping",
-      "details": "Used 'Water Feature Micro' for '1 x micro - (Suite = SPA)' with MED confidence. CSV shows SPA maps to 'Pool/Spa Micro/LP Only Sampling' but Water Feature is semantically reasonable fallback.",
-      "confidence": "MED",
-      "recommendation": "Consider if Pool/Spa sample type should be used instead"
+      "visitRef": "VN013998",
+      "inspectionId": "f66b8c39-b216-443e-a292-7930a7606e16",
+      "inspectionRef": "IN034079",
+      "jobType": "Pool/Spa Micro/LP Only Sampling",
+      "reasoning": "Pool/Spa sampling with empty itemLocation and no notes guidance. Cannot determine Micro vs LP without booker labels.",
+      "batch": 2
+    },
+    {
+      "visitRef": "VN013997", 
+      "inspectionId": "f91a1900-8f43-4aaf-a426-2352b33bd90b",
+      "inspectionRef": "IN034074",
+      "jobType": "Pool/Spa Micro/LP Only Sampling",
+      "reasoning": "Pool/Spa sampling with null notes and empty itemLocation. Cannot determine sampling requirements.",
+      "batch": 5
     }
   ],
-  "approvedPatches": 29,
-  "totalReviewed": 262,
-  "fixLoopIter": 1,
-  "notes": "Fix iter 1 successfully resolved V188219 catalog_gap. Changed from unresolved to patched using Water Feature Micro (MED confidence) for SPA suite. No new errors introduced. 33 remaining unresolved items are legitimate (admin tasks, maintenance forms, unclear sample requirements due to missing notes). All batch totals verified correct: B1=0/7/44, B2=0/6/19, B3=12/0/99, B4=2/8/22, B5=15/12/16. Total: 29 patched, 33 unresolved, 200 skipped, 0 errors."
+  "approvedPatches": 2,
+  "totalReviewed": 145,
+  "fixLoopIter": 2,
+  "notes": "Post-fix verification summary: All 8 previously flagged SKIP-OVERRIDE reclassification errors have been successfully corrected - inspections VN013965/c7f55264, V188254/2fd0d4ee, VN013998/fba868c4, VN013966/0c7003e0, V188129/58d52f10, VN013973/9e6d6c88, V184056/82a919db, and V188306/fd3acba9 are now properly marked as 'skipped'. The 2 original approved patches remain valid: V188322 Legionella resample and VN013008 Pool/Spa→Water Feature Micro conversion. All remaining 13 unresolved cases are genuinely unresolvable due to missing notes, empty locations, or insufficient guidance. No errors remain in the system."
 }
