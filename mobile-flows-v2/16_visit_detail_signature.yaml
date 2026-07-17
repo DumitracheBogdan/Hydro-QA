@@ -17,9 +17,16 @@ tags:
 #   text="Enter"              (EditText placeholder)
 #   content-desc="Tap to sign" + text="Tap to sign!" (canvas area)
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
-# --- Client Signature accordion is visible on default tab ---
+# --- Scroll to the Client Signature accordion ---
+# On 320px CI screens the 1.8.x Description card pushes the accordion
+# below the fold, so scroll to it before tapping.
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 15000
 - tapOn:
     text: "Client Signature"
 

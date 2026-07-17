@@ -1,0 +1,37 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Expand the Visit Details accordion"
+tags:
+  - shared
+  - visit-detail
+---
+
+# Expands the "Visit Details" accordion on the Visit Details tab to
+# reveal the Description & Reference / Work Details form fields.
+#
+# Why this is not a simple tap: the accordion header text is literally
+# "Visit Details", the SAME string as the tab label. In 1.8.x the tab
+# sits at the top and the accordion is below the fold, so a plain
+# tapOn only sees the tab. Scrolling the "Client Signature" accordion
+# (which lives just below the Visit Details accordion) into view
+# scrolls the tab label off the top, leaving the accordion header as
+# the ONLY "Visit Details" match - then the tap hits the accordion.
+#
+# Caller must already be on the Visit Details tab.
+# Usage:
+#   - runFlow: _shared/expand_visit_details_accordion.yaml
+
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 15000
+
+# Now the only "Visit Details" on screen is the accordion header
+- tapOn: "Visit Details"
+
+# Confirm it expanded - the Description & Reference field appears
+- scrollUntilVisible:
+    element:
+      text: "Description & Reference"
+    direction: DOWN
+    timeout: 15000

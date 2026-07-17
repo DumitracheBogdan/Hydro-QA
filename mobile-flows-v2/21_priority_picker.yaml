@@ -7,23 +7,28 @@ tags:
   - smoke
 ---
 
-# Opens a visit that has action items with priorities, finds a
-# priority badge, taps it to open the picker dropdown, verifies
-# all options, dismisses.
+# Opens the QA test visit (guaranteed to hold one action item with a
+# priority badge), finds the badge, taps it to open the picker
+# dropdown, verifies all options, dismisses.
 #
-# Navigates via History tab (reliable) -> Visit Detail.
+# Anchored on the QA test visit - the previous "first visit in
+# History" navigation broke whenever new seed visits (without
+# actions) landed above it.
 
-- runFlow: _shared/navigate_to_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
-# --- Scroll down to find a priority badge in Actions area ---
+# --- Scroll down to find the priority badge in the Actions area ---
+# Accept any current priority so a manual priority change on the QA
+# visit does not fail the flow; the dropdown assert below still
+# checks all three options.
 - scrollUntilVisible:
     element:
-      text: "Low"
+      text: "(Low|Medium|High)"
     direction: DOWN
     timeout: 15000
 
 # --- Tap the priority badge to open dropdown ---
-- tapOn: "Low"
+- tapOn: "(Low|Medium|High)"
 
 # --- Verify all three priority options visible ---
 - assertVisible: "Low"

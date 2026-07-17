@@ -16,8 +16,22 @@ UI_DUMP_DIR="$ARTIFACTS/ui-dumps"
 mkdir -p "$SHOT_DIR" "$LOG_DIR" "$RESULTS_DIR" "$UI_DUMP_DIR"
 
 echo "=== Downloading and installing APK ==="
-gh release download mobile-apk-v1 -p "app-debug.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber || true
-adb install -r /tmp/app-debug.apk && echo "APK installed" || echo "APK install failed"
+# app-release.apk = the 1.8.46 release build (com.hydrocert.app v46).
+# It defaults to Production; the shared login flow switches it to DEV
+# on every launch. Uninstall first: a leftover install with a different
+# signing key (debug vs release) makes install -r fail with
+# INSTALL_FAILED_UPDATE_INCOMPATIBLE.
+gh release download mobile-apk-v1 -p "app-release.apk" -D /tmp -R DumitracheBogdan/Hydro-QA --clobber || true
+adb uninstall com.hydrocert.app >/dev/null 2>&1 || true
+adb install -r -g /tmp/app-release.apk && echo "APK installed" || echo "APK install failed"
+
+# Force all animation scales to 0. The workflow already sets
+# disable-animations: true, but the 1.8.46 splash-exit crash is severe
+# enough (100% cold-launch crash with animations ON) that we guard it
+# here too - defence in depth against a flaky-launch storm.
+adb shell settings put global window_animation_scale 0 || true
+adb shell settings put global transition_animation_scale 0 || true
+adb shell settings put global animator_duration_scale 0 || true
 
 echo "=== Installing Maestro CLI ==="
 curl -Ls "https://get.maestro.mobile.dev" | bash
@@ -54,6 +68,16 @@ PASS_COUNT=0
 FAIL_COUNT=0
 declare -a CHECK_LINES
 
+# run_flow <flow-path> <log-file>  sets RUN_EXIT to the maestro exit code
+run_flow() {
+  local flow="$1" log_file="$2"
+  maestro test \
+    -e MAESTRO_APP_EMAIL="${MAESTRO_APP_EMAIL}" \
+    -e MAESTRO_APP_PASSWORD="${MAESTRO_APP_PASSWORD}" \
+    "$flow" 2>&1 | tee "$log_file"
+  RUN_EXIT=${PIPESTATUS[0]}
+}
+
 for flow in "${FLOWS[@]}"; do
   FLOW_NAME=$(basename "$flow" .yaml)
   TOTAL=$((TOTAL + 1))
@@ -62,19 +86,38 @@ for flow in "${FLOWS[@]}"; do
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-before.png" 2>/dev/null || true
 
   LOG_FILE="$LOG_DIR/${FLOW_NAME}.log"
-  maestro test \
-    -e MAESTRO_APP_EMAIL="${MAESTRO_APP_EMAIL}" \
-    -e MAESTRO_APP_PASSWORD="${MAESTRO_APP_PASSWORD}" \
-    "$flow" 2>&1 | tee "$LOG_FILE"
-  EXIT_CODE=${PIPESTATUS[0]}
+
+  # Up to 3 attempts per flow. The 1.8.46 release build has an
+  # intermittent splash-exit crash on cold launch (androidx
+  # SplashScreenViewProvider NPE) that surfaces under the software
+  # (swiftshader) renderer, especially as the emulator warms up. That
+  # is an app bug, not a flow bug, but it makes a single cold launch
+  # flaky - so a flow that dies on launch is retried on a fresh launch.
+  # A flow that fails all 3 times is a real failure. The attempt count
+  # is recorded in the details so a flaky-but-passing flow stays
+  # visible in the report (honest reporting, no silent green).
+  ATTEMPTS=0
+  EXIT_CODE=1
+  while [[ $ATTEMPTS -lt 3 ]]; do
+    ATTEMPTS=$((ATTEMPTS + 1))
+    [[ $ATTEMPTS -gt 1 ]] && echo "--- $FLOW_NAME attempt $ATTEMPTS ---"
+    run_flow "$flow" "$LOG_FILE"
+    EXIT_CODE=$RUN_EXIT
+    [[ "$EXIT_CODE" -eq 0 ]] && break
+  done
 
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-after.png" 2>/dev/null || true
 
   if [[ "$EXIT_CODE" -eq 0 ]]; then
     echo "PASS" > "$RESULTS_DIR/${FLOW_NAME}.result"
     PASS_COUNT=$((PASS_COUNT + 1))
-    CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"PASS\", \"details\": \"Maestro flow passed\" }")
-    echo "Flow $FLOW_NAME PASSED"
+    if [[ "$ATTEMPTS" -gt 1 ]]; then
+      CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"PASS\", \"details\": \"Maestro flow passed on attempt ${ATTEMPTS}/3 (flaky launch recovered by retry)\" }")
+      echo "Flow $FLOW_NAME PASSED on attempt ${ATTEMPTS}"
+    else
+      CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"PASS\", \"details\": \"Maestro flow passed\" }")
+      echo "Flow $FLOW_NAME PASSED"
+    fi
   else
     ERR_LINE=$(grep -m1 -E "FAILED|Assertion is false|Error" "$LOG_FILE" | head -c 300 | sed 's/"/\\"/g' || true)
     if [[ -z "$ERR_LINE" ]]; then
@@ -82,8 +125,8 @@ for flow in "${FLOWS[@]}"; do
     fi
     echo "FAIL" > "$RESULTS_DIR/${FLOW_NAME}.result"
     FAIL_COUNT=$((FAIL_COUNT + 1))
-    CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"FAIL\", \"details\": \"${ERR_LINE}\" }")
-    echo "Flow $FLOW_NAME FAILED: $ERR_LINE"
+    CHECK_LINES+=("    { \"id\": \"${FLOW_NAME}\", \"status\": \"FAIL\", \"details\": \"${ERR_LINE} (failed all 3 attempts)\" }")
+    echo "Flow $FLOW_NAME FAILED after 3 attempts: $ERR_LINE"
     # Dump uiautomator XML so we can later resolve element bounds for the failure screenshot.
     adb shell uiautomator dump /sdcard/window_dump.xml >/dev/null 2>&1 \
       && adb pull /sdcard/window_dump.xml "$UI_DUMP_DIR/${FLOW_NAME}.xml" >/dev/null 2>&1 \

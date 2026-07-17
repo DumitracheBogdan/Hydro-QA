@@ -1,16 +1,17 @@
 appId: com.hydrocert.app
-name: "MOB30 V2 - Inspection missing toggle and Save"
+name: "MOB30 V2 - Unable to Inspect toggle and Submit"
 tags:
   - inspections
   - missing-inspection
   - toggle
 ---
 
-# Opens the first inspection form, scrolls to the Missing
-# inspection toggle, verifies it can be switched ON/OFF,
-# and that the Save button is visible.
+# Opens the first inspection form, scrolls to the Unable to
+# Inspect toggle (renamed from Missing inspection in 1.8.46),
+# verifies it can be switched ON/OFF,
+# and that the Submit button (renamed from Save) is visible.
 
-- runFlow: _shared/navigate_to_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:
@@ -24,25 +25,25 @@ tags:
     text: "Start Inspection"
     index: 0
 
-# --- Scroll to Missing inspection toggle ---
+# --- Scroll to Unable to Inspect toggle ---
 - scrollUntilVisible:
     element:
-      text: "Missing inspection"
+      text: "Unable to Inspect"
     direction: DOWN
     timeout: 10000
 
-# --- Verify Save button (may need scroll) ---
+# --- Verify Submit button (may need scroll) ---
 - scrollUntilVisible:
     element:
-      text: "Save"
+      text: "Submit"
     direction: DOWN
     timeout: 10000
 
-# --- Toggle Missing inspection ON ---
-- tapOn: "Missing inspection"
+# --- Toggle Unable to Inspect ON ---
+- tapOn: "Unable to Inspect"
 
-# --- Toggle back OFF ---
-- tapOn: "Missing inspection"
+# --- Toggle back OFF (leaves the form in its original state) ---
+- tapOn: "Unable to Inspect"
 
 # --- Go back ---
 - back

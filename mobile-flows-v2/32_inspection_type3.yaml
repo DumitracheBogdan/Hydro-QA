@@ -8,7 +8,7 @@ tags:
 # Opens the Calorifier/Water Heater form (Type 3) and
 # verifies the form structure.
 
-- runFlow: _shared/navigate_to_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
 - tapOn:
@@ -20,12 +20,18 @@ tags:
     visible: "Start Inspection"
     timeout: 10000
 
-# --- Scroll to Calorifier card ---
+# --- Scroll to this card's Start Inspection button ---
+# Scroll until the Start Inspection that sits BELOW this card's
+# title is on screen (not just the title) - on the 320x640 CI
+# screen the title can land at the fold with its button off-screen,
+# which made a plain "tapOn below" miss.
 - scrollUntilVisible:
     element:
-      text: ".*Calorifier.*"
+      text: "Start Inspection"
+      below:
+        text: ".*Calorifier.*"
     direction: DOWN
-    timeout: 10000
+    timeout: 15000
 
 # --- Tap Start Inspection for this specific card ---
 - tapOn:
@@ -35,7 +41,7 @@ tags:
 
 # --- Verify form opened ---
 - extendedWaitUntil:
-    visible: "(Save|Information|Missing)"
+    visible: "(Submit|Information|Unable)"
     timeout: 15000
 
 # --- Go back ---

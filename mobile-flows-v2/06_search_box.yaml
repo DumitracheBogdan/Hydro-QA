@@ -18,10 +18,13 @@ tags:
 - inputText: "QA"
 - hideKeyboard
 
-# Filter chips must still be present during search
+# Filter chips must still be present during search. "Next week" sits
+# off-screen right on the 320px CI display (the chips row became a
+# carousel when "This week" was added in 1.8.x), so assert the chips
+# that fit without swiping.
 - assertVisible: "Today"
 - assertVisible: "Tomorrow"
-- assertVisible: "Next week"
+- assertVisible: "This week"
 
 # --- Erase the search text ---
 - tapOn:

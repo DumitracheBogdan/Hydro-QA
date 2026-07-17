@@ -6,31 +6,31 @@ tags:
   - smoke
 ---
 
-# Opens a visit and switches to the Inspections tab.
-# The "testing visit" from History may have 0 inspections,
-# so this flow does NOT require "Start Inspection" buttons.
+# Opens the QA test visit and switches to the Inspections tab.
 # It verifies:
 # 1. The Inspections tab can be switched to
 # 2. The tab content differs from Visit Details content
 # 3. The FAB is still accessible on the Inspections tab
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Verify on Visit Details tab (default) ---
-- assertVisible: "Client Signature"
+# "Purchase Ord." is a top-anchored, Visit-Details-only element.
+# (Client Signature also identifies the tab but sits below the fold
+# on the 320px CI screen since the 1.8.x Description card.)
+- assertVisible: "Purchase Ord.*"
 
 # --- Switch to Inspections tab ---
 - tapOn:
     text: "Inspections.*"
 
-# --- Give tab content time to render ---
+# --- Give tab content time to render (QA test visit has 4 forms) ---
 - extendedWaitUntil:
-    visible: "Inspections.*"
+    visible: "Start Inspection"
     timeout: 10000
 
 # --- Verify Visit Details tab content is no longer shown ---
-# "Client Signature" accordion is specific to Visit Details tab
-- assertNotVisible: "Client Signature"
+- assertNotVisible: "Purchase Ord.*"
 
 # --- FAB should still be accessible on Inspections tab ---
 - assertVisible: "Quick actions"

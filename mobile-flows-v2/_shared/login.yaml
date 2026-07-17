@@ -11,14 +11,47 @@ tags:
 - launchApp:
     clearState: true
 
-# Wait for the login screen to appear. We use "Forgot" (the link
-# text in the middle of the screen) instead of Welcome back or
-# Login because it tends to be the most reliable signal that the
-# Compose tree has finished its initial paint pass on CI.
+# Wait for the login screen to appear. "Welcome back!" sits at the
+# top of the screen and is never covered by the soft keyboard - unlike
+# the "Forgot" link, which 1.8.x hides behind the keyboard when it
+# auto-focuses the Email field on launch (that was a flaky-launch and
+# false-fail source on the small CI screen).
 - extendedWaitUntil:
     visible:
-      text: "Forgot.*"
+      text: "Welcome back.*"
     timeout: 45000
+
+# Wait for the logo to paint before tapping it. (Do NOT hideKeyboard
+# here: the login screen does not auto-open the keyboard, so a
+# hideKeyboard sends a stray Back that exits the app.)
+- extendedWaitUntil:
+    visible: "Hydrocert Logo"
+    timeout: 10000
+
+# Point the app at the DEV environment. Since build 1.8.46 the QA
+# release APK defaults to Production, and clearState wipes the stored
+# choice, so every fresh launch must re-select it. Triple-tap on the
+# logo opens the selector dialog. NOTE: tapping the "Development" TEXT
+# does NOT move the radio (verified on device) - the radio circle to
+# the LEFT of the label must be tapped, hence the leftOf selector.
+- tapOn:
+    text: "Hydrocert Logo"
+    repeat: 3
+    delay: 250
+- extendedWaitUntil:
+    visible: "Select Environment"
+    timeout: 10000
+- tapOn:
+    leftOf:
+      text: "^Development$"
+- tapOn: "^Apply$"
+- extendedWaitUntil:
+    notVisible: "Select Environment"
+    timeout: 10000
+
+# Safety note: if this step ever silently fails the app stays on
+# Production, where the QA account does not exist, so the login below
+# fails loudly instead of tests running against the wrong backend.
 
 # Tap Email and type credentials (tapOn has internal retry)
 - tapOn:

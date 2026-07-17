@@ -20,6 +20,12 @@ tags:
 - assertVisible: "Quick actions"
 
 # --- Verify Client Signature accordion (Visit Details tab) ---
+# Below the fold on the 320px CI screen since 1.8.x, so scroll to it.
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 15000
 - assertVisible: "Client Signature"
 
 # --- Navigate back ---

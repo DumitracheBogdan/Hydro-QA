@@ -1,5 +1,5 @@
 appId: com.hydrocert.app
-name: "MOB14 V2 - Logout dialog -> Confirm -> back at Login"
+name: "MOB14 V2 - Logout dialog Confirm returns to Login"
 tags:
   - account
   - logout

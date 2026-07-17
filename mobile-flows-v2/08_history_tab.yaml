@@ -26,14 +26,14 @@ tags:
     text: "Type to search.*"
 
 # --- Visit card structural contents ---
-# Avoid hardcoded dynamic visit titles (volatile seed data)
-# The visit title and site name depend on which visit the seed
-# currently holds. Assert only structural elements that exist
-# for any History visit card: Upcoming badge, Booking Person
-# role label, INSPECTIONS(N) counter, and the "View Visit
-# Details" CTA that is unique to the History tab.
-- assertVisible: "Upcoming"
-- assertVisible: "Booking Person"
+# Avoid hardcoded dynamic visit titles (volatile seed data).
+# Assert only structural elements that exist for any History visit
+# card. Two fixes learned from false positives:
+#   - the status badge is time-dependent ("Upcoming" becomes
+#     "Overdue" once the visit date passes), so accept any badge
+#   - "Booking Person" is no longer rendered on the card in 1.8.x
+#     (it moved inside the visit detail header), so don't assert it
+- assertVisible: "(Upcoming|Overdue|In progress|Completed)"
 - assertVisible:
     text: "INSPECTIONS.*"
 - assertVisible: "View Visit Details"

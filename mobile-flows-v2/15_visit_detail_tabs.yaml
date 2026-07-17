@@ -6,31 +6,30 @@ tags:
   - smoke
 ---
 
-# Opens a visit via History > View Visit Details and verifies
-# all three tabs (Visit Details, Inspections, Attachments) can
-# be navigated. Also verifies accordion sections on the default
-# Visit Details tab.
+# Opens the QA test visit and verifies all three tabs (Visit
+# Details, Inspections, Attachments) can be navigated. Also verifies
+# accordion sections on the default Visit Details tab.
 # Source: exploration docs/04_VISIT_DETAIL.md
 #
 # IMPORTANT: Tab navigation MUST happen before any scrolling,
 # because scrollUntilVisible can push the tab row off-screen
-# in Compose ScrollView layouts.
+# in Compose ScrollView layouts. The 1.8.x Visit Details tab also
+# gained a Description card, which pushes the Client Signature
+# accordion below the fold on the 320px CI screen - so the
+# accordion checks scroll instead of asserting directly.
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- All three tabs are visible ---
 - assertVisible: "Visit Details"
 - assertVisible: "Inspections.*"
 - assertVisible: "Attachments.*"
 
-# --- Default tab: Visit Details has Client Signature accordion ---
-- assertVisible: "Client Signature"
-
 # --- Switch to Inspections tab (do this BEFORE scrolling) ---
 - tapOn:
     text: "Inspections.*"
 - extendedWaitUntil:
-    visible: "Inspections.*"
+    visible: "Start Inspection"
     timeout: 10000
 
 # --- Switch to Attachments tab ---
@@ -41,13 +40,21 @@ tags:
     timeout: 10000
 
 # --- Switch back to Visit Details tab ---
+# "Purchase Ord." sits at the top of the tab, so it confirms the
+# switch without scrolling.
 - tapOn:
     text: "Visit Details"
 - extendedWaitUntil:
-    visible: "Client Signature"
+    visible: "Purchase Ord.*"
     timeout: 10000
 
-# --- NOW scroll to verify Actions accordion exists ---
+# --- NOW scroll to the accordions (below the fold on 320px) ---
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: "Client Signature"
 - scrollUntilVisible:
     element:
       text: "Actions"

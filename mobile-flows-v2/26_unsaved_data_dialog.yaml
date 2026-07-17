@@ -7,30 +7,26 @@ tags:
   - regression
 ---
 
-# Opens a visit, expands the Visit Details accordion, verifies
-# the form fields are visible, then navigates back.
-#
-# Navigates via History tab (reliable) -> Visit Detail.
+# Opens the QA test visit, expands the Visit Details accordion,
+# verifies the form fields are visible, then navigates back.
 
-- runFlow: _shared/navigate_to_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
-# --- Expand Visit Details accordion ---
-- tapOn: "Visit Details"
-- tapOn:
-    text: "Visit Details"
-    index: 1
+# --- Ensure on the Visit Details tab (default) ---
+- assertVisible: "Purchase Ord.*"
+
+# --- Expand the Visit Details accordion ---
+# The accordion header shares the tab's "Visit Details" label, so use
+# the shared expand macro (scrolls the tab off first). It also leaves
+# Description & Reference on screen.
+- runFlow: _shared/expand_visit_details_accordion.yaml
 
 # --- Verify Description field ---
-# Use the concrete field label (not the EditText hint — hint child nodes are
-# not findable text nodes on the API 30 CI emulator).
-- scrollUntilVisible:
-    element:
-      text: "Description & Reference"
-    direction: DOWN
-    timeout: 15000
+# Use the concrete field label (the EditText hint is not a findable
+# text node on the API 30 CI emulator).
+- assertVisible: "Description & Reference"
 
 # --- Verify Work Details field ---
-# Same reasoning — use the concrete "Work Details" label, not the hint text.
 - scrollUntilVisible:
     element:
       text: "Work Details"
@@ -38,10 +34,21 @@ tags:
     timeout: 10000
 
 # --- Navigate back ---
-# Entry was via History tab -> Visit Detail, so `back` lands on History.
+# Entry was via History search, so `back` lands on the History list.
+# Expanding the Visit Details accordion marks the form dirty, so the
+# unsaved-data modal ("Unsubmitted data") can appear on back. This
+# flow only views the fields, so dismiss it with "Not now" (discard).
 - back
+- tapOn:
+    text: "Not now"
+    optional: true
 
-# --- Verify returned to the History visit list ---
+# --- Verify we left the visit (back on a main tab screen) ---
+# The bottom-nav "Activity" exists only on the Visits/History/Activity/
+# Account screens, never on the visit detail, so it is a clean "we
+# navigated out" signal. (The History search stays filtered to "QA
+# test" and the card CTA is below the fold, so neither "View Visit
+# Details" nor the "Type to search" placeholder is a reliable check.)
 - extendedWaitUntil:
-    visible: "View Visit Details"
+    visible: "Activity"
     timeout: 15000

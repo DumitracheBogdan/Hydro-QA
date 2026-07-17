@@ -6,11 +6,12 @@ tags:
   - smoke
 ---
 
-# Opens a visit and verifies the Attachments tab shows the
+# Opens the QA test visit (owned by QA, kept attachment-free) and
+# verifies the Attachments tab shows the
 # empty state when there are no attachments.
 # Source: exploration docs/06_ATTACHMENTS_TAB.md
 
-- runFlow: _shared/open_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Attachments tab ---
 - tapOn:

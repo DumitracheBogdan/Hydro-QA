@@ -7,13 +7,16 @@ tags:
   - smoke
 ---
 
-# Opens a visit, scrolls to a delete action icon, taps it to
-# open confirmation dialog, verifies Cancel/Delete buttons,
-# then cancels without deleting.
+# Opens the QA test visit (guaranteed to hold one action item with a
+# delete icon), scrolls to it, taps it to open the confirmation
+# dialog, verifies Cancel/Delete buttons, then cancels without
+# deleting.
 #
-# Navigates via History tab (reliable) -> Visit Detail.
+# Anchored on the QA test visit - the previous "first visit in
+# History" navigation broke whenever new seed visits (without
+# actions) landed above it.
 
-- runFlow: _shared/navigate_to_visit_detail.yaml
+- runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll down to find delete action icon ---
 - scrollUntilVisible:

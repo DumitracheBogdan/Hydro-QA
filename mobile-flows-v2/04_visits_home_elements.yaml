@@ -21,16 +21,27 @@ tags:
     text: "Type to search.*"
 
 # --- Filter chips ---
+# "This week" chip was added in app 1.8.x
 - assertVisible: "Today"
 - assertVisible: "Tomorrow"
+- assertVisible: "This week"
+
+# The chips row is a horizontal carousel. With the extra "This week"
+# chip, "Next week" no longer fits on the 320px CI screen, so swipe
+# the row (y = 29% of the screen) before asserting it.
+- swipe:
+    start: "85%, 29%"
+    end: "15%, 29%"
 - assertVisible: "Next week"
 
-# --- Filter state chip ---
-# "Upcoming" is the default filter group label shown on Visits Home.
-# Visit card contents (time, Booking Person, INSPECTIONS) are NOT asserted
-# here — in the CI emulator seed Visits Home can be empty of cards
-# (seeded visit is historical). Those assertions belong in the History flow.
-- assertVisible: "Upcoming"
+# --- List state ---
+# The home list has exactly two legitimate states for the QA account:
+# upcoming visit cards (label/badge "Upcoming") or the explicit empty
+# state "No visits found". Asserting only "Upcoming" was a false
+# positive generator - the seed visits are all historical, so once
+# their dates passed the label disappeared and the flow failed with
+# the app perfectly healthy.
+- assertVisible: "(Upcoming|No visits found.*)"
 
 # --- Bottom navigation tabs ---
 - assertVisible: "Visits"

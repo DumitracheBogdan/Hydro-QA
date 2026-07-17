@@ -1,5 +1,5 @@
 appId: com.hydrocert.app
-name: "MOB13 V2 - Logout dialog -> Cancel"
+name: "MOB13 V2 - Logout dialog Cancel keeps session"
 tags:
   - account
   - logout
