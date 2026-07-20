@@ -26,6 +26,9 @@ tags:
 # E18 2RD, South Woodford, London
 - assertVisible: ".*Avondale.*"
 
+# --- Customer name is appended to the address (PR 227) ---
+- assertVisible: ".*B Bailey.*"
+
 # --- Verify tabs are still present (we're on Visit Detail) ---
 - assertVisible: "Visit Details"
 - assertVisible: "Inspections.*"

@@ -32,6 +32,10 @@ tags:
 - assertVisible:
     text: "(Confirm|OK|Yes|Logout)"
 
+# 1.8.46 added a data-retention warning to this dialog - guard it
+- assertVisible: ".*your data stays on this device.*"
+- assertVisible: ".*local data will be lost.*"
+
 # --- Tap Cancel: dialog dismisses, we stay on Account ---
 - tapOn:
     text: "Cancel"

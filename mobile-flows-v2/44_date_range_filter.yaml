@@ -1,0 +1,35 @@
+appId: com.hydrocert.app
+name: "MOB44 V2 - Date range filter dialog on Home and History"
+tags:
+  - visits
+  - filters
+  - regression
+---
+
+# Guards the PR 194 calendar range filter: the calendar icon next to
+# the search bar (content-desc "Filter by date range") opens the
+# date-range picker on both Visits Home and History. Cancel only -
+# no filter is applied, no state left behind.
+
+- runFlow: _shared/login.yaml
+
+# --- Visits Home: open the picker, then cancel ---
+- tapOn: "Filter by date range"
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+- tapOn: "Cancel"
+- assertVisible: "Today"
+
+# --- History: same picker exists there too ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible: "Type to search.*"
+    timeout: 15000
+- tapOn: "Filter by date range"
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+- tapOn: "Cancel"
+- assertVisible: "History"

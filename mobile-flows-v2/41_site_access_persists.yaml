@@ -1,0 +1,70 @@
+appId: com.hydrocert.app
+name: "MOB41 V2 - Site access info persists after edit"
+tags:
+  - visit-detail
+  - site-access
+  - regression
+---
+
+# Guards the 1.8.47 fix "access info api call now done when going out
+# of the screen" (site access info previously did not save / random).
+# Edits Site Access Info on the QA test visit, leaves the screen, and
+# re-opens it to confirm the value persisted.
+#
+# The value is fixed ("QA regression access") and overwritten each
+# run, so it is idempotent and does not accumulate.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- On the Visit Details tab, open Site Access Info edit ---
+- assertVisible: "Purchase Ord.*"
+- scrollUntilVisible:
+    element:
+      text: "Site Access Info"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "Edit"
+    below:
+      text: "Site Access Info"
+
+# --- Clear and type a fixed value, then save ---
+# The field may hold a previous run's value (the hint only exists
+# while empty, and hints are not findable on API 30), so anchor on
+# the card title, clear and retype. Idempotent across runs.
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Site Access Info"
+- eraseText: 60
+- inputText: "QA regression access"
+- hideKeyboard
+- tapOn: "Save"
+- extendedWaitUntil:
+    visible: "QA regression access"
+    timeout: 10000
+
+# --- Leave the screen (this is when the API call fires) ---
+- back
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000
+
+# --- Re-open the same visit and confirm the value persisted ---
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "Site Access Info"
+    direction: DOWN
+    timeout: 15000
+- assertVisible: "QA regression access"

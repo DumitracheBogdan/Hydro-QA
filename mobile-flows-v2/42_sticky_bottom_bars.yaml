@@ -1,0 +1,43 @@
+appId: com.hydrocert.app
+name: "MOB42 V2 - Sticky bottom bars per visit tab"
+tags:
+  - visit-detail
+  - submit
+  - regression
+---
+
+# Guards the 1.8.46 sticky-bar redesign (PR 326 + the PR 282 rename):
+#   - Visit Details tab: the sticky "Submit" bar is visible WITHOUT
+#     any scrolling
+#   - Inspections tab: the bar reads "Submit Samples" - ASSERT ONLY,
+#     NEVER tap it (it submits real lab samples), plus the inspection
+#     cards' location fallback line (PR 227)
+#   - Attachments tab: no Submit bar at all
+# Exact-match "^Submit$" is used so "Submit Samples" cannot satisfy
+# the Visit Details assert or leak into the Attachments one.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Visit Details tab: sticky Submit, no scroll needed ---
+- assertVisible: "Purchase Ord.*"
+- assertVisible: "^Submit$"
+
+# --- Inspections tab: Submit Samples bar (assert only!) ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- assertVisible: "Submit Samples.*"
+- assertVisible: "No location available.*"
+
+# --- Attachments tab: no Submit bar ---
+- tapOn:
+    text: "Attachments.*"
+- extendedWaitUntil:
+    visible: "No attachments.*"
+    timeout: 10000
+- assertNotVisible: "^Submit$"
+
+# --- Navigate back ---
+- back

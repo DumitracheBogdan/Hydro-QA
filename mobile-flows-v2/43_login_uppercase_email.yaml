@@ -1,0 +1,57 @@
+appId: com.hydrocert.app
+name: "MOB43 V2 - Login accepts a mixed-case email"
+tags:
+  - login
+  - regression
+---
+
+# Guards the PR 194 fix: the email is lowercased before the API call,
+# so an ALL-CAPS address must still log in. A regression here locks
+# out any user whose keyboard auto-capitalises the email field.
+#
+# Mirrors _shared/login.yaml but types the email in upper case. The
+# address itself is not a secret (only the password is), so it is
+# hardcoded here in caps on purpose.
+
+- launchApp:
+    clearState: true
+
+- extendedWaitUntil:
+    visible: "Welcome back.*"
+    timeout: 45000
+- extendedWaitUntil:
+    visible: "Hydrocert Logo"
+    timeout: 10000
+
+# Point the release build at DEV (see _shared/login.yaml for the why)
+- tapOn:
+    text: "Hydrocert Logo"
+    repeat: 3
+    delay: 250
+- extendedWaitUntil:
+    visible: "Select Environment"
+    timeout: 10000
+- tapOn:
+    leftOf:
+      text: "^Development$"
+- tapOn: "^Apply$"
+- extendedWaitUntil:
+    notVisible: "Select Environment"
+    timeout: 10000
+
+# --- Credentials with the email in CAPS ---
+- tapOn:
+    text: "^Email$"
+- inputText: "BOGDAN.DUMITRACHE@TECHQUARTER.IO"
+- hideKeyboard
+- tapOn:
+    text: "^Password$"
+- inputText: ${MAESTRO_APP_PASSWORD}
+- hideKeyboard
+- tapOn: "^Login$"
+
+# --- Must land on Visits Home, not on Invalid Credentials ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 90000
+- assertNotVisible: "Invalid Credentials"

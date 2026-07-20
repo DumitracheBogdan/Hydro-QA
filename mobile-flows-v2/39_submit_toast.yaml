@@ -1,0 +1,60 @@
+appId: com.hydrocert.app
+name: "MOB39 V2 - Submit success toast says 'submitted'"
+tags:
+  - inspections
+  - submit
+  - regression
+---
+
+# Guards the 1.8.47 fix: the post-submit toast must read
+# "Inspection submitted successfully!", NOT "...saved successfully".
+# Opens the QA test visit's first inspection, makes a small change
+# (a note), submits via the unsaved-data modal, and asserts the toast.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Open the first inspection ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Make a change so Submit enables: edit the note ---
+# The note field may hold text from a previous run (the "Enter
+# notes" hint only exists while the field is empty, and hints are
+# not findable on API 30 anyway), so anchor on the "Notes" dialog
+# title, clear whatever is there and retype a fixed value - this
+# keeps the flow idempotent across runs.
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA regression toast check"
+- hideKeyboard
+- tapOn: "Save"
+
+# --- Leave via Back and submit through the modal ---
+- back
+- extendedWaitUntil:
+    visible: "Unsubmitted data"
+    timeout: 10000
+- tapOn: "Submit now"
+
+# --- Assert the success toast wording ---
+# 1.8.47 changed "saved" -> "submitted". Match on "submitted"
+# and explicitly fail if the old "saved" wording ever returns.
+- extendedWaitUntil:
+    visible: ".*submitted successfully.*"
+    timeout: 10000
+- assertNotVisible: ".*saved successfully.*"

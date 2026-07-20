@@ -1,0 +1,18 @@
+appId: com.hydrocert.app
+---
+- runFlow: _shared/open_qa_test_visit.yaml
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000

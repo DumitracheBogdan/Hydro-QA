@@ -1,0 +1,78 @@
+appId: com.hydrocert.app
+name: "MOB40 V2 - Submit not active after submit (no phantom changes)"
+tags:
+  - inspections
+  - submit
+  - regression
+---
+
+# Guards the 1.8.47 fix for "Submit stays active with no changes".
+# Repro that used to leave Submit enabled on re-entry:
+#   fill form -> Back -> Submit now -> re-open the same inspection.
+# After the fix, the re-opened inspection has NO pending changes, so
+# Submit is disabled. Maestro cannot read a Compose button's enabled
+# flag directly, so we assert the OBSERVABLE consequence: pressing
+# Back on the re-opened inspection does NOT raise the unsaved-data
+# modal (a dirty form would). If Submit were wrongly active, the form
+# would be dirty and "Unsubmitted data" would appear.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Open the first inspection ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Make a change (note), Back, submit through the modal ---
+# Anchor on the "Notes" dialog title and clear + retype a fixed
+# value (the field may hold a previous run's note; hints are not
+# findable on API 30). Idempotent across runs.
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA regression submit-state check"
+- hideKeyboard
+- tapOn: "Save"
+- back
+- extendedWaitUntil:
+    visible: "Unsubmitted data"
+    timeout: 10000
+- tapOn: "Submit now"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 15000
+
+# --- Re-open the SAME inspection ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- The submitted note survived the round-trip (merge-not-overwrite) ---
+- assertVisible: ".*QA regression submit-state check.*"
+
+# --- Press Back: with no pending changes there must be NO modal ---
+# Wait for the list FIRST (background nodes stay findable even under
+# the modal overlay, so this wait passes either way and gives the
+# modal time to render), THEN assert it is absent. Asserting
+# immediately after back could race the modal's appearance.
+- back
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- assertNotVisible: "Unsubmitted data"

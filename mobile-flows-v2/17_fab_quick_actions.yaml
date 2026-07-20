@@ -44,6 +44,18 @@ tags:
 - assertVisible: "Cancel"
 - assertVisible: "Save"
 
+# --- Custom-action widget: confirm button is "Add" (1.8.46 rename) ---
+# Open the inline widget, assert its button (exact match - the sheet's
+# "Add Custom Action" would match a loose "Add.*"), close the widget
+# with ITS Cancel (index 0 = the widget's, it sits above the sheet's).
+- tapOn: "Add Custom Action"
+- extendedWaitUntil:
+    visible: "^Add$"
+    timeout: 10000
+- tapOn:
+    text: "Cancel"
+    index: 0
+
 # --- Cancel to close the sheet without saving ---
 - tapOn:
     text: "Cancel"

@@ -26,5 +26,9 @@ tags:
     visible: "(Photos|Albums|Images|Recent|Gallery|Documents|Open from)"
     timeout: 10000
 
-# --- Go back ---
+# --- Go back: we must land on the SAME tab we started from ---
+# (PR 227 removed the forced switch to the Attachments tab)
 - back
+- extendedWaitUntil:
+    visible: "Purchase Ord.*"
+    timeout: 10000
