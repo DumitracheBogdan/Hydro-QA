@@ -90,7 +90,7 @@ tags:
     visible: "(Start Inspection|View Inspection|^Submit$|Activity)"
     timeout: 20000
 
-# If the form won the race, back out of it
+# If the form won the race, back out of it to the inspections list
 - runFlow:
     when:
       visible: "^Submit$"
@@ -100,10 +100,16 @@ tags:
           text: "Not now"
           optional: true
 
-# --- Final: a main tab screen is responsive (bottom nav present) ---
+# We are now on the visit detail (Inspections tab), which has tabs -
+# not the app's bottom nav. Back out once more to the History list,
+# which does carry the bottom nav; a stray unsaved-data modal is
+# dismissed defensively.
+- back
 - tapOn:
-    text: "History"
+    text: "Not now"
     optional: true
+
+# --- Final: a main tab screen is responsive (bottom nav present) ---
 - extendedWaitUntil:
     visible: "Activity"
     timeout: 15000
