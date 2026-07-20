@@ -1,0 +1,140 @@
+name: Update mobile APK
+run-name: "Update mobile APK - ${{ inputs.apk_url != '' && 'from URL' || 'validate current asset' }}"
+
+# Refreshes the APK that the mobile regression workflow tests
+# (release mobile-apk-v1, asset app-release.apk). Two ways to use it
+# from the GitHub UI:
+#
+#   1. Paste a direct download link (apk or a zip that contains the
+#      apk) into apk_url and press Run workflow. It downloads,
+#      validates and replaces the release asset.
+#
+#   2. No link? Drag-and-drop the new apk onto the mobile-apk-v1
+#      release page yourself (delete the old app-release.apk asset
+#      first), then run this with apk_url left empty - it validates
+#      whatever is in the release and can kick off the regression.
+#
+# Validation: the package must be com.hydrocert.app and the new
+# versionCode must not be lower than the current one (set
+# allow_downgrade to bypass when a rollback is intended).
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_url:
+        description: "Direct link to the new app-release.apk (or a .zip containing it). Leave empty to just validate the current release asset."
+        required: false
+        type: string
+        default: ""
+      run_regression:
+        description: "Start the mobile regression suite after updating"
+        required: false
+        type: boolean
+        default: true
+      allow_downgrade:
+        description: "Allow a lower versionCode than the current asset (rollback)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: update-mobile-apk
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Locate aapt
+        id: aapt
+        run: |
+          AAPT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/aapt"
+          "$AAPT" version
+          echo "aapt=$AAPT" >> "$GITHUB_OUTPUT"
+
+      - name: Download current release asset
+        run: |
+          mkdir -p current
+          gh release download mobile-apk-v1 -p "app-release.apk" -D current -R "$GITHUB_REPOSITORY" --clobber
+          echo "current asset:" && ls -la current
+
+      - name: Read current versionCode
+        id: current
+        run: |
+          AAPT="${{ steps.aapt.outputs.aapt }}"
+          LINE=$("$AAPT" dump badging current/app-release.apk | grep '^package:')
+          echo "$LINE"
+          VC=$(echo "$LINE" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          echo "versionCode=$VC" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch the new APK
+        if: ${{ inputs.apk_url != '' }}
+        run: |
+          mkdir -p incoming
+          curl -fL --retry 3 -o incoming/download.bin "${{ inputs.apk_url }}"
+          # The team often ships the apk wrapped in a zip. An apk is
+          # itself a zip, so tell them apart by whether the archive
+          # CONTAINS an .apk entry.
+          if unzip -l incoming/download.bin 2>/dev/null | grep -qiE '\s[^ ]+\.apk$'; then
+            unzip -o incoming/download.bin -d incoming/unzipped
+            APK=$(find incoming/unzipped -name "*.apk" ! -path "*__MACOSX*" | head -1)
+            [ -n "$APK" ] || { echo "::error::zip contained no apk"; exit 1; }
+            mv "$APK" incoming/app-release.apk
+          else
+            mv incoming/download.bin incoming/app-release.apk
+          fi
+          ls -la incoming
+
+      - name: Validate the new APK
+        if: ${{ inputs.apk_url != '' }}
+        run: |
+          AAPT="${{ steps.aapt.outputs.aapt }}"
+          LINE=$("$AAPT" dump badging incoming/app-release.apk | grep '^package:')
+          echo "$LINE"
+          PKG=$(echo "$LINE" | sed -n "s/.*name='\([^']*\)'.*/\1/p")
+          VC=$(echo "$LINE" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          [ "$PKG" = "com.hydrocert.app" ] || { echo "::error::wrong package: $PKG (expected com.hydrocert.app)"; exit 1; }
+          CUR="${{ steps.current.outputs.versionCode }}"
+          if [ "$VC" -lt "$CUR" ] && [ "${{ inputs.allow_downgrade }}" != "true" ]; then
+            echo "::error::new versionCode $VC is lower than the current $CUR - set allow_downgrade for an intended rollback"
+            exit 1
+          fi
+          echo "new versionCode: $VC (current was $CUR)"
+
+      - name: Upload to the release
+        if: ${{ inputs.apk_url != '' }}
+        run: |
+          gh release upload mobile-apk-v1 incoming/app-release.apk -R "$GITHUB_REPOSITORY" --clobber
+          echo "asset replaced"
+
+      - name: Summary
+        run: |
+          AAPT="${{ steps.aapt.outputs.aapt }}"
+          if [ -f incoming/app-release.apk ]; then FINAL=incoming/app-release.apk; else FINAL=current/app-release.apk; fi
+          LINE=$("$AAPT" dump badging "$FINAL" | grep '^package:')
+          VN=$(echo "$LINE" | sed -n "s/.*versionName='\([^']*\)'.*/\1/p")
+          VC=$(echo "$LINE" | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          {
+            echo "## Mobile APK for regression"
+            echo ""
+            if [ -f incoming/app-release.apk ]; then
+              echo "- **Asset replaced** in release \`mobile-apk-v1\`"
+            else
+              echo "- No URL given - **validated the existing asset** only"
+            fi
+            echo "- **Version:** $VN (versionCode $VC)"
+            echo "- **Package:** com.hydrocert.app"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Start the mobile regression
+        if: ${{ inputs.run_regression }}
+        run: |
+          gh workflow run post-deploy-regression-mobile.yml --ref "$GITHUB_REF_NAME" -R "$GITHUB_REPOSITORY"
+          echo "regression dispatched on $GITHUB_REF_NAME" >> "$GITHUB_STEP_SUMMARY"
