@@ -50,10 +50,19 @@ tags:
 - tapOn: "Save"
 
 # --- WATER-SAMPLE TYPE: do NOT submit (Submit could push samples).
-# Assert the Notes saved, that the Submit Samples bar exists (text
-# only, never tapped), then leave.
+# Assert the Notes saved and the form's own Submit control is present
+# (never tapped on this sample-bearing form), then leave. The
+# "Submit Samples" bar lives on the visit's Inspections tab, not
+# inside the form, so it is not asserted here (see flow 42/47's
+# sibling checks for that bar).
 - assertVisible: "QA regression form check"
-- assertVisible: "Submit Samples.*"
+- scrollUntilVisible:
+    element:
+      text: "^Submit$"
+    direction: DOWN
+    timeout: 20000
+    speed: 40
+- assertVisible: "^Submit$"
 - back
 - tapOn:
     text: "Not now"
