@@ -33,6 +33,13 @@ adb shell settings put global window_animation_scale 0 || true
 adb shell settings put global transition_animation_scale 0 || true
 adb shell settings put global animator_duration_scale 0 || true
 
+echo "=== Seeding a gallery image (photo-attachment flow) ==="
+# Flow 55 picks an image from the system photo picker; a fresh CI
+# emulator has an empty gallery, so drop one deterministic image in.
+adb exec-out screencap -p > /tmp/qa_seed.png || true
+adb push /tmp/qa_seed.png /sdcard/Pictures/qa_seed.png || true
+adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/qa_seed.png >/dev/null 2>&1 || true
+
 echo "=== Installing Maestro CLI ==="
 curl -Ls "https://get.maestro.mobile.dev" | bash
 export PATH="$HOME/.maestro/bin:$PATH"
@@ -83,6 +90,21 @@ for flow in "${FLOWS[@]}"; do
   TOTAL=$((TOTAL + 1))
   echo "--- Running: $FLOW_NAME ---"
 
+  # Offline-wrapped flows: 54 (water sampling UI - belt and braces, a
+  # mis-tap physically cannot reach the ALS lab with no network) and
+  # 63 (offline submit queue). Connectivity is cut for every attempt
+  # of the flow and restored right after; 63b then verifies the queued
+  # change syncs once back online.
+  OFFLINE=0
+  case "$FLOW_NAME" in
+    54_*|63_offline_submit)
+      OFFLINE=1
+      adb shell svc wifi disable || true
+      adb shell svc data disable || true
+      sleep 2
+      ;;
+  esac
+
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-before.png" 2>/dev/null || true
 
   LOG_FILE="$LOG_DIR/${FLOW_NAME}.log"
@@ -105,6 +127,13 @@ for flow in "${FLOWS[@]}"; do
     EXIT_CODE=$RUN_EXIT
     [[ "$EXIT_CODE" -eq 0 ]] && break
   done
+
+  # Restore connectivity after an offline-wrapped flow
+  if [[ "$OFFLINE" -eq 1 ]]; then
+    adb shell svc wifi enable || true
+    adb shell svc data enable || true
+    sleep 4
+  fi
 
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-after.png" 2>/dev/null || true
 

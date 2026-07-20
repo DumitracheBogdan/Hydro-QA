@@ -1,0 +1,105 @@
+appId: com.hydrocert.app
+name: "MOB64 V2 - Save control reachable with the keyboard open"
+tags:
+  - inspections
+  - keyboard
+  - edge-case
+---
+
+# Edge case: on the 320x640 screen the soft keyboard eats more than
+# half the viewport. With the IME up over the inspection Notes edit
+# dialog, the Save control must still be reachable - either directly
+# tappable, or after a single hideKeyboard. The flow documents which
+# of the two it is (screenshot with the IME up + which branch fired)
+# and then proves Save actually works by tapping it.
+#
+# Honesty note: Maestro reads the app window hierarchy and the IME is
+# a separate window, so an element the keyboard covers on screen can
+# still report "visible". Reachability is therefore proven by the TAP
+# outcome, not the visibility flag: if the first tap is swallowed by
+# the keyboard window the dialog stays open, and the recovery branch
+# (hideKeyboard then tap again) both documents the occlusion and
+# completes the flow.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Open the first inspection ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Open the Notes edit dialog and focus the field (IME comes up) ---
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA keyboard reachability check"
+
+# --- Document the IME-up state for the report ---
+- takeScreenshot: mob64_ime_up
+
+# --- Save must be reachable with the IME up ---
+# Branch 1: Save not even in the visible hierarchy (dialog resized it
+# away) - close the keyboard first.
+- runFlow:
+    when:
+      notVisible: "^Save$"
+    commands:
+      - hideKeyboard
+- extendedWaitUntil:
+    visible: "^Save$"
+    timeout: 5000
+- tapOn: "^Save$"
+
+# Branch 2: Save reported visible but was physically covered, so the
+# tap above hit the keyboard window and the dialog is still open.
+# Close the IME and tap again - this branch firing IS the documented
+# behavior ("reachable only after hideKeyboard").
+- runFlow:
+    when:
+      visible: "^Save$"
+    commands:
+      - hideKeyboard
+      - tapOn: "^Save$"
+
+# --- Dialog closed; the sticky Submit is reachable after the edit ---
+- extendedWaitUntil:
+    notVisible: "^Save$"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "^Submit$"
+    direction: DOWN
+    timeout: 15000
+
+# --- Cleanup: leave WITHOUT submitting (discard the local change) ---
+# The typed note differs from every other flow's fixed note strings,
+# so the form is dirty and the unsaved-data modal must appear; "Not
+# now" discards, leaving the seed inspection exactly as found.
+- back
+- extendedWaitUntil:
+    visible: "Unsubmitted data"
+    timeout: 10000
+- tapOn: "Not now"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000

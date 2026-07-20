@@ -1,0 +1,83 @@
+appId: com.hydrocert.app
+name: "MOB65 V2 - Huge inspection list scrolls to the bottom"
+tags:
+  - inspections
+  - performance
+  - edge-case
+---
+
+# Stress/edge case: a visit with a very large inspection list (the
+# "Saturday Visit" seed showing INSPECTIONS (55) on its History card)
+# must render and scroll all the way to the bottom without a crash or
+# a blank/stuck list. READ-ONLY: this is real dev data, not the QA
+# anchor - the flow opens and scrolls, never edits, never submits.
+
+- runFlow: _shared/login.yaml
+
+# --- Find the visit via History search ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible:
+      text: "Type to search.*"
+    timeout: 15000
+- tapOn:
+    text: "Type to search.*"
+- inputText: "Saturday Visit"
+- hideKeyboard
+
+# Pin the huge card by its double-digit inspection count before
+# trusting the CTA. \d\d+ tolerates the count drifting from exactly
+# 55, and no ordinary seed visit has a 10+ inspection count, so this
+# also disambiguates if the search matches more than one card.
+- scrollUntilVisible:
+    element:
+      text: "INSPECTIONS \\(\\d\\d+\\)"
+    direction: DOWN
+    timeout: 20000
+
+# Tap the CTA that belongs to THAT card (below: anchor, MOB31 style).
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+      below:
+        text: "INSPECTIONS \\(\\d\\d+\\)"
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    text: "View Visit Details"
+    below:
+      text: "INSPECTIONS \\(\\d\\d+\\)"
+
+# 55 inspections load slower than the QA anchor - generous wait.
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 30000
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 20000
+
+# --- Scroll the whole list to the bottom ---
+# Inspection cards are numbered "1. <name>" style (MOB27/31 fixture
+# convention), so the last card of a 55-inspection visit starts with
+# "55.". The long timeout covers roughly 30 screens of scrolling on
+# the 320x640 emulator; a crash or a list that stops producing new
+# cards fails this step - which is exactly the point.
+- scrollUntilVisible:
+    element:
+      text: "55\\..*"
+    direction: DOWN
+    timeout: 180000
+    speed: 60
+
+# --- Prove the app is still responsive after the long scroll ---
+# (No edits were made; the modal dismiss is purely defensive.)
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000

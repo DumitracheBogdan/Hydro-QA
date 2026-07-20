@@ -1,0 +1,61 @@
+appId: com.hydrocert.app
+name: "MOB58 V2 - Priority change round-trip Low to Medium and back"
+tags:
+  - visit-detail
+  - actions
+  - priority
+  - regression
+---
+
+# MOB21 only opens the priority picker and dismisses; this flow
+# actually CHANGES the priority and changes it back. The QA test
+# visit's seed action is expected at Low, but the initial scroll
+# accepts any current value so the flow self-heals leftovers -
+# whatever the start state, the end state is Low (the seed default
+# that MOB21/MOB22 tolerate).
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Scroll to the priority badge in the Actions area ---
+- scrollUntilVisible:
+    element:
+      text: "(Low|Medium|High)"
+    direction: DOWN
+    timeout: 15000
+
+# --- Open the picker and select Medium ---
+- tapOn: "(Low|Medium|High)"
+# All three options visible = dropdown is open
+- assertVisible: "Low"
+- assertVisible: "Medium"
+- assertVisible: "High"
+- tapOn: "^Medium$"
+
+# --- Picker closed and badge now reads Medium ---
+# "High" only exists inside the open dropdown (the badge can no
+# longer be High after we just set Medium), so its disappearance
+# proves the picker closed before we assert the badge.
+- extendedWaitUntil:
+    notVisible: "^High$"
+    timeout: 10000
+- assertVisible: "^Medium$"
+
+# --- Round-trip: set it back to Low ---
+- tapOn: "^Medium$"
+- extendedWaitUntil:
+    visible: "^High$"
+    timeout: 10000
+- tapOn: "^Low$"
+- extendedWaitUntil:
+    notVisible: "^High$"
+    timeout: 10000
+- assertVisible: "^Low$"
+
+# --- Leave; discard if the round-trip left the form dirty ---
+- back
+- tapOn:
+    text: "Go back"
+    optional: true
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000

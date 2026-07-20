@@ -1,0 +1,115 @@
+appId: com.hydrocert.app
+name: "MOB61 V2 - Rapid double-tap on Submit is safe"
+tags:
+  - inspections
+  - submit
+  - interruption
+  - regression
+---
+
+# Edge case: the user double-taps Submit on a dirty inspection form.
+# The app must produce exactly one successful submit - no crash, no
+# duplicate-submit error, no phantom pending change afterwards.
+#
+# Implementation note - deliberately NOT tapOn repeat:2. Maestro's
+# repeat re-taps the recorded coordinates without re-querying the
+# hierarchy; if the app pops the form right after the first Submit,
+# the second coordinate tap could land on the inspections list's
+# "Submit Samples" bar, which sits in the same screen region - and
+# tapping Submit Samples is this suite's hard ban (real lab data).
+# Two back-to-back text-anchored taps give the same rapid double
+# press (Maestro dispatches them a few hundred ms apart) and the
+# second one re-resolves "^Submit$" by exact text, which can never
+# match "Submit Samples". The second tap is optional so it skips
+# cleanly if the first submit already dismissed or disabled the
+# button. Do NOT convert this to repeat:2.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+# --- Open the first inspection ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Dirty the form: idempotent note edit (pattern from MOB39/40) ---
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA double tap submit check"
+- hideKeyboard
+- tapOn: "Save"
+
+# --- Rapid double press on the sticky Submit ---
+- scrollUntilVisible:
+    element:
+      text: "^Submit$"
+    direction: DOWN
+    timeout: 15000
+- tapOn: "^Submit$"
+- tapOn:
+    text: "^Submit$"
+    optional: true
+
+# --- Exactly one success outcome: the 1.8.47 toast wording ---
+# The toast only appears once the submit committed, so everything
+# below runs AFTER the async call finished (MOB38's lesson: a Back
+# during the in-flight call loses data - we never race it).
+- extendedWaitUntil:
+    visible: ".*submitted successfully.*"
+    timeout: 15000
+
+# --- App responsive after the double press ---
+# The direct-Submit path may stay on the form or return to the list;
+# both are handled. If still on the form, Back must NOT raise the
+# unsaved-data modal (a duplicate pending change would).
+- extendedWaitUntil:
+    visible: "(Start Inspection|Visit Information|Submit)"
+    timeout: 15000
+- runFlow:
+    when:
+      visible: "^Submit$"
+    commands:
+      - back
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 15000
+- assertNotVisible: "Unsubmitted data"
+
+# --- Re-open the same inspection: note persisted, form clean ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+- assertVisible: ".*QA double tap submit check.*"
+
+# Back with no changes: no modal may appear (MOB40 pattern - wait for
+# the list first so a modal has time to render, then assert absence).
+- back
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+- assertNotVisible: "Unsubmitted data"
+
+# --- Leave the visit ---
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000

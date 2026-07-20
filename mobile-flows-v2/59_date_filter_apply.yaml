@@ -1,0 +1,66 @@
+appId: com.hydrocert.app
+name: "MOB59 V2 - Date range filter apply and clear on Visits Home"
+tags:
+  - visits
+  - filters
+  - regression
+---
+
+# MOB44 only opens the date-range picker and cancels. This flow
+# APPLIES a filter: picks a start and end day in the current month
+# (computed at runtime so the flow works any day of the year),
+# confirms, asserts the "Filtered by" pill and the filtered list
+# state, then clears the filter via the pill's X and asserts the
+# normal chips row returned. No persistent state - the filter is
+# UI-only and fully cleared before exit.
+
+- runFlow: _shared/login.yaml
+
+# --- Compute two ascending day-of-month numbers for the range ---
+# Prefer (today, tomorrow); on the last day of the month fall back
+# to (yesterday, today) so both days stay inside the visible grid.
+- evalScript: ${var d = new Date(); var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); var a = d.getDate(); var b = a + 1; if (b > last) { b = a; a = a - 1; } output.d1 = String(a); output.d2 = String(b);}
+
+# --- Open the picker (calendar icon next to the search bar) ---
+- tapOn: "Filter by date range"
+- extendedWaitUntil:
+    visible: "Cancel"
+    timeout: 10000
+
+# --- Pick start and end day, then confirm ---
+- tapOn: "^${output.d1}$"
+- tapOn: "^${output.d2}$"
+- tapOn: "(OK|Ok|Save|Apply)"
+
+# --- Filter applied: the Filtered-by pill shows on Visits Home ---
+- extendedWaitUntil:
+    visible: ".*Filtered by.*"
+    timeout: 10000
+# The filtered list legitimately shows either visit cards or the
+# empty state, depending on what the QA account has in the range
+- extendedWaitUntil:
+    visible: "(No visits found.*|View Visit Details|Upcoming)"
+    timeout: 10000
+
+# --- Clear the filter via the pill's X ---
+# The X's accessible label is unverified on 1.8.47, so try the
+# likely content-desc names first, then fall back to tapping the
+# element to the right of the pill text (the X sits at the pill's
+# right edge).
+- tapOn:
+    text: "(Clear date filter|Clear filter|Clear|Remove filter)"
+    optional: true
+- runFlow:
+    when:
+      visible: ".*Filtered by.*"
+    commands:
+      - tapOn:
+          rightOf:
+            text: ".*Filtered by.*"
+
+# --- Pill gone, chips row back ---
+- extendedWaitUntil:
+    notVisible: ".*Filtered by.*"
+    timeout: 10000
+- assertVisible: "Today"
+- assertVisible: "Visits"

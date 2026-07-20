@@ -64,11 +64,15 @@ jobs:
           else
             MODE="standard"
           fi
-          # Determine if mobile tests should run
+          # Determine if mobile tests should run.
+          # Mobile now runs on EVERY scheduled night (weeknights + Sunday),
+          # matching the web nightly cadence, since the app is heading to
+          # production and needs the same nightly safety net. Manual
+          # dispatches still honour the run_mobile_tests checkbox.
           MOBILE="false"
           if [[ "${{ github.event.inputs.run_mobile_tests }}" == "true" ]]; then
             MOBILE="true"
-          elif [[ "${MODE}" == "full" ]]; then
+          elif [[ -n "${{ github.event.schedule }}" ]]; then
             MOBILE="true"
           fi
 

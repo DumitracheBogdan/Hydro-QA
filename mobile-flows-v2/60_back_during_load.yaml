@@ -1,0 +1,142 @@
+appId: com.hydrocert.app
+name: "MOB60 V2 - Back pressed during screen load lands safely"
+tags:
+  - navigation
+  - interruption
+  - regression
+---
+
+# Interruption edge case: tap a navigation CTA and press Back
+# IMMEDIATELY, with no wait in between, so the Back arrives while the
+# target screen is still loading. Whatever the race outcome, the app
+# must not crash, must not exit and must not strand the user on a
+# stuck spinner. Two interrupts are exercised:
+#   1. History card "View Visit Details" then instant Back
+#   2. Inspections tab "Start Inspection" then instant Back
+# Both race outcomes are legitimate (Back consumed during load means
+# we stay on the source list; navigation wins means the target screen
+# shows and we back out normally). Crash, app exit or a never-settling
+# spinner is the failure this flow exists to catch.
+
+- runFlow: _shared/login.yaml
+
+# --- Filter History down to the QA test visit (deterministic card) ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible:
+      text: "Type to search.*"
+    timeout: 15000
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA test"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+
+# --- Interrupt 1: View Visit Details then INSTANT Back ---
+# No wait between the two commands - that is the whole point.
+- tapOn: "View Visit Details"
+- back
+
+# Settle. Deliberately NOT "Inspections.*" here: Maestro text match is
+# case-insensitive, so that regex would also hit the History card's
+# "INSPECTIONS (N)" line and misdetect the screen. "Quick actions"
+# (the FAB content-desc) exists only inside the visit detail; the
+# search placeholder only on History; the overview subtitle only on
+# Visits home (in case the instant Back fell through to the root tab).
+- extendedWaitUntil:
+    visible: "(Type to search.*|Quick actions|.*overview of your visits.*)"
+    timeout: 20000
+
+# Outcome: navigation won and the visit detail rendered anyway. Leave
+# it normally (nothing was edited; the modal dismiss is defensive).
+- runFlow:
+    when:
+      visible: "Quick actions"
+    commands:
+      - back
+      - tapOn:
+          text: "Not now"
+          optional: true
+
+# Outcome: Back fell through to Visits home. Return to History and
+# restore the filter (erase first - the old query may have survived).
+- runFlow:
+    when:
+      visible: ".*overview of your visits.*"
+    commands:
+      - tapOn:
+          text: "History"
+      - extendedWaitUntil:
+          visible:
+            text: "Type to search.*"
+          timeout: 15000
+      - tapOn:
+          text: "Type to search.*"
+      - eraseText: 30
+      - inputText: "QA test"
+      - hideKeyboard
+
+# --- Assert: History list is alive and the filtered card reachable ---
+- extendedWaitUntil:
+    visible: "Type to search.*"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+
+# --- Open the visit FOR REAL to stage interrupt 2 ---
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Interrupt 2: Start Inspection then INSTANT Back ---
+- tapOn:
+    text: "Start Inspection"
+    index: 0
+- back
+
+# Settle: inspections list ("Start Inspection" cards), the opened form
+# (exact "Submit" - the list's own bar reads "Submit Samples", which a
+# full-string match cannot hit), or History if Back popped the visit.
+- extendedWaitUntil:
+    visible: "(Start Inspection|Submit|Type to search.*)"
+    timeout: 20000
+
+# If the form won the race, back out of it (no edits were made, so no
+# modal is expected - dismissed defensively anyway).
+- runFlow:
+    when:
+      visible: "^Submit$"
+    commands:
+      - back
+      - tapOn:
+          text: "Not now"
+          optional: true
+
+# If we are (now) on the inspections list, leave the visit too.
+- runFlow:
+    when:
+      visible: "Start Inspection"
+    commands:
+      - back
+      - tapOn:
+          text: "Not now"
+          optional: true
+
+# --- Final: a main tab screen is responsive (bottom nav present) ---
+- extendedWaitUntil:
+    visible: "Activity"
+    timeout: 15000

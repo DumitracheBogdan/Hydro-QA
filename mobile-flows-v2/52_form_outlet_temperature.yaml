@@ -1,0 +1,66 @@
+appId: com.hydrocert.app
+name: "MOB52 V2 - Outlet Temperature monitoring form fill and submit"
+tags:
+  - inspections
+  - forms
+  - regression
+---
+
+# Opens the "Outlet Temperature monitoring" inspection on the dedicated "QA forms" fixture
+# visit, fills the Notes field (present on every inspection type via
+# its Edit dialog - the one input whose selectors are proven on
+# device), submits the form and asserts the success toast. "Outlet Temperature monitoring"
+# is a NON water-sample job type, so submitting the form is safe.
+# This flow never taps "Submit Samples".
+
+- runFlow: _shared/open_qa_forms_visit.yaml
+
+# --- Inspections tab ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 10000
+
+# --- Open this specific inspection type (scroll its Start button in) ---
+- scrollUntilVisible:
+    element:
+      text: "(Start Inspection|View Inspection)"
+      below:
+        text: ".*Outlet Temperature.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "(Start Inspection|View Inspection)"
+    below:
+      text: ".*Outlet Temperature.*"
+- extendedWaitUntil:
+    visible: "(Submit|Information|Unable|Notes)"
+    timeout: 15000
+
+# --- Fill the Notes field via its Edit dialog (idempotent) ---
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA regression form check"
+- hideKeyboard
+- tapOn: "Save"
+
+# --- Submit the form (exact match; never a Submit Samples bar) ---
+- scrollUntilVisible:
+    element:
+      text: "^Submit$"
+    direction: DOWN
+    timeout: 20000
+    speed: 40
+- tapOn: "^Submit$"
+
+# --- Success toast ---
+- extendedWaitUntil:
+    visible: ".*submitted successfully.*"
+    timeout: 15000

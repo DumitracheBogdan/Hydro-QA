@@ -1,0 +1,161 @@
+appId: com.hydrocert.app
+name: "MOB56 V2 - Signature e2e (My signature save, Client Signature add)"
+tags:
+  - account
+  - signature
+  - visit-detail
+  - e2e
+  - regression
+---
+
+# Two-part signature end-to-end. Drawing a signature is allowed (it is
+# not a lab submission).
+#
+# PART A - Account tab, My signature: expand the row, draw two strokes
+# on the pad with swipes, save, collapse and reopen, then assert a
+# signature is present (no empty "Tap to sign" placeholder).
+# PART B - QA test visit, Client Signature accordion: open the dialog,
+# draw, tap Add, assert the drawing replaced the placeholder on the
+# visit detail, then leave WITHOUT saving the visit so the seed visit
+# stays as found.
+#
+# Canvas strokes use percentage coordinates and are mostly HORIZONTAL
+# on purpose: the surrounding containers scroll vertically, so a
+# horizontal gesture that starts inside the canvas is not stolen by
+# the scroll container.
+# Source: docs/10_ACCOUNT_TAB.md + docs/04_VISIT_DETAIL.md, patterns
+# from flows 11 and 16.
+
+- runFlow: _shared/login.yaml
+
+# ================= PART A - Account, My signature =================
+- tapOn:
+    text: "Account"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 15000
+- tapOn: "My signature"
+
+# The expanded row shows the drawing area in place. Two build shapes
+# are handled here:
+#   a) empty canvas with a "Tap to sign" placeholder that opens the
+#      pad as a dialog
+#   b) an already-saved signature image that must be tapped to open
+#      the pad (it sits directly below the row header)
+- runFlow:
+    when:
+      visible:
+        text: "Tap to sign.*"
+    commands:
+      - tapOn: "Tap to sign.*"
+- runFlow:
+    when:
+      notVisible: "^Clear$"
+    commands:
+      - tapOn:
+          below:
+            text: "My signature"
+
+# Bring the pad controls into view (a no-op when a dialog is open and
+# Clear is already on screen)
+- scrollUntilVisible:
+    element:
+      text: "^Clear$"
+    direction: DOWN
+    timeout: 15000
+
+# Start from a clean canvas, then draw two strokes
+- tapOn: "^Clear$"
+- swipe:
+    start: "22%, 46%"
+    end: "78%, 50%"
+    duration: 450
+- swipe:
+    start: "72%, 44%"
+    end: "28%, 54%"
+    duration: 450
+
+# Save. Confirm-button naming moved around in 1.8.4x (Submit became
+# Add on the visit dialog), so accept any variant here.
+- tapOn: "^(Save|Add|Submit)$"
+
+# Back on the Account list; collapse the row, then reopen it
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 10000
+- scrollUntilVisible:
+    element:
+      text: "My signature"
+    direction: UP
+    timeout: 10000
+- tapOn: "My signature"
+- extendedWaitUntil:
+    visible: "Change Password"
+    timeout: 10000
+- tapOn: "My signature"
+- extendedWaitUntil:
+    visible: "My signature"
+    timeout: 10000
+
+# A saved signature means the empty-state placeholder must not show
+- assertNotVisible: "Tap to sign.*"
+
+# ============= PART B - QA test visit, Client Signature =============
+# Full re-navigation through the shared anchor subflow (relaunches the
+# app; slower but deterministic).
+- runFlow: _shared/open_qa_test_visit.yaml
+
+- scrollUntilVisible:
+    element:
+      text: "Client Signature"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "Client Signature"
+- scrollUntilVisible:
+    element:
+      text: "Client name"
+    direction: DOWN
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "Tap to sign.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "Tap to sign.*"
+
+# Signature dialog: Clear plus Add (1.8.47 renamed Submit to Add)
+- extendedWaitUntil:
+    visible: "^Clear$"
+    timeout: 10000
+- assertVisible: "^Add$"
+
+# Draw inside the dialog canvas. The canvas spans roughly the middle
+# band of the dialog, so the strokes stay well inside it.
+- tapOn: "^Clear$"
+- swipe:
+    start: "25%, 42%"
+    end: "75%, 47%"
+    duration: 450
+- swipe:
+    start: "70%, 40%"
+    end: "30%, 50%"
+    duration: 450
+- tapOn: "^Add$"
+
+# Dialog closes; the drawing now sits where the placeholder was
+- extendedWaitUntil:
+    notVisible: "^Clear$"
+    timeout: 10000
+- assertNotVisible: "Tap to sign.*"
+
+# Leave without saving the visit so the seed visit stays clean;
+# discard through the Unsaved data dialog if it appears
+- back
+- runFlow:
+    when:
+      visible:
+        text: "Unsaved data"
+    commands:
+      - tapOn: "Go back"

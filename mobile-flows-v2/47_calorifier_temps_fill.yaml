@@ -1,0 +1,60 @@
+appId: com.hydrocert.app
+name: "MOB47 V2 - Calorifier temps inspection fill (no sample submit)"
+tags:
+  - inspections
+  - forms
+  - regression
+---
+
+# Opens the Calorifier/Water Heater temperatures inspection on the QA test visit, fills the Notes
+# field via its Edit dialog (the input whose selectors are proven on
+# device; per-form accordion field labels are not reliable across
+# 1.8.4x, so we fill Notes rather than guess), and - because this is a WATER-SAMPLE type - asserts the form + samples bar without ever submitting.
+# HARD BAN: never tap Submit / Submit Samples on this sample-bearing form.
+
+- runFlow: _shared/open_qa_test_visit.yaml
+
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "Start Inspection"
+    timeout: 10000
+
+# --- Open this inspection type via its own card ---
+- scrollUntilVisible:
+    element:
+      text: "(Start Inspection|View Inspection)"
+      below:
+        text: ".*Calorifier.*"
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    text: "(Start Inspection|View Inspection)"
+    below:
+      text: ".*Calorifier.*"
+- extendedWaitUntil:
+    visible: "(Submit|Information|Unable|Notes)"
+    timeout: 15000
+
+# --- Fill Notes via its Edit dialog (idempotent) ---
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA regression form check"
+- hideKeyboard
+- tapOn: "Save"
+
+# --- WATER-SAMPLE TYPE: do NOT submit (Submit could push samples).
+# Assert the Notes saved, that the Submit Samples bar exists (text
+# only, never tapped), then leave.
+- assertVisible: "QA regression form check"
+- assertVisible: "Submit Samples.*"
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
