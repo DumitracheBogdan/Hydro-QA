@@ -7,6 +7,17 @@ set +e
 # _discovery subdirectory), captures before/after screenshots
 # and per-flow pass/fail, then writes summary.json.
 # =============================================================
+#
+# REQUIRED DEV FIXTURES - do NOT delete these visits from dev; the
+# nightly suite anchors on them by History title-search. If dev data
+# is ever wiped, recreate them (assigned to the QA engineer, dated in
+# the past so they show under History) or the suite fails silently:
+#   - "QA test"      - multi-inspection seed visit (VN011710)
+#   - "QA forms"     - 5 non-sample form types (49-53)
+#   - "QA procdeath" - single Service Report inspection (62a/62b/63)
+# Follow-up: make the runner create-if-missing so the suite is self-
+# seeding and cannot break on a data cleanup.
+# =============================================================
 
 ARTIFACTS="$GITHUB_WORKSPACE/qa-artifacts/mobile-v2/test"
 SHOT_DIR="$ARTIFACTS/screenshots"
