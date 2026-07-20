@@ -42,6 +42,15 @@ tags:
 # here — collapsing with tapOn "Visit Details" index:1 after typing was
 # found to trigger the "unsaved data" dialog on back (possibly because
 # accordion recomposition marks form state as dirty again).
+#
+# Scroll the label back into view first: hideKeyboard sometimes leaves
+# the view scrolled so the label is off-screen, and a bare tapOn then
+# fails ("element not found") - this was a cross-run flake on CI.
+- scrollUntilVisible:
+    element:
+      text: "Description & Reference"
+    direction: UP
+    timeout: 10000
 - tapOn: "Description & Reference"
 
 # --- Scroll to Submit (renamed from Save in 1.8.46) ---

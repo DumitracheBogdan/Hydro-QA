@@ -52,11 +52,12 @@ tags:
     text: "Tap to sign.*"
 
 # --- Verify signature dialog has correct buttons ---
+# 1.8.47 renamed the confirm button from "Submit" to "Add".
 - extendedWaitUntil:
     visible: "Clear"
     timeout: 10000
 - assertVisible: "Clear"
-- assertVisible: "Submit"
+- assertVisible: "Add"
 
 # --- Close dialog without submitting (system back) ---
 - back
