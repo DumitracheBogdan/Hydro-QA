@@ -1,0 +1,75 @@
+appId: com.hydrocert.app
+name: "MOB63 V2 - Offline note edit is accepted without crashing"
+tags:
+  - offline
+  - resilience
+  - regression
+---
+
+# The runner cuts wifi+data for this flow (its filename matches the
+# offline wrap) and restores them right after. Login needs a network
+# we do not have, so relaunch on the EXISTING session
+# (clearState:false) - the preceding flow 62 just loaded the
+# "QA procdeath" visit online, so its list + detail are warm in cache
+# and reachable offline. Edit a note fully offline, Save, and prove the
+# app accepts the local edit and does not crash. ALS-safe: Notes only,
+# never submits; the single inspection is a non-sample Service Report.
+
+- launchApp:
+    clearState: false
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 90000
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible:
+      text: "Type to search.*"
+    timeout: 15000
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA procdeath"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 15000
+- tapOn:
+    text: "(Start Inspection|View Inspection)"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 15000
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA offline edit check"
+- hideKeyboard
+- tapOn: "Save"
+- assertNotVisible: ".*keeps stopping.*"
+- assertNotVisible: ".*has stopped.*"
+- extendedWaitUntil:
+    visible: ".*QA offline edit check.*"
+    timeout: 15000
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 15000

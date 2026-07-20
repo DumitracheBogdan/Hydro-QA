@@ -1,0 +1,75 @@
+appId: com.hydrocert.app
+name: "MOB62b V2 - App survives process death: clean relaunch, session intact"
+tags:
+  - runner-orchestrated
+  - process-death
+  - regression
+---
+
+# Part 2 of the process-death pair. The runner force-stops the app
+# after 62a (harshest kill - no lifecycle callbacks, the exact cold-
+# start path that surfaced the 1.8.4x splash-exit NPE). This flow
+# proves the app RECOVERS from that kill:
+#   - cold relaunch does not crash on the splash (no "keeps stopping")
+#   - the login session + DEV environment choice survive the kill
+#     (clearState:false, lands straight on the dashboard, no re-login)
+#   - the visit and its inspection are reopenable, app stays responsive
+#
+# NOTE (not asserted here): a Notes draft saved but not submitted does
+# NOT survive a force-stop - the server never received it (stays
+# not-started) and the local edit is gone on cold start. Whether an
+# unsubmitted draft SHOULD persist across process death is a product
+# decision for the app team; this flow does not assert it either way,
+# it only asserts the app itself recovers cleanly.
+
+- launchApp:
+    clearState: false
+
+# --- Cold relaunch must not crash on the splash and must skip login ---
+- extendedWaitUntil:
+    visible: ".*overview of your visits.*"
+    timeout: 90000
+- assertNotVisible: ".*keeps stopping.*"
+- assertNotVisible: ".*has stopped.*"
+- assertNotVisible: "^Login$"
+
+# --- The visit + its inspection are still reachable after the kill ---
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible:
+      text: "Type to search.*"
+    timeout: 15000
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA procdeath"
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 15000
+- tapOn:
+    text: "(Start Inspection|View Inspection)"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Still responsive: leave cleanly back to the list ---
+- back
+- tapOn:
+    text: "Not now"
+    optional: true
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 15000

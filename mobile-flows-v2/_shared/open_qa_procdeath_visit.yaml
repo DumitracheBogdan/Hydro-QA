@@ -1,0 +1,55 @@
+appId: com.hydrocert.app
+name: "V2 Shared - Open the QA procdeath visit (single-inspection fixture) (deterministic anchor)"
+tags:
+  - shared
+  - navigation
+---
+
+# Shared subflow: opens the dedicated "QA procdeath" seed visit
+# (15.04.2026, Avondale Court, VN011710) instead of whatever visit
+# happens to be first in the History list. That visit is owned by QA
+# and holds the fixtures the inspection/action flows depend on:
+#   - 4 inspections: Health and Safty Risk Assessment, Cooling Tower
+#     Disinfection, Calorifier/Water Heater temperatures, Chlorine
+#     Dioxide Outlet Testing
+#   - 1 action item (Low priority) with a delete icon
+#
+# Anchoring by TITLE SEARCH is what makes flows 21-23 and 27-33
+# deterministic: "first card in History" changes whenever seed data
+# is added, which is what caused the Jul 2026 false-positive failures.
+#
+# Usage from a test flow:
+#   - runFlow: _shared/open_qa_test_visit.yaml
+
+- runFlow: login.yaml
+
+# History tab holds past visits (the QA procdeath visit is historical)
+- tapOn:
+    text: "History"
+- extendedWaitUntil:
+    visible:
+      text: "Type to search.*"
+    timeout: 15000
+
+# Filter the list down to the QA procdeath visit by title
+- tapOn:
+    text: "Type to search.*"
+- inputText: "QA procdeath"
+- hideKeyboard
+
+# The filtered list shows exactly one card, so the CTA below is
+# guaranteed to open the right visit. The card is tall (multi-line
+# address + description) and its CTA sits below the fold on the
+# 320px CI screen, so scroll to it rather than just waiting.
+- scrollUntilVisible:
+    element:
+      text: "View Visit Details"
+    direction: DOWN
+    timeout: 20000
+- tapOn: "View Visit Details"
+
+# Wait for Visit Detail to load - the Inspections tab label is
+# unique to this screen and confirms all tabs rendered
+- extendedWaitUntil:
+    visible: "Inspections.*"
+    timeout: 15000

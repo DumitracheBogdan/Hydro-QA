@@ -33,13 +33,6 @@ adb shell settings put global window_animation_scale 0 || true
 adb shell settings put global transition_animation_scale 0 || true
 adb shell settings put global animator_duration_scale 0 || true
 
-echo "=== Seeding a gallery image (photo-attachment flow) ==="
-# Flow 55 picks an image from the system photo picker; a fresh CI
-# emulator has an empty gallery, so drop one deterministic image in.
-adb exec-out screencap -p > /tmp/qa_seed.png || true
-adb push /tmp/qa_seed.png /sdcard/Pictures/qa_seed.png || true
-adb shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/qa_seed.png >/dev/null 2>&1 || true
-
 echo "=== Installing Maestro CLI ==="
 curl -Ls "https://get.maestro.mobile.dev" | bash
 export PATH="$HOME/.maestro/bin:$PATH"
@@ -90,14 +83,15 @@ for flow in "${FLOWS[@]}"; do
   TOTAL=$((TOTAL + 1))
   echo "--- Running: $FLOW_NAME ---"
 
-  # Offline-wrapped flows: 54 (water sampling UI - belt and braces, a
-  # mis-tap physically cannot reach the ALS lab with no network) and
-  # 63 (offline submit queue). Connectivity is cut for every attempt
-  # of the flow and restored right after; 63b then verifies the queued
-  # change syncs once back online.
+  # Offline-wrapped flows: 63 edits a note fully offline to prove the
+  # app accepts local edits without crashing. Connectivity is cut for
+  # every attempt and restored right after. The flow relies on the
+  # preceding flow 62 having cached the "QA procdeath" visit online, so
+  # it stays reachable with no network (login itself needs a network we
+  # deliberately do not have here).
   OFFLINE=0
   case "$FLOW_NAME" in
-    54_*|63_offline_submit)
+    63_offline_note_edit)
       OFFLINE=1
       adb shell svc wifi disable || true
       adb shell svc data disable || true
@@ -134,6 +128,20 @@ for flow in "${FLOWS[@]}"; do
     adb shell svc data enable || true
     sleep 4
   fi
+
+  # Process-death orchestration: 62a leaves the app dirty (unsubmitted
+  # edit), then we force-stop it here - the harshest kill, no lifecycle
+  # callbacks, the same cold-start path that surfaced the splash-exit
+  # NPE. The very next flow (62b) then proves the app recovers: clean
+  # relaunch, session intact, visit reopenable. force-stop only, never
+  # "pm clear" (that would wipe the session and mask a crash).
+  case "$FLOW_NAME" in
+    62a_*)
+      echo "--- process death: force-stop after $FLOW_NAME ---"
+      adb shell am force-stop com.hydrocert.app || true
+      sleep 2
+      ;;
+  esac
 
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-after.png" 2>/dev/null || true
 

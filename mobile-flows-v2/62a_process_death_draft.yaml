@@ -1,0 +1,80 @@
+appId: com.hydrocert.app
+name: "MOB62a V2 - Process death part 1: dirty an inspection, then get killed"
+tags:
+  - runner-orchestrated
+  - process-death
+  - regression
+---
+
+# RUNNER-ORCHESTRATED (pair with 62b). This flow leaves the app in a
+# dirty, mid-edit state: open the single inspection on the dedicated
+# "QA procdeath" fixture, write a note in the Notes dialog, Save it,
+# and leave back to the visit detail WITHOUT submitting ("Not now" on
+# the unsaved-data modal). The app is now sitting on unsubmitted work.
+#
+# Immediately after this flow the runner force-stops the app:
+#   adb shell am force-stop com.hydrocert.app
+# force-stop ONLY - never "pm clear" (that would wipe the login session
+# and the DEV environment choice, so 62b could not tell a crash apart
+# from a wiped install). Then 62b runs right away and proves the app
+# recovers from that kill (clean cold relaunch, session intact, visit
+# reopenable). Nothing may run between 62a and 62b.
+#
+# "QA procdeath" holds exactly ONE inspection (Service Report, a
+# non-sample type - no lab samples, so nothing here can reach ALS), so
+# index 0 is unambiguous whether the card reads "Start Inspection"
+# (fresh) or "View Inspection" (opened by a prior run).
+
+- runFlow: _shared/open_qa_procdeath_visit.yaml
+
+# --- Open the single inspection ---
+- tapOn:
+    text: "Inspections.*"
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 10000
+- tapOn:
+    text: "(Start Inspection|View Inspection)"
+    index: 0
+- extendedWaitUntil:
+    visible: "(Visit Information|Submit)"
+    timeout: 10000
+
+# --- Write the draft note ---
+# Anchor on the "Notes" dialog title and clear + retype a fixed value
+# (the field may hold a previous run's note; Compose hints are not
+# findable on API 30 and vanish once the field has text). Idempotent.
+- tapOn: "Edit"
+- extendedWaitUntil:
+    visible: "Save"
+    timeout: 10000
+- tapOn:
+    below:
+      text: "Notes"
+- eraseText: 60
+- inputText: "QA proc death draft"
+- hideKeyboard
+- tapOn: "Save"
+
+# --- Confirm the draft rendered in the Notes section ---
+- extendedWaitUntil:
+    visible: ".*QA proc death draft.*"
+    timeout: 10000
+
+# --- Leave to visit detail WITHOUT submitting ---
+# The dirty form raises the unsaved-data modal on back; "Not now"
+# leaves the edit as a local unsubmitted draft (the 1.8.4x retention
+# design: local data is kept, wiped only on different-user login).
+# Do NOT tap "Submit now" here - the whole point is an in-flight
+# draft at kill time.
+- back
+- extendedWaitUntil:
+    visible: "Unsubmitted data"
+    timeout: 10000
+- tapOn: "Not now"
+
+# --- End state: visit detail, Inspections tab ---
+# The runner force-stops the app from here.
+- extendedWaitUntil:
+    visible: "(Start Inspection|View Inspection)"
+    timeout: 15000
