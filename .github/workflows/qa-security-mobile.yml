@@ -1,0 +1,36 @@
+name: QA security (mobile)
+run-name: "QA security (mobile) - ${{ github.event_name }}"
+
+# Static safety guard for the mobile regression suite. Fast, no emulator.
+# Blocks the non-negotiable rules: never tap "Submit Samples" (would reach
+# the real ALS lab), no real lab endpoints, no hardcoded credentials, and the
+# APK-upload workflow must validate its input.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'mobile-flows-v2/**'
+      - 'scripts/run-mobile-v2-test.sh'
+      - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/qa_security_check.py'
+      - '.github/workflows/update-mobile-apk.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'mobile-flows-v2/**'
+      - 'scripts/run-mobile-v2-test.sh'
+      - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/qa_security_check.py'
+      - '.github/workflows/update-mobile-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run mobile security checks
+        run: python scripts/qa_security_check.py

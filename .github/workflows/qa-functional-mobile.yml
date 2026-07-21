@@ -1,0 +1,37 @@
+name: QA functional (mobile)
+run-name: "QA functional (mobile) - ${{ github.event_name }}"
+
+# Fast plumbing guard for the mobile regression tooling (no emulator): every
+# flow parses and targets the app, every flow has a description, and the Excel
+# generator still produces a Summary + Details workbook. Catches a broken flow
+# or a broken generator before a 1-hour emulator run is wasted on it.
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'mobile-flows-v2/**'
+      - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/qa_functional_check.py'
+  push:
+    branches: [main]
+    paths:
+      - 'mobile-flows-v2/**'
+      - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/qa_functional_check.py'
+
+permissions:
+  contents: read
+
+jobs:
+  functional:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install deps
+        run: python -m pip install --upgrade pip openpyxl Pillow pyyaml
+      - name: Run mobile functional checks
+        run: python scripts/qa_functional_check.py

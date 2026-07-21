@@ -77,6 +77,13 @@ jobs:
       - name: Fetch the new APK
         if: ${{ inputs.apk_url != '' }}
         run: |
+          # Transport security: only pull the build over https (no plain-http
+          # download that could be swapped in transit). The aapt package check
+          # below is the strong guard, this adds transport integrity.
+          case "${{ inputs.apk_url }}" in
+            https://*) : ;;
+            *) echo "::error::apk_url must be an https:// link"; exit 1 ;;
+          esac
           mkdir -p incoming
           curl -fL --retry 3 -o incoming/download.bin "${{ inputs.apk_url }}"
           # The team often ships the apk wrapped in a zip. An apk is
