@@ -27,8 +27,9 @@ UI_DUMP_DIR="$ARTIFACTS/ui-dumps"
 mkdir -p "$SHOT_DIR" "$LOG_DIR" "$RESULTS_DIR" "$UI_DUMP_DIR"
 
 echo "=== Downloading and installing APK ==="
-# app-release.apk = the 1.8.46 release build (com.hydrocert.app v46).
-# It defaults to Production; the shared login flow switches it to DEV
+# app-release.apk = the current release build in the mobile-apk-v1
+# release (updated via update-mobile-apk.yml). It defaults to Production;
+# the shared login flow switches it to DEV
 # on every launch. Uninstall first: a leftover install with a different
 # signing key (debug vs release) makes install -r fail with
 # INSTALL_FAILED_UPDATE_INCOMPATIBLE.
@@ -114,7 +115,7 @@ for flow in "${FLOWS[@]}"; do
 
   LOG_FILE="$LOG_DIR/${FLOW_NAME}.log"
 
-  # Up to 3 attempts per flow. The 1.8.46 release build has an
+  # Up to 3 attempts per flow. The release build has an
   # intermittent splash-exit crash on cold launch (androidx
   # SplashScreenViewProvider NPE) that surfaces under the software
   # (swiftshader) renderer, especially as the emulator warms up. That

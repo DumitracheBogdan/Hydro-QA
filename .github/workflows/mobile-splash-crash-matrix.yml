@@ -1,0 +1,107 @@
+name: Mobile splash-crash matrix (report-only)
+run-name: "Mobile splash-crash matrix"
+
+# Codifies the API-34 investigation: runs the same smoke subset across a
+# range of Android versions so anyone can reproduce WHERE the app's splash-
+# exit crash shows up under the Maestro harness. Finding (proven locally,
+# 2026-07): the crash is triggered by Maestro's launch, not by a normal
+# launch - it appears on API 31+ (the androidx SplashScreen Impl31 path,
+# SplashScreenViewProvider.getIconView NPE in the app's SplashExitAnimator)
+# and never on API 30. So API 30 is where the real suite runs; this matrix
+# is documentation, not a gate.
+#
+# Every job is report-only (continue-on-error + the run step swallows its
+# code): a "crash" lane failing is the expected, documented result, not a
+# pipeline failure. Read each lane's summary for pass/fail counts.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 60
+    environment: Development
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - api: 30
+            target: default
+            note: "baseline - no splash crash (different splash impl)"
+          - api: 31
+            target: default
+            note: "first API with the Impl31 splash path"
+          - api: 33
+            target: google_apis
+            note: "Android 13"
+          - api: 34
+            target: google_apis
+            note: "Android 14 - the field lane"
+          - api: 35
+            target: google_apis
+            note: "Android 15"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: "Smoke subset on API ${{ matrix.api }} (${{ matrix.target }})"
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FLOWS_FILTER: "01,02,07,15,27,38,39,40"
+          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+
+      - name: Upload artifacts (API ${{ matrix.api }})
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: splash-matrix-api${{ matrix.api }}-${{ github.run_id }}
+          path: qa-artifacts/mobile-v2/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: "Summary: API ${{ matrix.api }}"
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## API ${{ matrix.api }} (${{ matrix.target }}) — ${{ matrix.note }}"
+            SUMMARY_FILE="qa-artifacts/mobile-v2/test/summary.json"
+            if [[ -f "$SUMMARY_FILE" ]]; then
+              node -e "
+                const s = require('./$SUMMARY_FILE'); const t = s.totals||{};
+                const pass=t.pass||0, total=t.total||0;
+                console.log('| Passed | Failed | Reading |');
+                console.log('|--------|--------|---------|');
+                const reading = (pass===0 && total>0) ? 'app never reaches login = splash crash present'
+                              : (pass===total) ? 'app opens normally = no crash'
+                              : 'mixed';
+                console.log('| ' + pass + ' | ' + ((t.fail||0)) + ' | ' + reading + ' |');
+              " 2>/dev/null || echo "_summary parse failed_"
+            else
+              echo "_no summary (emulator/install problem)_"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
