@@ -7,8 +7,9 @@ tags:
 ---
 
 # Opens a visit, expands Client Signature accordion, taps to
-# open the signature dialog, verifies Clear/Submit buttons,
-# then closes without submitting.
+# open the signature dialog, verifies the Clear and Add buttons
+# (1.8.47 renamed the confirm button from "Submit" to "Add"), then
+# closes without submitting.
 # Source: exploration docs/04_VISIT_DETAIL.md (Signature Dialog)
 # UI dump: ui-dumps/12_client_signature_expanded.xml
 #

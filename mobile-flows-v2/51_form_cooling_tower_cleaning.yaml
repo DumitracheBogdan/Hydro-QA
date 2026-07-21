@@ -9,9 +9,11 @@ tags:
 # Opens the "Cooling Tower Cleaning" inspection on the dedicated "QA forms" fixture
 # visit, fills the Notes field (present on every inspection type via
 # its Edit dialog - the one input whose selectors are proven on
-# device), submits the form and asserts the success toast. "Cooling Tower Cleaning"
-# is a NON water-sample job type, so submitting the form is safe.
-# This flow never taps "Submit Samples".
+# device), then asserts the form rendered and its Submit control is
+# present. It does NOT submit - required fields are not all filled
+# here; a full submit is covered by flows 45 and 49. "Cooling Tower Cleaning" is a
+# NON water-sample job type; this flow never taps "Submit" or
+# "Submit Samples".
 
 - runFlow: _shared/open_qa_forms_visit.yaml
 

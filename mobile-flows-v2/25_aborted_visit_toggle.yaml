@@ -6,9 +6,10 @@ tags:
   - save-button
 ---
 
-# Verifies the Aborted visit toggle can be switched ON,
-# that Submit button becomes active, and toggling back OFF
-# restores the original state.
+# Toggles the Aborted-visit switch ON then back OFF and asserts the
+# Submit button stays visible throughout (Maestro checks visibility,
+# not enabled/disabled state). Exercises the toggle without crashing;
+# it does not verify the button becoming enabled or a restored value.
 
 - runFlow: _shared/open_visit_detail.yaml
 

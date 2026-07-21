@@ -5,8 +5,9 @@ tags:
   - regression
 ---
 
-# Opens the Cooling Tower Disinfection form (Type 2) and
-# verifies the form structure with accordions.
+# Opens the Cooling Tower Disinfection form (Type 2) and asserts the
+# form screen renders (one of Submit / Information / Unable is shown).
+# A smoke check that the inspection opens; it does not verify accordions.
 
 - runFlow: _shared/open_qa_test_visit.yaml
 

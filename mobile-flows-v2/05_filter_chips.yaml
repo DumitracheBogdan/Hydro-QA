@@ -6,9 +6,11 @@ tags:
   - smoke
 ---
 
-# Taps every date filter chip. Today and Tomorrow are empty for
-# the fixture user (text "No visits found"), Next week shows the
-# seeded "QA test" visit card.
+# Taps every date filter chip and asserts the app stays on the Visits
+# screen with a valid result under each chip. The QA account's seed
+# visits are historical, so each chip legitimately resolves to either
+# visit cards or the "No visits found" empty state - the flow accepts
+# either; it does not require a specific card under a specific chip.
 
 - runFlow: _shared/login.yaml
 

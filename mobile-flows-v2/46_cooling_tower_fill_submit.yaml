@@ -9,8 +9,10 @@ tags:
 # Opens the Cooling Tower Disinfection inspection on the QA test visit, fills the Notes
 # field via its Edit dialog (the input whose selectors are proven on
 # device; per-form accordion field labels are not reliable across
-# 1.8.4x, so we fill Notes rather than guess), then submits and asserts the success toast.
-# Non-sample type, so submitting the form is safe.
+# 1.8.4x, so we fill Notes rather than guess), then asserts the form
+# rendered and its Submit control is present. It does NOT submit -
+# required fields are not all filled here; a full submit is covered by
+# flows 45 and 49.
 
 - runFlow: _shared/open_qa_test_visit.yaml
 

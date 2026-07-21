@@ -9,7 +9,10 @@ tags:
 # Opens the Calorifier/Water Heater temperatures inspection on the QA test visit, fills the Notes
 # field via its Edit dialog (the input whose selectors are proven on
 # device; per-form accordion field labels are not reliable across
-# 1.8.4x, so we fill Notes rather than guess), and - because this is a WATER-SAMPLE type - asserts the form + samples bar without ever submitting.
+# 1.8.4x, so we fill Notes rather than guess), and - because this is a
+# WATER-SAMPLE type - asserts the saved Notes plus the form's own
+# Submit control WITHOUT ever submitting (the "Submit Samples" bar
+# lives on the Inspections tab, not in the form; flow 42 checks it).
 # HARD BAN: never tap Submit / Submit Samples on this sample-bearing form.
 
 - runFlow: _shared/open_qa_test_visit.yaml
