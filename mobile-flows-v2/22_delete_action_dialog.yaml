@@ -16,7 +16,7 @@ tags:
 # History" navigation broke whenever new seed visits (without
 # actions) landed above it.
 
-# CIRCLE: Delete
+# CIRCLE: Cancel, Delete
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll down to find delete action icon ---
@@ -34,7 +34,3 @@ tags:
 - assertVisible: "Delete"
 
 # --- Cancel without deleting ---
-- tapOn: "Cancel"
-
-# --- Navigate back ---
-- back

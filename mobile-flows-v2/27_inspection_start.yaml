@@ -10,7 +10,7 @@ tags:
 # Inspections tab, taps "Start Inspection" on the first card,
 # verifies the form opened.
 
-# CIRCLE: Submit
+# CIRCLE: Visit Information, Risk Assessment, Actions, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

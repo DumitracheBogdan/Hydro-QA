@@ -12,7 +12,7 @@ tags:
 # visit cards or the "No visits found" empty state - the flow accepts
 # either; it does not require a specific card under a specific chip.
 
-# CIRCLE: Next week
+# CIRCLE: Today, Tomorrow, This week, Next week
 - runFlow: _shared/login.yaml
 
 # --- Today ---

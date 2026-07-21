@@ -66,6 +66,18 @@ jobs:
             --artifacts-dir qa-artifacts/mobile-v2 \
             --output qa-artifacts/mobile-v2/mobile-regression-report.xlsx
 
+      - name: Verify annotations + order (report-only)
+        if: always()
+        continue-on-error: true
+        run: |
+          {
+            echo "## Annotation check (what-was-tested circles)"
+            echo '```'
+            python scripts/qa_annotation_check.py \
+              --artifacts-dir qa-artifacts/mobile-v2 --warn-only 2>&1 || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload mobile V2 artifacts
         if: always()
         id: upload_bundle

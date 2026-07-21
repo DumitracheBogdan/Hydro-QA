@@ -8,7 +8,7 @@ tags:
 # Opens the Chlorine Dioxide Outlet Testing form (Type 4)
 # and verifies the form structure.
 
-# CIRCLE: Submit
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

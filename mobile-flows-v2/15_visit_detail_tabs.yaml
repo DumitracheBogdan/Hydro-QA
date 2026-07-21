@@ -18,7 +18,7 @@ tags:
 # accordion below the fold on the 320px CI screen - so the
 # accordion checks scroll instead of asserting directly.
 
-# CIRCLE: Attachments
+# CIRCLE: Visit Details, Inspections, Attachments, Actions
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- All three tabs are visible ---
@@ -62,6 +62,3 @@ tags:
     direction: DOWN
     timeout: 10000
 - assertVisible: "Actions"
-
-# --- Navigate back ---
-- back

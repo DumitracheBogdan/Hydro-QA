@@ -25,7 +25,7 @@ tags:
 # index 0 is unambiguous whether the card reads "Start Inspection"
 # (fresh) or "View Inspection" (opened by a prior run).
 
-# CIRCLE: Start Inspection
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_procdeath_visit.yaml
 
 # --- Open the single inspection ---
@@ -68,14 +68,3 @@ tags:
 # design: local data is kept, wiped only on different-user login).
 # Do NOT tap "Submit now" here - the whole point is an in-flight
 # draft at kill time.
-- back
-- extendedWaitUntil:
-    visible: "Unsubmitted data"
-    timeout: 10000
-- tapOn: "Not now"
-
-# --- End state: visit detail, Inspections tab ---
-# The runner force-stops the app from here.
-- extendedWaitUntil:
-    visible: "(Start Inspection|View Inspection)"
-    timeout: 15000

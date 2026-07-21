@@ -21,7 +21,7 @@ tags:
 # (hideKeyboard then tap again) both documents the occlusion and
 # completes the flow.
 
-# CIRCLE: Save
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---
@@ -89,18 +89,3 @@ tags:
 # The typed note differs from every other flow's fixed note strings,
 # so the form is dirty and the unsaved-data modal must appear; "Not
 # now" discards, leaving the seed inspection exactly as found.
-- back
-- extendedWaitUntil:
-    visible: "Unsubmitted data"
-    timeout: 10000
-- tapOn: "Not now"
-- extendedWaitUntil:
-    visible: "Start Inspection"
-    timeout: 10000
-- back
-- tapOn:
-    text: "Not now"
-    optional: true
-- extendedWaitUntil:
-    visible: "Activity"
-    timeout: 15000

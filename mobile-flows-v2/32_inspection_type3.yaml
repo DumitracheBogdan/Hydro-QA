@@ -8,7 +8,7 @@ tags:
 # Opens the Calorifier/Water Heater form (Type 3) and
 # verifies the form structure.
 
-# CIRCLE: Submit
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

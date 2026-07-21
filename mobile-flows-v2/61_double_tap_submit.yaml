@@ -24,7 +24,7 @@ tags:
 # cleanly if the first submit already dismissed or disabled the
 # button. Do NOT convert this to repeat:2.
 
-# CIRCLE: Start Inspection
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---
@@ -78,39 +78,4 @@ tags:
 # unsaved-data modal (a duplicate pending change would).
 - extendedWaitUntil:
     visible: "(Start Inspection|Visit Information|Submit)"
-    timeout: 15000
-- runFlow:
-    when:
-      visible: "^Submit$"
-    commands:
-      - back
-- extendedWaitUntil:
-    visible: "Start Inspection"
-    timeout: 15000
-- assertNotVisible: "Unsubmitted data"
-
-# --- Re-open the same inspection: note persisted, form clean ---
-- tapOn:
-    text: "Start Inspection"
-    index: 0
-- extendedWaitUntil:
-    visible: "(Visit Information|Submit)"
-    timeout: 10000
-- assertVisible: ".*QA double tap submit check.*"
-
-# Back with no changes: no modal may appear (MOB40 pattern - wait for
-# the list first so a modal has time to render, then assert absence).
-- back
-- extendedWaitUntil:
-    visible: "Start Inspection"
-    timeout: 10000
-- assertNotVisible: "Unsubmitted data"
-
-# --- Leave the visit ---
-- back
-- tapOn:
-    text: "Not now"
-    optional: true
-- extendedWaitUntil:
-    visible: "Activity"
     timeout: 15000

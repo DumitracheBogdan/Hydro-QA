@@ -14,7 +14,7 @@ tags:
 # required fields are not all filled here; a full submit is covered by
 # flows 45 and 49.
 
-# CIRCLE: Submit
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 - tapOn:

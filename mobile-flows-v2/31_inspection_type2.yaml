@@ -9,7 +9,7 @@ tags:
 # form screen renders (one of Submit / Information / Unable is shown).
 # A smoke check that the inspection opens; it does not verify accordions.
 
-# CIRCLE: Submit
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

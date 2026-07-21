@@ -15,7 +15,7 @@ tags:
 # lives on the Inspections tab, not in the form; flow 42 checks it).
 # HARD BAN: never tap Submit / Submit Samples on this sample-bearing form.
 
-# CIRCLE: Submit
+# CIRCLE: Notes, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 - tapOn:

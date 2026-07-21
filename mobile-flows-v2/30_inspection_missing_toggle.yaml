@@ -11,7 +11,7 @@ tags:
 # verifies it can be switched ON/OFF,
 # and that the Submit button (renamed from Save) is visible.
 
-# CIRCLE: Submit
+# CIRCLE: Unable to Inspect, Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

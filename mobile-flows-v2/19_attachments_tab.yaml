@@ -11,7 +11,7 @@ tags:
 # empty state when there are no attachments.
 # Source: exploration docs/06_ATTACHMENTS_TAB.md
 
-# CIRCLE: Attachments
+# CIRCLE: No attachments, Visit Details, Inspections
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Attachments tab ---
@@ -30,6 +30,3 @@ tags:
 
 # --- The FAB should also be visible on this tab ---
 - assertVisible: "Quick actions"
-
-# --- Navigate back ---
-- back

@@ -8,7 +8,7 @@ tags:
 # Opens the first inspection form, expands Risk Assessment
 # accordion, and verifies content appears.
 
-# CIRCLE: Risk Assessment
+# CIRCLE: Visit Information, Risk Assessment
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---

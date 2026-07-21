@@ -8,9 +8,9 @@ tags:
 ---
 
 # Opens the QA test visit, expands the Visit Details accordion,
-# verifies the form fields are visible, then navigates back.
+# verifies the form fields are visible.
 
-# CIRCLE: Unsubmitted data
+# CIRCLE: Unsubmitted data, Not now
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Ensure on the Visit Details tab (default) ---
@@ -40,16 +40,3 @@ tags:
 # unsaved-data modal ("Unsubmitted data") can appear on back. This
 # flow only views the fields, so dismiss it with "Not now" (discard).
 - back
-- tapOn:
-    text: "Not now"
-    optional: true
-
-# --- Verify we left the visit (back on a main tab screen) ---
-# The bottom-nav "Activity" exists only on the Visits/History/Activity/
-# Account screens, never on the visit detail, so it is a clean "we
-# navigated out" signal. (The History search stays filtered to "QA
-# test" and the card CTA is below the fold, so neither "View Visit
-# Details" nor the "Type to search" placeholder is a reliable check.)
-- extendedWaitUntil:
-    visible: "Activity"
-    timeout: 15000

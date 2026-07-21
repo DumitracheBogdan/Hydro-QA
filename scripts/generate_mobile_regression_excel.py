@@ -304,51 +304,57 @@ def _clean_selector(sel: str) -> str:
     return re.sub(r'\s+', ' ', s).strip()
 
 
-def derive_circle_target(flows_dir: Path, flow_id: str) -> str | None:
-    """What to circle for this flow. ONLY an explicit '# CIRCLE: X' hint is
-    used to draw a circle - it is the single source of truth for "what was
-    tested", so we never circle a wrong element. Flows without a hint fall
-    back to embedding the raw screenshot (no circle). The last-selector
-    heuristic is returned too (suffixed) only as a suggestion when auditing
-    which flows still need a hint; the generator ignores non-hint values."""
+def derive_circle_targets(flows_dir: Path, flow_id: str) -> list:
+    """The elements to circle for this flow, from an explicit
+    '# CIRCLE: A, B, C' hint (comma-separated). Each becomes its own numbered
+    circle so a test that verifies several things shows every one of them.
+    The hint is the single source of truth - a flow with no hint gets no
+    circle (raw screenshot) rather than a guessed, possibly-wrong one."""
     p = flows_dir / f'{flow_id}.yaml'
     if not p.is_file():
-        return None
+        return []
     text = p.read_text(encoding='utf-8', errors='ignore')
     m = _CIRCLE_HINT_RE.search(text)
-    if m:
-        return _clean_selector(m.group(1))
-    return None
+    if not m:
+        return []
+    out = []
+    for part in m.group(1).split(','):
+        c = _clean_selector(part)
+        if c and c not in out:
+            out.append(c)
+    return out
 
 
-def annotate_full(img_path: Path, bounds: tuple, tmp_dir: Path, tag: str, label: int = 1):
-    """Draw a red ellipse + numbered badge around `bounds` on the FULL
-    screenshot (keeps on-screen context) and return the annotated copy path."""
-    if not HAS_PIL:
+def annotate_full(img_path: Path, bounds_list, tmp_dir: Path, tag: str):
+    """Draw a red ellipse + numbered badge (1, 2, 3 ...) around EACH element in
+    `bounds_list` on the FULL screenshot, keeping on-screen context, so the dev
+    sees every element the test verified. Returns the annotated copy path."""
+    if not HAS_PIL or not bounds_list:
         return None
     try:
         img = PILImage.open(img_path).convert('RGB')
     except Exception:
         return None
     draw = ImageDraw.Draw(img)
-    x1, y1, x2, y2 = bounds
-    pad_x = max(14, int((x2 - x1) * 0.18))
-    pad_y = max(14, int((y2 - y1) * 0.35))
-    ex1, ey1 = max(0, x1 - pad_x), max(0, y1 - pad_y)
-    ex2, ey2 = min(img.width, x2 + pad_x), min(img.height, y2 + pad_y)
-    line_w = max(4, int(img.width * 0.008))
-    draw.ellipse([ex1, ey1, ex2, ey2], outline=(214, 40, 40), width=line_w)
     r = max(12, int(img.width * 0.024))
-    bx = min(img.width - 2 * r, ex2 - r)
-    by = max(0, ey1 - r)
-    draw.ellipse([bx, by, bx + 2 * r, by + 2 * r], fill=(214, 40, 40))
+    line_w = max(4, int(img.width * 0.008))
     try:
         font = ImageFont.truetype('arialbd.ttf', int(r * 1.3))
     except Exception:
         font = ImageFont.load_default()
-    s = str(label)
-    tw = draw.textlength(s, font=font)
-    draw.text((bx + r - tw / 2, by + r * 0.25), s, fill='white', font=font)
+    for i, bounds in enumerate(bounds_list, 1):
+        x1, y1, x2, y2 = bounds
+        pad_x = max(14, int((x2 - x1) * 0.18))
+        pad_y = max(14, int((y2 - y1) * 0.35))
+        ex1, ey1 = max(0, x1 - pad_x), max(0, y1 - pad_y)
+        ex2, ey2 = min(img.width, x2 + pad_x), min(img.height, y2 + pad_y)
+        draw.ellipse([ex1, ey1, ex2, ey2], outline=(214, 40, 40), width=line_w)
+        bx = min(img.width - 2 * r, ex2 - r)
+        by = max(0, ey1 - r)
+        draw.ellipse([bx, by, bx + 2 * r, by + 2 * r], fill=(214, 40, 40))
+        s = str(i)
+        tw = draw.textlength(s, font=font)
+        draw.text((bx + r - tw / 2, by + r * 0.25), s, fill='white', font=font)
     out = tmp_dir / f'{tag}_full.png'
     try:
         img.save(out)
@@ -582,13 +588,20 @@ def build_details_sheet(
             # Uses the flow's '# CIRCLE:' hint (or its last real selector),
             # located in the per-flow uiautomator dump. If the element is not
             # on the end screen (e.g. a dismissed dialog), embed the raw shot.
-            target = circle_targets.get(flow_name) or ''
-            if HAS_PIL and target:
-                bounds = find_node_bounds(ui_dumps_dir / f'{flow_name}.xml', target)
-                if bounds is not None:
+            targets = circle_targets.get(flow_name) or []
+            if isinstance(targets, str):
+                targets = [targets]
+            if HAS_PIL and targets:
+                dump = ui_dumps_dir / f'{flow_name}.xml'
+                bounds_list = []
+                for t in targets:
+                    b = find_node_bounds(dump, t)
+                    if b is not None and b not in bounds_list:
+                        bounds_list.append(b)
+                if bounds_list:
                     try:
                         annotated = annotate_full(
-                            screenshot_path, bounds, tmp_dir, tag=f'{flow_name}_pass', label=1)
+                            screenshot_path, bounds_list, tmp_dir, tag=f'{flow_name}_pass')
                         if annotated:
                             embed_path = annotated
                     except Exception as exc:
@@ -660,12 +673,12 @@ def main() -> int:
     # Pre-compute per flow: the "What it checks" description and the element
     # to circle (the "what was tested" marker) on the screenshot.
     descriptions: dict[str, str] = {}
-    circle_targets: dict[str, str] = {}
+    circle_targets: dict[str, list] = {}
     for check in summary.get('checks') or []:
         fid = check.get('id') or ''
         if fid and fid not in descriptions:
             descriptions[fid] = extract_flow_description(flows_dir, fid)
-            circle_targets[fid] = derive_circle_target(flows_dir, fid) or ''
+            circle_targets[fid] = derive_circle_targets(flows_dir, fid)
 
     build_report(summary, artifacts_dir, output, args.title, args.subtitle,
                  descriptions, circle_targets)

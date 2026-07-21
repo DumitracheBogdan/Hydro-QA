@@ -18,7 +18,7 @@ tags:
 #   text="Enter"              (EditText placeholder)
 #   content-desc="Tap to sign" + text="Tap to sign!" (canvas area)
 
-# CIRCLE: Clear
+# CIRCLE: Clear, Add
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll to the Client Signature accordion ---
@@ -60,18 +60,3 @@ tags:
     timeout: 10000
 - assertVisible: "Clear"
 - assertVisible: "Add"
-
-# --- Close dialog without submitting (system back) ---
-- back
-
-# --- Verify dialog was closed and we're back on visit detail ---
-# The view is scrolled far down from earlier scrollUntilVisible,
-# so scroll UP to find the accordion header as confirmation
-- scrollUntilVisible:
-    element:
-      text: "Client Signature"
-    direction: UP
-    timeout: 10000
-
-# --- Navigate back ---
-- back

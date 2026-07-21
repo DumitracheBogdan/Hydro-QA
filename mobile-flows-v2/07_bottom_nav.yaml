@@ -15,7 +15,7 @@ tags:
 # When a tab is selected it is NOT in the clickable list, so we
 # round-trip through each.
 
-# CIRCLE: Account
+# CIRCLE: Visits, History, Activity, Account
 - runFlow: _shared/login.yaml
 
 # --- Visits tab is initial state ---
