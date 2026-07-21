@@ -16,6 +16,7 @@ tags:
 # modal (a dirty form would). If Submit were wrongly active, the form
 # would be dirty and "Unsubmitted data" would appear.
 
+# CIRCLE: Start Inspection
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---

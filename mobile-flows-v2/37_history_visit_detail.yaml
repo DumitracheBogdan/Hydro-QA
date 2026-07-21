@@ -9,6 +9,7 @@ tags:
 # Opens a visit from History tab and verifies it opens in
 # full edit mode (all tabs, FAB, fields accessible).
 
+# CIRCLE: Visit Details
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Verify Visit Detail opened with all tabs ---

@@ -11,6 +11,7 @@ tags:
 # directly to the Account tab. "BD" = user initials (Bogdan
 # Dumitrache). The avatar is at the top of the header area.
 
+# CIRCLE: BD
 - runFlow: _shared/login.yaml
 
 # --- Verify BD avatar is visible on Visits Home ---

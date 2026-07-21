@@ -12,6 +12,7 @@ tags:
 #        Email, Password, Forgot your password?, Login
 # Content-desc: Hydrocert Logo, Show password
 
+# CIRCLE: Login
 - launchApp:
     clearState: true
 

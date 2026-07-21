@@ -11,6 +11,7 @@ tags:
 # not enabled/disabled state). Exercises the toggle without crashing;
 # it does not verify the button becoming enabled or a restored value.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Scroll down to Aborted visit toggle ---

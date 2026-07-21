@@ -16,6 +16,7 @@ tags:
 # deterministic - asserting an address on "whatever visit is first
 # in History" was a false positive generator.
 
+# CIRCLE: Avondale
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Verify Location icon exists in the toolbar area ---

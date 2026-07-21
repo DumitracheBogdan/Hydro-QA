@@ -12,6 +12,7 @@ tags:
 # 1.8.4x, so we fill Notes rather than guess), then submits and asserts the success toast.
 # Non-sample type, so submitting the form is safe.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 - tapOn:

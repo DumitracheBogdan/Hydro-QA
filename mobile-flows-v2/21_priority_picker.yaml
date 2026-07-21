@@ -15,6 +15,7 @@ tags:
 # History" navigation broke whenever new seed visits (without
 # actions) landed above it.
 
+# CIRCLE: Medium
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll down to find the priority badge in the Actions area ---

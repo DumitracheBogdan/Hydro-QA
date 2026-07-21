@@ -24,6 +24,7 @@ tags:
 # cleanly if the first submit already dismissed or disabled the
 # button. Do NOT convert this to repeat:2.
 
+# CIRCLE: Start Inspection
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---

@@ -11,6 +11,7 @@ tags:
 # empty state when there are no attachments.
 # Source: exploration docs/06_ATTACHMENTS_TAB.md
 
+# CIRCLE: Attachments
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Attachments tab ---

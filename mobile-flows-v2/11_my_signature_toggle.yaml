@@ -12,6 +12,7 @@ tags:
 # pushed below the viewport. Source: discovery/hierarchies/
 # 12-account-tab.xml (collapsed) + 13-my-signature.xml (expanded).
 
+# CIRCLE: My signature
 - runFlow: _shared/login.yaml
 
 # --- Navigate to Account ---

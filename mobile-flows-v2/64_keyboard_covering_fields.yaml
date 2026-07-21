@@ -21,6 +21,7 @@ tags:
 # (hideKeyboard then tap again) both documents the occlusion and
 # completes the flow.
 
+# CIRCLE: Save
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---

@@ -11,6 +11,7 @@ tags:
 # Opens the QA test visit's first inspection, makes a small change
 # (a note), submits via the unsaved-data modal, and asserts the toast.
 
+# CIRCLE: Start Inspection
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Open the first inspection ---

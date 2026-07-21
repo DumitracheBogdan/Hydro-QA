@@ -14,6 +14,7 @@ tags:
 # 4. Cancel to close
 # Source: exploration docs/07_QUICK_ACTIONS_FAB.md
 
+# CIRCLE: Camera
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Tap the FAB button (content-desc "Quick actions") ---

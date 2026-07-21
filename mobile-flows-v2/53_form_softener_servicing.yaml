@@ -15,6 +15,7 @@ tags:
 # NON water-sample job type; this flow never taps "Submit" or
 # "Submit Samples".
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_forms_visit.yaml
 
 # --- Inspections tab ---

@@ -8,6 +8,7 @@ tags:
 # Opens the Calorifier/Water Heater form (Type 3) and
 # verifies the form structure.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -43,7 +44,3 @@ tags:
 - extendedWaitUntil:
     visible: "(Submit|Information|Unable)"
     timeout: 15000
-
-# --- Go back ---
-- back
-- back

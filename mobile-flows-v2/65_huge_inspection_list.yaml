@@ -12,6 +12,7 @@ tags:
 # a blank/stuck list. READ-ONLY: this is real dev data, not the QA
 # anchor - the flow opens and scrolls, never edits, never submits.
 
+# CIRCLE: Activity
 - runFlow: _shared/login.yaml
 
 # --- Find the visit via History search ---

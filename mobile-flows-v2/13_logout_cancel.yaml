@@ -11,6 +11,7 @@ tags:
 # Exact dialog text not yet known from discovery - we keep the
 # assertion permissive and let the first test run refine it.
 
+# CIRCLE: Logout
 - runFlow: _shared/login.yaml
 
 # --- Navigate to Account ---

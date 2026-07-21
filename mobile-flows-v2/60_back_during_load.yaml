@@ -17,6 +17,7 @@ tags:
 #     (so navigation won the race)
 # One of the two is always true unless the app crashed or exited.
 
+# CIRCLE: Activity
 - runFlow: _shared/login.yaml
 
 # --- Filter History to the QA test visit ---

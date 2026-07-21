@@ -25,6 +25,7 @@ tags:
 # index 0 is unambiguous whether the card reads "Start Inspection"
 # (fresh) or "View Inspection" (opened by a prior run).
 
+# CIRCLE: Start Inspection
 - runFlow: _shared/open_qa_procdeath_visit.yaml
 
 # --- Open the single inspection ---

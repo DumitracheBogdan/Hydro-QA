@@ -11,6 +11,7 @@ tags:
 # only clickable card target in the whole app (Visits Home cards
 # are not clickable).
 
+# CIRCLE: Type to search
 - runFlow: _shared/login.yaml
 
 # --- Navigate to History ---

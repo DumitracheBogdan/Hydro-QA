@@ -9,6 +9,7 @@ tags:
 # Taps Logout, confirms the dialog, asserts we are back on the
 # Login screen. This is the end-to-end logout path.
 
+# CIRCLE: Login
 - runFlow: _shared/login.yaml
 
 # --- Navigate to Account ---

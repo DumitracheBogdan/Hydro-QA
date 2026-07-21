@@ -12,6 +12,7 @@ tags:
 # 2. The tab content differs from Visit Details content
 # 3. The FAB is still accessible on the Inspections tab
 
+# CIRCLE: Start Inspection
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Verify on Visit Details tab (default) ---

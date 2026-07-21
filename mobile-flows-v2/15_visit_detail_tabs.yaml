@@ -18,6 +18,7 @@ tags:
 # accordion below the fold on the 320px CI screen - so the
 # accordion checks scroll instead of asserting directly.
 
+# CIRCLE: Attachments
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- All three tabs are visible ---

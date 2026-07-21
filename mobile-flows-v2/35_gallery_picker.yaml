@@ -9,6 +9,7 @@ tags:
 # Opens a visit, taps FAB > Gallery, verifies the Android
 # Photo Picker opens with Photos and Albums tabs.
 
+# CIRCLE: gallery
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Tap FAB ---

@@ -13,6 +13,7 @@ tags:
 #   Change Password [16,422][304,474]
 #   Logout          [16,490][304,542]
 
+# CIRCLE: Logout
 - runFlow: _shared/login.yaml
 
 # --- Navigate to Account ---

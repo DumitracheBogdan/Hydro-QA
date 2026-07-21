@@ -16,6 +16,7 @@ tags:
 # Exact-match "^Submit$" is used so "Submit Samples" cannot satisfy
 # the Visit Details assert or leak into the Attachments one.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Visit Details tab: sticky Submit, no scroll needed ---

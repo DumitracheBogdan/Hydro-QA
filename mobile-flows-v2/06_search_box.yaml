@@ -10,6 +10,7 @@ tags:
 # The search EditText lives at bounds [16,104][304,164] per the
 # uiautomator dump, and its placeholder is "Type to search…".
 
+# CIRCLE: Type to search
 - runFlow: _shared/login.yaml
 
 # --- Tap search bar and type ---

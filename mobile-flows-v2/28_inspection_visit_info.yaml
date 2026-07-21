@@ -9,6 +9,7 @@ tags:
 # Opens the first inspection form and verifies the Visit
 # Information accordion expands with fields visible.
 
+# CIRCLE: Visit Information
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -33,7 +34,3 @@ tags:
 - extendedWaitUntil:
     visible: "Assisting 1"
     timeout: 10000
-
-# --- Go back ---
-- back
-- back

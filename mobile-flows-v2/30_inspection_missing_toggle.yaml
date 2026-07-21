@@ -11,6 +11,7 @@ tags:
 # verifies it can be switched ON/OFF,
 # and that the Submit button (renamed from Save) is visible.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -44,7 +45,3 @@ tags:
 
 # --- Toggle back OFF (leaves the form in its original state) ---
 - tapOn: "Unable to Inspect"
-
-# --- Go back ---
-- back
-- back

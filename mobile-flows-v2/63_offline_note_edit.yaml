@@ -15,6 +15,7 @@ tags:
 # app accepts the local edit and does not crash. ALS-safe: Notes only,
 # never submits; the single inspection is a non-sample Service Report.
 
+# CIRCLE: Inspections
 - launchApp:
     clearState: false
 - extendedWaitUntil:

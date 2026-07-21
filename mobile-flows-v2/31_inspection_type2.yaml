@@ -9,6 +9,7 @@ tags:
 # form screen renders (one of Submit / Information / Unable is shown).
 # A smoke check that the inspection opens; it does not verify accordions.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -44,7 +45,3 @@ tags:
 - extendedWaitUntil:
     visible: "(Submit|Information|Unable)"
     timeout: 15000
-
-# --- Go back ---
-- back
-- back

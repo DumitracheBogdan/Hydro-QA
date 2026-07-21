@@ -10,6 +10,7 @@ tags:
 # permission dialog appears (first-time only).
 # Camera crashes on emulator (no hardware) - that's expected.
 
+# CIRCLE: Camera
 - runFlow: _shared/open_visit_detail.yaml
 
 # --- Tap FAB ---

@@ -18,6 +18,7 @@ tags:
 #   text="Enter"              (EditText placeholder)
 #   content-desc="Tap to sign" + text="Tap to sign!" (canvas area)
 
+# CIRCLE: Clear
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Scroll to the Client Signature accordion ---

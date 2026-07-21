@@ -13,6 +13,7 @@ tags:
 # address itself is not a secret (only the password is), so it is
 # hardcoded here in caps on purpose.
 
+# CIRCLE: Welcome, Bogdan
 - launchApp:
     clearState: true
 

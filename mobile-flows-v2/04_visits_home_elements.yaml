@@ -9,6 +9,7 @@ tags:
 # Asserts every visible element on the Visits Home screen.
 # Source of truth: discovery/hierarchies/04-visits-home-default.xml
 
+# CIRCLE: Next week
 - runFlow: _shared/login.yaml
 
 # --- Header ---

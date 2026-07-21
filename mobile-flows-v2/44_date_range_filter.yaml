@@ -11,6 +11,7 @@ tags:
 # date-range picker on both Visits Home and History. Cancel only -
 # no filter is applied, no state left behind.
 
+# CIRCLE: Filter by date range
 - runFlow: _shared/login.yaml
 
 # --- Visits Home: open the picker, then cancel ---

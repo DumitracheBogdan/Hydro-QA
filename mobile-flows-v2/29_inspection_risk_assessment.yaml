@@ -8,6 +8,7 @@ tags:
 # Opens the first inspection form, expands Risk Assessment
 # accordion, and verifies content appears.
 
+# CIRCLE: Risk Assessment
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -36,7 +37,3 @@ tags:
       text: "Accessing Area.*"
     direction: DOWN
     timeout: 10000
-
-# --- Go back ---
-- back
-- back

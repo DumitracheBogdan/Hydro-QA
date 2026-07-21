@@ -13,6 +13,7 @@ tags:
 # is a NON water-sample job type, so submitting the form is safe.
 # This flow never taps "Submit Samples".
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_forms_visit.yaml
 
 # --- Inspections tab ---

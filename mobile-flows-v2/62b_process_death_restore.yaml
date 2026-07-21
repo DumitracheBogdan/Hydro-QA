@@ -22,6 +22,7 @@ tags:
 # decision for the app team; this flow does not assert it either way,
 # it only asserts the app itself recovers cleanly.
 
+# CIRCLE: Inspections
 - launchApp:
     clearState: false
 

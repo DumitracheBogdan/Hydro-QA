@@ -9,6 +9,7 @@ tags:
 # Activity screen is empty for the fixture user: single message
 # "No activities found." plus the app chrome.
 
+# CIRCLE: No activities found
 - runFlow: _shared/login.yaml
 
 # --- Navigate to Activity ---

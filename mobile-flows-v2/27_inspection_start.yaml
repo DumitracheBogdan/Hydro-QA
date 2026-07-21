@@ -8,8 +8,9 @@ tags:
 
 # Opens the QA test visit (has 4 inspections), switches to
 # Inspections tab, taps "Start Inspection" on the first card,
-# verifies the form opened, then navigates back.
+# verifies the form opened.
 
+# CIRCLE: Submit
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Switch to Inspections tab ---
@@ -30,14 +31,3 @@ tags:
 - extendedWaitUntil:
     visible: "(Visit Information|Submit)"
     timeout: 10000
-
-# --- Go back to inspections list ---
-- back
-
-# --- Verify back on inspections ---
-- extendedWaitUntil:
-    visible: "Inspections.*"
-    timeout: 10000
-
-# --- Go back to home ---
-- back

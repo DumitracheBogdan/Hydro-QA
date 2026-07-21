@@ -9,6 +9,7 @@ tags:
 # Tests wrong credentials show error message and
 # verifies show/hide password toggle.
 
+# CIRCLE: Login
 - launchApp:
     clearState: true
 

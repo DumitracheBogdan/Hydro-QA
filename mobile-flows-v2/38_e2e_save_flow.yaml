@@ -11,6 +11,7 @@ tags:
 #
 # Uses Visits Home visit (QA test) for persistence check.
 
+# CIRCLE: Maestro CI E2E Test
 - runFlow: _shared/open_qa_test_visit.yaml
 
 # --- Ensure on the Visit Details tab, then expand the accordion ---
