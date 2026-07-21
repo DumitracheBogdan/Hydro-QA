@@ -280,6 +280,83 @@ def find_node_bounds(xml_path: Path, selector: str) -> tuple[int, int, int, int]
     return None
 
 
+# Selectors that are navigation / login / cleanup scaffolding, never the
+# element under test. Used when a flow has no explicit '# CIRCLE:' hint.
+_GENERIC_SELECTORS = {
+    'history', 'activity', 'visits', 'account', 'back', 'not now',
+    'type to search', 'overview of your visits', 'welcome back', 'login',
+    'email', 'password', 'apply', 'development', 'hydrocert logo',
+    'select environment', 'view visit details', 'inspections', 'quick actions',
+    'forgot your password?',
+}
+_SELECTOR_LINE_RE = re.compile(r'(?:tapOn|assertVisible|text)\s*:\s*["\']([^"\']+)["\']')
+_CIRCLE_HINT_RE = re.compile(r'#\s*CIRCLE:\s*(.+?)\s*$', re.MULTILINE)
+
+
+def _clean_selector(sel: str) -> str:
+    """Turn a Maestro regex selector into a plain substring for matching."""
+    s = (sel or '').strip().strip('"\'')
+    if s.startswith('(') and '|' in s:            # (A|B) -> A
+        s = s[1:].split('|', 1)[0]
+    for ch in ('^', '$', '(', ')', '\\'):
+        s = s.replace(ch, '')
+    s = s.replace('.*', '').replace('d+', '').replace('dd', '')
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+def derive_circle_target(flows_dir: Path, flow_id: str) -> str | None:
+    """What to circle for this flow. ONLY an explicit '# CIRCLE: X' hint is
+    used to draw a circle - it is the single source of truth for "what was
+    tested", so we never circle a wrong element. Flows without a hint fall
+    back to embedding the raw screenshot (no circle). The last-selector
+    heuristic is returned too (suffixed) only as a suggestion when auditing
+    which flows still need a hint; the generator ignores non-hint values."""
+    p = flows_dir / f'{flow_id}.yaml'
+    if not p.is_file():
+        return None
+    text = p.read_text(encoding='utf-8', errors='ignore')
+    m = _CIRCLE_HINT_RE.search(text)
+    if m:
+        return _clean_selector(m.group(1))
+    return None
+
+
+def annotate_full(img_path: Path, bounds: tuple, tmp_dir: Path, tag: str, label: int = 1):
+    """Draw a red ellipse + numbered badge around `bounds` on the FULL
+    screenshot (keeps on-screen context) and return the annotated copy path."""
+    if not HAS_PIL:
+        return None
+    try:
+        img = PILImage.open(img_path).convert('RGB')
+    except Exception:
+        return None
+    draw = ImageDraw.Draw(img)
+    x1, y1, x2, y2 = bounds
+    pad_x = max(14, int((x2 - x1) * 0.18))
+    pad_y = max(14, int((y2 - y1) * 0.35))
+    ex1, ey1 = max(0, x1 - pad_x), max(0, y1 - pad_y)
+    ex2, ey2 = min(img.width, x2 + pad_x), min(img.height, y2 + pad_y)
+    line_w = max(4, int(img.width * 0.008))
+    draw.ellipse([ex1, ey1, ex2, ey2], outline=(214, 40, 40), width=line_w)
+    r = max(12, int(img.width * 0.024))
+    bx = min(img.width - 2 * r, ex2 - r)
+    by = max(0, ey1 - r)
+    draw.ellipse([bx, by, bx + 2 * r, by + 2 * r], fill=(214, 40, 40))
+    try:
+        font = ImageFont.truetype('arialbd.ttf', int(r * 1.3))
+    except Exception:
+        font = ImageFont.load_default()
+    s = str(label)
+    tw = draw.textlength(s, font=font)
+    draw.text((bx + r - tw / 2, by + r * 0.25), s, fill='white', font=font)
+    out = tmp_dir / f'{tag}_full.png'
+    try:
+        img.save(out)
+    except Exception:
+        return None
+    return out
+
+
 def resolve_log_path(artifacts_dir: Path, flow_name: str) -> Path:
     """Logs may be in artifacts/logs/ or artifacts/test/logs/ — try both."""
     candidates = [
@@ -417,11 +494,13 @@ def build_details_sheet(
     artifacts_dir: Path,
     tmp_dir: Path,
     descriptions: dict[str, str] | None = None,
+    circle_targets: dict[str, str] | None = None,
 ) -> None:
     """Per-flow rich view: Flow | What it checks | Status | Error | Print-screen (annotated)."""
     ws.sheet_view.showGridLines = False
 
     descriptions = descriptions or {}
+    circle_targets = circle_targets or {}
 
     # Row 1: headers (no title banner, Summary sheet already has it)
     headers = ['Flow', 'What it checks', 'Status', 'Error', 'Print-screen (annotated)']
@@ -498,8 +577,24 @@ def build_details_sheet(
                 # No matching node (or PIL disabled / annotate failed) — embed raw after.png
                 embed_path = screenshot_path
         elif status_raw == 'PASS' and screenshot_path.is_file():
-            # Passing flow: embed the after.png as-is, no annotation needed.
-            embed_path = screenshot_path
+            # Passing flow: circle the "what was tested" element on the full
+            # screenshot so the dev sees concretely what the flow verified.
+            # Uses the flow's '# CIRCLE:' hint (or its last real selector),
+            # located in the per-flow uiautomator dump. If the element is not
+            # on the end screen (e.g. a dismissed dialog), embed the raw shot.
+            target = circle_targets.get(flow_name) or ''
+            if HAS_PIL and target:
+                bounds = find_node_bounds(ui_dumps_dir / f'{flow_name}.xml', target)
+                if bounds is not None:
+                    try:
+                        annotated = annotate_full(
+                            screenshot_path, bounds, tmp_dir, tag=f'{flow_name}_pass', label=1)
+                        if annotated:
+                            embed_path = annotated
+                    except Exception as exc:
+                        print(f'WARNING: annotate failed for {flow_name}: {exc}', file=sys.stderr)
+            if embed_path is None:
+                embed_path = screenshot_path
 
         if embed_path is not None:
             try:
@@ -524,9 +619,11 @@ def build_report(
     title: str,
     subtitle: str,
     descriptions: dict[str, str] | None = None,
+    circle_targets: dict[str, str] | None = None,
 ) -> None:
     wb = Workbook()
     descriptions = descriptions or {}
+    circle_targets = circle_targets or {}
 
     with tempfile.TemporaryDirectory(prefix='mobile_excel_') as tmp_dir_str:
         tmp_dir = Path(tmp_dir_str)
@@ -538,7 +635,7 @@ def build_report(
 
         # Sheet 2: Details
         ws_details = wb.create_sheet(title='Details')
-        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir, descriptions)
+        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir, descriptions, circle_targets)
 
         output.parent.mkdir(parents=True, exist_ok=True)
         wb.save(str(output))
@@ -560,14 +657,18 @@ def main() -> int:
     else:
         summary = load_summary(summary_path)
 
-    # Pre-compute "What it checks" descriptions once per flow id.
+    # Pre-compute per flow: the "What it checks" description and the element
+    # to circle (the "what was tested" marker) on the screenshot.
     descriptions: dict[str, str] = {}
+    circle_targets: dict[str, str] = {}
     for check in summary.get('checks') or []:
         fid = check.get('id') or ''
         if fid and fid not in descriptions:
             descriptions[fid] = extract_flow_description(flows_dir, fid)
+            circle_targets[fid] = derive_circle_target(flows_dir, fid) or ''
 
-    build_report(summary, artifacts_dir, output, args.title, args.subtitle, descriptions)
+    build_report(summary, artifacts_dir, output, args.title, args.subtitle,
+                 descriptions, circle_targets)
     print(f'EXCEL_PATH={output}')
     return 0
 

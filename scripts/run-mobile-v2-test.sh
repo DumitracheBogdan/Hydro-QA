@@ -156,6 +156,13 @@ for flow in "${FLOWS[@]}"; do
 
   adb exec-out screencap -p > "$SHOT_DIR/${FLOW_NAME}-after.png" 2>/dev/null || true
 
+  # Capture the uiautomator hierarchy for EVERY flow (pass or fail), not
+  # just failures, so the Excel generator can locate the tested element
+  # on the screenshot and draw the "what was tested" circle on passing
+  # flows too. Best-effort; never fails the run.
+  adb shell uiautomator dump /sdcard/wd_${FLOW_NAME}.xml >/dev/null 2>&1 \
+    && adb pull /sdcard/wd_${FLOW_NAME}.xml "$UI_DUMP_DIR/${FLOW_NAME}.xml" >/dev/null 2>&1 || true
+
   if [[ "$EXIT_CODE" -eq 0 ]]; then
     echo "PASS" > "$RESULTS_DIR/${FLOW_NAME}.result"
     PASS_COUNT=$((PASS_COUNT + 1))
