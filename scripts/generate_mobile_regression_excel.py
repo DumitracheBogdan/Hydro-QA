@@ -363,6 +363,101 @@ def annotate_full(img_path: Path, bounds_list, tmp_dir: Path, tag: str):
     return out
 
 
+def flow_to_steps(flows_dir: Path, flow_id: str, max_steps: int = 14) -> list:
+    """Translate a flow file into simple, human 'steps to reproduce' - the kind
+    a person can follow by hand: Log in / Open X / Tap "Y" / Type "Z" / See "W".
+    Skips the technical noise (waits, timeouts, hideKeyboard, screenshots)."""
+    p = flows_dir / f'{flow_id}.yaml'
+    if not p.is_file():
+        return []
+    lines = p.read_text(encoding='utf-8', errors='ignore').split('\n')
+    start = 0
+    for i, ln in enumerate(lines):
+        if ln.strip() == '---':
+            start = i + 1
+            break
+
+    def nearby_text(j, window=5):
+        for k in range(j, min(j + window, len(lines))):
+            m = re.search(r'text:\s*["\']([^"\']+)', lines[k])
+            if m:
+                return _clean_selector(m.group(1))
+        return None
+
+    steps: list[str] = []
+    i = start
+    while i < len(lines):
+        s = lines[i].strip()
+        if not s or s.startswith('#'):
+            i += 1
+            continue
+        m = re.match(r'-\s*runFlow:\s*(\S+)', s)
+        if m:
+            f = m.group(1)
+            if 'login' in f:
+                steps.append('Log in')
+            elif 'open_qa_test' in f:
+                steps.append('Open the "QA test" visit (History > search "QA test" > View Visit Details)')
+            elif 'open_qa_forms' in f:
+                steps.append('Open the "QA forms" visit from History')
+            elif 'open_qa_procdeath' in f:
+                steps.append('Open the "QA procdeath" visit from History')
+            i += 1
+            continue
+        if re.match(r'-\s*launchApp', s):
+            steps.append('Open the app')
+            i += 1
+            continue
+        m = re.match(r'-\s*tapOn:\s*["\']([^"\']+)', s)
+        if m:
+            steps.append(f'Tap "{_clean_selector(m.group(1))}"')
+            i += 1
+            continue
+        if re.match(r'-\s*tapOn:\s*$', s):
+            t = nearby_text(i + 1)
+            if t:
+                steps.append(f'Tap "{t}"')
+            i += 1
+            continue
+        m = re.match(r'-\s*inputText:\s*["\']?([^"\'\n]+)', s)
+        if m:
+            v = m.group(1).strip()
+            if v.startswith('${'):
+                v = 'your email' if 'EMAIL' in v else 'your password' if 'PASSWORD' in v else 'text'
+                steps.append(f'Type {v}')
+            else:
+                steps.append(f'Type "{v}"')
+            i += 1
+            continue
+        m = re.match(r'-\s*assertVisible:\s*["\']([^"\']+)', s)
+        if m:
+            steps.append(f'See "{_clean_selector(m.group(1))}"')
+            i += 1
+            continue
+        m = re.match(r'-\s*assertNotVisible:\s*["\']([^"\']+)', s)
+        if m:
+            steps.append(f'Confirm "{_clean_selector(m.group(1))}" is gone')
+            i += 1
+            continue
+        if re.match(r'-\s*scrollUntilVisible', s):
+            t = nearby_text(i + 1, 6)
+            if t:
+                steps.append(f'Scroll to "{t}"')
+            i += 1
+            continue
+        if s == '- back':
+            steps.append('Press back')
+            i += 1
+            continue
+        i += 1
+
+    out: list[str] = []
+    for st in steps:
+        if not out or out[-1] != st:
+            out.append(st)
+    return out[:max_steps]
+
+
 def resolve_log_path(artifacts_dir: Path, flow_name: str) -> Path:
     """Logs may be in artifacts/logs/ or artifacts/test/logs/ — try both."""
     candidates = [
@@ -501,15 +596,19 @@ def build_details_sheet(
     tmp_dir: Path,
     descriptions: dict[str, str] | None = None,
     circle_targets: dict[str, str] | None = None,
+    steps: dict[str, list] | None = None,
 ) -> None:
-    """Per-flow rich view: Flow | What it checks | Status | Error | Print-screen (annotated)."""
+    """Per-flow rich view: Flow | What it checks | Steps to reproduce | Status |
+    Error | Print-screen (annotated with the tested elements circled)."""
     ws.sheet_view.showGridLines = False
 
     descriptions = descriptions or {}
     circle_targets = circle_targets or {}
+    steps = steps or {}
 
     # Row 1: headers (no title banner, Summary sheet already has it)
-    headers = ['Flow', 'What it checks', 'Status', 'Error', 'Print-screen (annotated)']
+    headers = ['Flow', 'What it checks', 'Steps to reproduce', 'Status', 'Error',
+               'Print-screen (annotated)']
     for i, h in enumerate(headers, start=1):
         style_header(ws.cell(row=1, column=i, value=h))
     ws.row_dimensions[1].height = 24
@@ -531,7 +630,13 @@ def build_details_sheet(
         what_cell = ws.cell(row=row, column=2, value=description)
         what_cell.alignment = Alignment(wrap_text=True, vertical='top')
 
-        status_cell = ws.cell(row=row, column=3, value=status_raw)
+        # Steps to reproduce - simple numbered human steps.
+        flow_steps = steps.get(flow_name) or []
+        steps_text = '\n'.join(f'{i}. {s}' for i, s in enumerate(flow_steps, 1)) or '-'
+        steps_cell = ws.cell(row=row, column=3, value=steps_text)
+        steps_cell.alignment = Alignment(wrap_text=True, vertical='top')
+
+        status_cell = ws.cell(row=row, column=4, value=status_raw)
         bg, fg = _status_colors(status_raw)
         status_cell.fill = PatternFill('solid', fgColor=bg)
         status_cell.font = Font(name='Aptos', bold=True, color=fg)
@@ -544,80 +649,60 @@ def build_details_sheet(
             if log_line and log_line not in error_text:
                 error_text = (error_text + '  |  ' + log_line).strip(' |')
 
-        err_cell = ws.cell(row=row, column=4, value=error_text[:800])
+        err_cell = ws.cell(row=row, column=5, value=error_text[:800])
         err_cell.alignment = Alignment(wrap_text=True, vertical='top')
 
         screenshot_path = screenshots_dir / f'{flow_name}-after.png'
         ws.row_dimensions[row].height = 320
-
         embed_path: Path | None = None
+        dump = ui_dumps_dir / f'{flow_name}.xml'
 
-        if status_raw != 'PASS' and HAS_PIL and screenshot_path.is_file():
-            try:
-                img = PILImage.open(screenshot_path)
-            except Exception as exc:
-                print(f'WARNING: cannot open screenshot {screenshot_path}: {exc}', file=sys.stderr)
-                img = None
-
-            bounds = None
-            if img is not None:
-                selector = extract_selector(error_text)
-                if selector:
-                    bounds = find_node_bounds(ui_dumps_dir / f'{flow_name}.xml', selector)
-
-            if img is not None and bounds is not None:
-                x1, y1, x2, y2 = bounds
+        # Annotation - the SAME "what was tested" circles for pass and fail:
+        # the flow's '# CIRCLE:' elements, each drawn as a numbered circle on
+        # the full screenshot. On a failure the same circles show what the test
+        # was verifying; if none resolve, fall back to circling the element
+        # named in the failure, else the raw screenshot.
+        if HAS_PIL and screenshot_path.is_file():
+            targets = circle_targets.get(flow_name) or []
+            if isinstance(targets, str):
+                targets = [targets]
+            bounds_list = []
+            for t in targets:
+                b = find_node_bounds(dump, t)
+                if b is not None and b not in bounds_list:
+                    bounds_list.append(b)
+            if bounds_list:
                 try:
-                    annotated = crop_and_annotate(
-                        img, x1, y1, x2, y2,
-                        label=1,
-                        tmp_dir=tmp_dir,
-                        tag=f'{flow_name}_fail',
-                    )
+                    annotated = annotate_full(screenshot_path, bounds_list, tmp_dir,
+                                              tag=f'{flow_name}_ann')
                     if annotated:
                         embed_path = annotated
                 except Exception as exc:
                     print(f'WARNING: annotate failed for {flow_name}: {exc}', file=sys.stderr)
-
-            if embed_path is None:
-                # No matching node (or PIL disabled / annotate failed) — embed raw after.png
-                embed_path = screenshot_path
-        elif status_raw == 'PASS' and screenshot_path.is_file():
-            # Passing flow: circle the "what was tested" element on the full
-            # screenshot so the dev sees concretely what the flow verified.
-            # Uses the flow's '# CIRCLE:' hint (or its last real selector),
-            # located in the per-flow uiautomator dump. If the element is not
-            # on the end screen (e.g. a dismissed dialog), embed the raw shot.
-            targets = circle_targets.get(flow_name) or []
-            if isinstance(targets, str):
-                targets = [targets]
-            if HAS_PIL and targets:
-                dump = ui_dumps_dir / f'{flow_name}.xml'
-                bounds_list = []
-                for t in targets:
-                    b = find_node_bounds(dump, t)
-                    if b is not None and b not in bounds_list:
-                        bounds_list.append(b)
-                if bounds_list:
+            if embed_path is None and status_raw != 'PASS':
+                selector = extract_selector(error_text)
+                b = find_node_bounds(dump, selector) if selector else None
+                if b is not None:
                     try:
-                        annotated = annotate_full(
-                            screenshot_path, bounds_list, tmp_dir, tag=f'{flow_name}_pass')
+                        img = PILImage.open(screenshot_path)
+                        annotated = crop_and_annotate(img, b[0], b[1], b[2], b[3],
+                                                      label=1, tmp_dir=tmp_dir, tag=f'{flow_name}_fail')
                         if annotated:
                             embed_path = annotated
                     except Exception as exc:
-                        print(f'WARNING: annotate failed for {flow_name}: {exc}', file=sys.stderr)
+                        print(f'WARNING: fail-annotate for {flow_name}: {exc}', file=sys.stderr)
             if embed_path is None:
                 embed_path = screenshot_path
 
         if embed_path is not None:
             try:
-                add_image_scaled(ws, str(embed_path), f'E{row}', max_w=360, max_h=520)
+                add_image_scaled(ws, str(embed_path), f'F{row}', max_w=360, max_h=520)
             except Exception as exc:
                 print(f'WARNING: embed image failed for {flow_name}: {exc}', file=sys.stderr)
 
         row += 1
 
-    set_col_widths(ws, [32, 50, 12, 60, 50])
+    set_col_widths(ws, [22, 40, 46, 10, 44, 52])
     ws.freeze_panes = 'A2'
 
 
@@ -633,10 +718,12 @@ def build_report(
     subtitle: str,
     descriptions: dict[str, str] | None = None,
     circle_targets: dict[str, str] | None = None,
+    steps: dict[str, list] | None = None,
 ) -> None:
     wb = Workbook()
     descriptions = descriptions or {}
     circle_targets = circle_targets or {}
+    steps = steps or {}
 
     with tempfile.TemporaryDirectory(prefix='mobile_excel_') as tmp_dir_str:
         tmp_dir = Path(tmp_dir_str)
@@ -648,7 +735,7 @@ def build_report(
 
         # Sheet 2: Details
         ws_details = wb.create_sheet(title='Details')
-        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir, descriptions, circle_targets)
+        build_details_sheet(ws_details, summary, artifacts_dir, tmp_dir, descriptions, circle_targets, steps)
 
         output.parent.mkdir(parents=True, exist_ok=True)
         wb.save(str(output))
@@ -674,14 +761,16 @@ def main() -> int:
     # to circle (the "what was tested" marker) on the screenshot.
     descriptions: dict[str, str] = {}
     circle_targets: dict[str, list] = {}
+    steps: dict[str, list] = {}
     for check in summary.get('checks') or []:
         fid = check.get('id') or ''
         if fid and fid not in descriptions:
             descriptions[fid] = extract_flow_description(flows_dir, fid)
             circle_targets[fid] = derive_circle_targets(flows_dir, fid)
+            steps[fid] = flow_to_steps(flows_dir, fid)
 
     build_report(summary, artifacts_dir, output, args.title, args.subtitle,
-                 descriptions, circle_targets)
+                 descriptions, circle_targets, steps)
     print(f'EXCEL_PATH={output}')
     return 0
 
