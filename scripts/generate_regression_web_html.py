@@ -199,6 +199,7 @@ def build_html(summary: dict, output_dir: Path, title: str, subtitle: str) -> st
     {''.join(sections)}
   </main>
 </div>
+{LIGHTBOX}
 </body>
 </html>
 """
@@ -282,8 +283,32 @@ header{display:flex;align-items:center;gap:15px;padding-bottom:24px;border-botto
 .detail.muted{color:var(--muted)}
 .shots{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
 .shot{margin:0}
-.shot img{max-width:280px;width:100%;border-radius:10px;border:1px solid var(--line)}
+.shot img{max-width:280px;width:100%;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;transition:filter .12s}
+.shot img:hover{filter:brightness(1.04)}
+#lightbox{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;
+  background:rgba(8,10,14,.93);padding:26px;cursor:zoom-out}
+#lightbox.open{display:flex}
+#lightbox img{max-width:96vw;max-height:96vh;width:auto;border-radius:10px;box-shadow:0 10px 50px rgba(0,0,0,.55)}
+#lightbox .hint{position:fixed;top:16px;right:20px;color:#c8ced8;font-size:12px;letter-spacing:.03em}
 </style>
+"""
+
+LIGHTBOX = """
+<div id="lightbox"><span class="hint">click / Esc to close</span><img alt="full screen"></div>
+<script>
+(function(){
+  var lb=document.getElementById('lightbox'); if(!lb) return;
+  var big=lb.querySelector('img');
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.tagName==='IMG'&&t.closest('.shot')){big.src=t.currentSrc||t.src;lb.classList.add('open');}
+    else if(lb.classList.contains('open')){lb.classList.remove('open');big.removeAttribute('src');}
+  });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&lb.classList.contains('open')){lb.classList.remove('open');big.removeAttribute('src');}
+  });
+})();
+</script>
 """
 
 
