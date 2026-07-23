@@ -229,7 +229,10 @@ async function waitForVisitReferenceResponse(page, reference, timeoutMs = 15000)
     if (!/\/visits\/calendar-filter/i.test(response.url())) return false;
     try {
       const url = new URL(response.url());
-      return response.ok() && url.searchParams.get('visitReference') === reference;
+      // Unified search box uses ?search=; the old dedicated input used
+      // ?visitReference=. Accept either so the check is layout-independent.
+      const p = url.searchParams;
+      return response.ok() && (p.get('search') === reference || p.get('visitReference') === reference);
     } catch {
       return false;
     }
@@ -517,17 +520,31 @@ let firstVisitDetailsUrl = '';
 
 try {
   await runCheck(page, { id: 'I01', area: 'WebApp', test: 'Web root is reachable' }, async () => {
-    const resp = await page.request.get(`${WEB_BASE}/`);
-    if (!resp.ok()) return { status: 'FAIL', details: `status=${resp.status()}` };
-    return { status: 'PASS', details: `status=${resp.status()}` };
+    // The dev webapp runs on an Azure App Service that cold-starts after idle;
+    // the first request can take >30s and time out. Retry with backoff so a
+    // sleeping app gets time to wake before we call it unreachable.
+    let lastStatus = 0;
+    for (let attempt = 1; attempt <= 6; attempt++) {
+      const resp = await page.request.get(`${WEB_BASE}/`, { timeout: 60000 }).catch(() => null);
+      if (resp && resp.ok()) return { status: 'PASS', details: `status=${resp.status()} (attempt ${attempt})` };
+      lastStatus = resp ? resp.status() : 0;
+      if (attempt < 6) await page.waitForTimeout(5000);
+    }
+    return { status: 'FAIL', details: `status=${lastStatus} after warm-up retries` };
   });
 
   await runCheck(page, { id: 'I02', area: 'WebApp', test: 'Main routes return HTTP success' }, async () => {
     const routes = ['/dashboard', '/customers', '/visits-list', '/planner', '/visits/addnewvisit', '/visits'];
     const bad = [];
     for (const r of routes) {
-      const resp = await page.request.get(`${WEB_BASE}${r}`);
-      if (!resp.ok()) bad.push(`${r}:${resp.status()}`);
+      let resp = null;
+      // Same cold-start tolerance as I01: retry each route before failing it.
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        resp = await page.request.get(`${WEB_BASE}${r}`, { timeout: 45000 }).catch(() => null);
+        if (resp && resp.ok()) break;
+        if (attempt < 3) await page.waitForTimeout(2000);
+      }
+      if (!resp || !resp.ok()) bad.push(`${r}:${resp ? resp.status() : 'timeout'}`);
     }
     if (bad.length) return { status: 'FAIL', details: bad.join(' | ') };
     return { status: 'PASS', details: `routes=${routes.length}` };
@@ -719,8 +736,11 @@ try {
       return { status: 'FAIL', details: 'No first visit reference in table', evidence: [ev] };
     }
     firstVisitRef = firstRef;
-    const refInput = page.getByPlaceholder(/Visit reference/i).first();
-    if (!(await refInput.isVisible().catch(() => false))) return { status: 'FAIL', details: 'Visit reference input missing' };
+    // Reference search now lives in the unified "Search visits..." box (the
+    // dedicated "Visit reference" input was removed ~Jul 2026). It filters by
+    // reference via calendar-filter?search=<ref>.
+    const refInput = page.getByPlaceholder(/Search visits/i).first();
+    if (!(await refInput.isVisible().catch(() => false))) return { status: 'FAIL', details: 'Visits search input missing' };
     const responsePromise = waitForVisitReferenceResponse(page, firstRef, 15000);
     await refInput.fill(firstRef);
     const responseSeen = await responsePromise;

@@ -249,7 +249,10 @@ async function waitForVisitReferenceResponse(page, reference, timeoutMs = 15000)
     if (!/\/visits\/calendar-filter/i.test(response.url())) return false;
     try {
       const url = new URL(response.url());
-      return response.ok() && url.searchParams.get('visitReference') === reference;
+      // Unified search box uses ?search=; the old dedicated input used
+      // ?visitReference=. Accept either so the check is layout-independent.
+      const p = url.searchParams;
+      return response.ok() && (p.get('search') === reference || p.get('visitReference') === reference);
     } catch {
       return false;
     }
@@ -539,7 +542,8 @@ try {
     if (initialRows < 1) return { status: 'FAIL', details: `rows=${initialRows}` };
     const ref = ((await dpage.locator('table tbody tr td').first().innerText().catch(() => '')) || '').trim();
     if (!ref) return { status: 'FAIL', details: 'no first reference' };
-    const input = dpage.getByPlaceholder(/Visit reference/i).first();
+    // Reference search moved into the unified "Search visits..." box.
+    const input = dpage.getByPlaceholder(/Search visits/i).first();
     const responsePromise = waitForVisitReferenceResponse(dpage, ref, 15000);
     await input.fill(ref);
     const responseSeen = await responsePromise;
