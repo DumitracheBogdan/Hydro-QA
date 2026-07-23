@@ -28,9 +28,35 @@ from __future__ import annotations
 import argparse
 import base64
 import html
+import io
 import json
+import re
 import sys
 from pathlib import Path
+
+try:
+    from PIL import Image
+except Exception:  # pragma: no cover - blank detection degrades to a size gate
+    Image = None
+
+# Reuse the Excel dashboard's enrichment so the HTML carries the same columns
+# (Path / Endpoint, Issue Summary, Reproduction Steps). Falls back gracefully
+# if openpyxl (which that module imports at load time) is not installed.
+try:
+    from generate_regression_excel_dashboard import (
+        build_issue_summary,
+        build_steps,
+        target_hint,
+    )
+except Exception:  # pragma: no cover - degraded but functional
+    def target_hint(check):
+        return ""
+
+    def build_issue_summary(check):
+        return ""
+
+    def build_steps(check):
+        return ""
 
 _PILL = {"PASS": ("pass", "Passed"), "FAIL": ("fail", "Failed"),
          "SKIP": ("skip", "Skipped")}
@@ -53,12 +79,28 @@ def load_summary(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _looks_blank(raw: bytes) -> bool:
+    """True for a near-empty screenshot. The API-reachability checks auto-grab
+    a screenshot on failure, but there is no page to capture (cold-starting or
+    request-only), so it comes out solid white. Those blank boxes are noise."""
+    if Image is not None:
+        try:
+            im = Image.open(io.BytesIO(raw)).convert("L").resize((32, 32))
+            lo, hi = im.getextrema()
+            return (hi - lo) < 10  # near-uniform brightness = effectively blank
+        except Exception:
+            pass
+    # No Pillow: a rendered page is well over this; a solid page is a few KB.
+    return len(raw) < 12000
+
+
 def evidence_data_uri(ev: str, output_dir: Path) -> str | None:
     """Resolve an evidence entry to a base64 image data URI, or None.
 
     The path in the JSON may be absolute (from the suite run) or a basename;
     suite artifacts are copied under <output_dir>/suites/. Try the literal path
-    first, then a recursive basename match under the output dir."""
+    first, then a recursive basename match under the output dir. Blank
+    screenshots are dropped."""
     try:
         p = Path(ev)
         if p.suffix.lower() not in _IMG_EXT:
@@ -73,9 +115,11 @@ def evidence_data_uri(ev: str, output_dir: Path) -> str | None:
                     break
         if not target:
             return None
+        raw = target.read_bytes()
+        if _looks_blank(raw):
+            return None
         mime = _MIME.get(target.suffix.lower(), "image/png")
-        data = base64.b64encode(target.read_bytes()).decode()
-        return f"data:{mime};base64,{data}"
+        return f"data:{mime};base64," + base64.b64encode(raw).decode()
     except Exception:
         return None
 
@@ -136,16 +180,56 @@ def build_html(summary: dict, output_dir: Path, title: str, subtitle: str) -> st
             area = html.escape(str(c.get("area") or ""))
             test = html.escape(str(c.get("test") or c.get("id") or ""))
             detail = html.escape(str(c.get("details") or "").strip())
-            imgs = []
+
+            # Same columns as the Excel dashboard.
+            path = html.escape((target_hint(c) or "").strip())
+            issue = html.escape((build_issue_summary(c) or "").strip()) if st != "PASS" else ""
+            step_items = []
+            for line in (build_steps(c) or "").splitlines():
+                line = re.sub(r"^\s*\d+\.\s*", "", line.strip())
+                if line:
+                    step_items.append(f"<li>{html.escape(line)}</li>")
+
+            meta_rows = []
+            if path:
+                meta_rows.append(
+                    f'<div class="row"><span class="k">Path / Endpoint</span>'
+                    f'<span class="v mono">{path}</span></div>')
+            if issue:
+                meta_rows.append(
+                    f'<div class="row"><span class="k">Issue</span><span class="v">{issue}</span></div>')
+            meta_rows.append(
+                f'<div class="row"><span class="k">Technical details</span>'
+                f'<span class="v mono">{detail or "-"}</span></div>')
+            meta_html = f'<div class="meta">{"".join(meta_rows)}</div>'
+
+            repro_html = (
+                f'<div class="repro"><span class="lbl">Reproduction steps</span>'
+                f'<ol>{"".join(step_items)}</ol></div>') if step_items else ""
+
+            # Evidence: embed print-screens; list any non-image files. Blank or
+            # unresolvable screenshots are dropped so no empty box is shown.
+            imgs, files = [], []
             for ev in (c.get("evidence") or []):
-                uri = evidence_data_uri(str(ev), output_dir)
-                if uri:
-                    imgs.append(
-                        f'<figure class="shot"><img loading="lazy" src="{uri}" '
-                        f'alt="{cid} evidence"></figure>')
-            shots = f'<div class="shots">{"".join(imgs)}</div>' if imgs else ""
-            detail_html = (f'<div class="detail">{detail}</div>' if detail
-                           else '<div class="detail muted">no detail reported</div>')
+                if Path(str(ev)).suffix.lower() in _IMG_EXT:
+                    uri = evidence_data_uri(str(ev), output_dir)
+                    if uri:
+                        imgs.append(
+                            f'<figure class="shot"><img loading="lazy" src="{uri}" '
+                            f'alt="{cid} print-screen"></figure>')
+                else:
+                    name = html.escape(Path(str(ev)).name)
+                    if name:
+                        files.append(f"<li>{name}</li>")
+            evidence_bits = []
+            if imgs:
+                evidence_bits.append(f'<div class="shots">{"".join(imgs)}</div>')
+            if files:
+                evidence_bits.append(f'<ul class="files">{"".join(files)}</ul>')
+            evidence_html = (
+                f'<div class="evidence"><span class="lbl">Evidence</span>{"".join(evidence_bits)}</div>'
+                if evidence_bits else "")
+
             area_tag = f'<span class="type">{area}</span>' if area else ""
             cards.append(f"""
         <details class="card {card_cls}"{open_attr}>
@@ -156,8 +240,9 @@ def build_html(summary: dict, output_dir: Path, title: str, subtitle: str) -> st
             <span class="pill {pill_cls}">{html.escape(pill_txt)}</span>
           </summary>
           <div class="card-body">
-            {detail_html}
-            {shots}
+            {meta_html}
+            {repro_html}
+            {evidence_html}
           </div>
         </details>""")
         st = run.get("totals") or {}
@@ -278,10 +363,18 @@ header{display:flex;align-items:center;gap:15px;padding-bottom:24px;border-botto
 .pill.skip{color:var(--warn);background:var(--warn-bg)}
 .pill.pass{color:var(--ok);background:var(--ok-bg)}
 .card-body{padding:14px 18px 18px;border-top:1px solid var(--line)}
-.detail{font-family:"Cascadia Code","Consolas",ui-monospace,monospace;font-size:12.5px;line-height:1.7;
-  color:var(--ink);white-space:pre-wrap;word-break:break-word;overflow-x:auto}
-.detail.muted{color:var(--muted)}
-.shots{display:flex;flex-wrap:wrap;gap:12px;margin-top:14px}
+.meta{display:flex;flex-direction:column;gap:9px}
+.meta .row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:start}
+@media(max-width:600px){.meta .row{grid-template-columns:1fr;gap:2px}}
+.meta .k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding-top:3px}
+.meta .v{font-size:13.5px;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.mono{font-family:"Cascadia Code","Consolas",ui-monospace,monospace;font-size:12.5px;line-height:1.6;overflow-x:auto}
+.lbl{display:block;text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.repro{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-top:12px}
+.repro ol{margin:0;padding-left:20px;font-size:13px;line-height:1.7}
+.evidence{margin-top:12px}
+.files{margin:6px 0 0;padding-left:18px;font-family:"Cascadia Code","Consolas",ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.shots{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
 .shot{margin:0}
 .shot img{max-width:280px;width:100%;border-radius:10px;border:1px solid var(--line);cursor:zoom-in;transition:filter .12s}
 .shot img:hover{filter:brightness(1.04)}

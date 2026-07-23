@@ -134,8 +134,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Excel dependency
-        run: python -m pip install --upgrade pip openpyxl
+      - name: Install report dependencies
+        run: python -m pip install --upgrade pip openpyxl Pillow
 
       # ── Run regression bundle (WITHOUT mobile) ────────────────
       - name: Run regression bundle
