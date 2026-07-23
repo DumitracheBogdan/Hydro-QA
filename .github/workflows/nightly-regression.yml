@@ -198,6 +198,16 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Upload HTML report
+        id: upload_html_web
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hydrocert-dev-nightly-${{ steps.mode.outputs.value }}-html-${{ github.run_id }}
+          path: ${{ steps.bundle.outputs.html_path }}
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload test videos
         if: always()
         uses: actions/upload-artifact@v4
@@ -220,6 +230,7 @@ jobs:
             echo "- Total tests: ${{ steps.bundle.outputs.total_tests }}"
             echo "- Failed tests: ${{ steps.bundle.outputs.failed_tests }}"
             echo "- Excel artifact: $(basename '${{ steps.bundle.outputs.excel_path }}')"
+            echo "- [Download HTML report](${{ steps.upload_html_web.outputs.artifact-url }})"
             echo "- [Download Excel artifact](${{ steps.upload_excel.outputs.artifact-url }})"
             echo "- [Download full regression bundle](${{ steps.upload_bundle.outputs.artifact-url }})"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -189,6 +189,40 @@ async function runPythonExcel(combinedJsonPath, excelPath, title, subtitle) {
   }
 }
 
+async function runPythonWebHtml(combinedJsonPath, htmlPath, title, subtitle) {
+  const python = process.platform === 'win32' ? 'python' : 'python3';
+  const result = await new Promise((resolve) => {
+    const child = spawn(python, [
+      path.join('scripts', 'generate_regression_web_html.py'),
+      '--combined-json',
+      combinedJsonPath,
+      '--output',
+      htmlPath,
+      '--title',
+      title,
+      '--subtitle',
+      subtitle,
+    ], {
+      cwd: ROOT,
+      env: process.env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    child.stdout.on('data', (chunk) => process.stdout.write(chunk.toString()));
+    child.stderr.on('data', (chunk) => process.stderr.write(chunk.toString()));
+    child.on('error', () => resolve({ code: 1 }));
+    child.on('close', (code) => resolve({ code }));
+  });
+
+  // Non-fatal: the HTML report is additive to the Excel. A generator problem
+  // must not fail the whole regression bundle.
+  if (result.code !== 0) {
+    console.warn(`WARNING: web HTML report generation failed (exit ${result.code})`);
+    return '';
+  }
+  return htmlPath;
+}
+
 const suiteKeys = selectedSuiteKeys(TARGET_ENV, MODE);
 const suiteDefs = suiteKeys.map((key) => SUITES[key]);
 
@@ -300,11 +334,16 @@ const title = `Hydrocert ${TARGET_ENV.toUpperCase()} ${MODE === 'full' ? 'Regres
 const subtitle = `Suite rulate: ${suiteRuns.map((suite) => suite.suite).join(', ')}`;
 await runPythonExcel(combinedJsonPath, excelPath, title, subtitle);
 
+const htmlName = excelName.replace(/\.xlsx$/, '.html');
+const htmlPath = path.join(outputDir, htmlName);
+const htmlResult = await runPythonWebHtml(combinedJsonPath, htmlPath, title, subtitle);
+
 writeGitHubOutput({
   output_dir: outputDir,
   combined_json: combinedJsonPath,
   report_md: combinedReportPath,
   excel_path: excelPath,
+  html_path: htmlResult,
   environment: TARGET_ENV,
   mode: MODE,
   total_tests: totals.total,
@@ -315,4 +354,5 @@ console.log(`OUTPUT_DIR=${outputDir}`);
 console.log(`COMBINED_JSON=${combinedJsonPath}`);
 console.log(`REPORT_MD=${combinedReportPath}`);
 console.log(`EXCEL_PATH=${excelPath}`);
+if (htmlResult) console.log(`HTML_PATH=${htmlResult}`);
 console.log(`TOTAL=${totals.total} PASS=${totals.pass} FAIL=${totals.fail} SKIP=${totals.skip}`);
