@@ -44,6 +44,13 @@ jobs:
       mode: ${{ steps.mode.outputs.value }}
       mobile: ${{ steps.mode.outputs.mobile }}
       webapp_ui: ${{ steps.mode.outputs.webapp_ui }}
+      total: ${{ steps.results.outputs.total }}
+      passed: ${{ steps.results.outputs.passed }}
+      failed: ${{ steps.results.outputs.failed }}
+      skipped: ${{ steps.results.outputs.skipped }}
+      failed_tests: ${{ steps.results.outputs.failed_tests }}
+      run_url: ${{ steps.results.outputs.run_url }}
+      date: ${{ steps.results.outputs.date }}
     env:
       HYDROCERT_TARGET_ENV: dev
       HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
@@ -274,175 +281,110 @@ jobs:
             > nightly-results.json
 
           echo "json_path=nightly-results.json" >> "$GITHUB_OUTPUT"
+          # Expose the web totals as step outputs so the notify job can build a
+          # combined (web + mobile) Teams card.
+          {
+            echo "total=${TOTAL:-0}"
+            echo "passed=${PASS:-0}"
+            echo "failed=${FAILED:-0}"
+            echo "skipped=${SKIP:-0}"
+            echo "failed_tests=${FAILED_DETAILS}"
+            echo "run_url=${RUN_URL}"
+            echo "date=${DATE}"
+          } >> "$GITHUB_OUTPUT"
           echo "Results JSON written:"
           cat nightly-results.json
-
-      # ── Send Teams notification via Incoming Webhook ─────────
-      - name: Notify Teams channel
-        if: always()
-        continue-on-error: true
-        shell: bash
-        env:
-          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-        run: |
-          set -euo pipefail
-          if [[ -z "${TEAMS_WEBHOOK_URL}" ]]; then
-            echo "No TEAMS_WEBHOOK_URL secret set — skipping Teams notification."
-            exit 0
-          fi
-
-          # Read results
-          TOTAL=$(jq -r '.totals.total' nightly-results.json 2>/dev/null || echo "0")
-          PASS=$(jq -r '.totals.pass' nightly-results.json 2>/dev/null || echo "0")
-          FAIL=$(jq -r '.totals.fail' nightly-results.json 2>/dev/null || echo "0")
-          SKIP=$(jq -r '.totals.skip' nightly-results.json 2>/dev/null || echo "0")
-          MODE=$(jq -r '.mode' nightly-results.json 2>/dev/null || echo "standard")
-          DATE=$(jq -r '.date' nightly-results.json 2>/dev/null || date -u +%Y-%m-%d)
-          RUN_URL=$(jq -r '.links.runUrl' nightly-results.json 2>/dev/null || echo "")
-
-          # Build failed tests rows for the table
-          FAILED_ROWS=""
-          FAIL_COUNT=$(jq '.failedTests | length' nightly-results.json 2>/dev/null || echo "0")
-          if [[ "$FAIL_COUNT" -gt 0 ]]; then
-            FAILED_ROWS=$(jq -r '.failedTests[] | "{\"type\":\"TableRow\",\"cells\":[{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.suite)\",\"size\":\"Small\"}]},{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.id)\",\"size\":\"Small\"}]},{\"type\":\"TableCell\",\"items\":[{\"type\":\"TextBlock\",\"text\":\"\(.test)\",\"size\":\"Small\",\"wrap\":true}]}]}"' nightly-results.json 2>/dev/null | paste -sd ',' -)
-          fi
-
-          # Determine status color and icon
-          if [[ "$FAIL" -eq 0 ]]; then
-            STATUS_COLOR="Good"
-            STATUS_TEXT="All tests passed!"
-            STATUS_ICON="✅"
-          else
-            STATUS_COLOR="Attention"
-            STATUS_TEXT="${FAIL} test(s) failed"
-            STATUS_ICON="❌"
-          fi
-
-          # Build failed tests section (only if failures exist)
-          FAILED_SECTION=""
-          if [[ "$FAIL_COUNT" -gt 0 ]]; then
-            FAILED_SECTION=',{
-              "type": "TextBlock",
-              "text": "Failed Tests:",
-              "weight": "Bolder",
-              "size": "Medium",
-              "spacing": "Medium"
-            },
-            {
-              "type": "Table",
-              "columns": [
-                {"width": 1},
-                {"width": 1},
-                {"width": 3}
-              ],
-              "rows": [
-                {
-                  "type": "TableRow",
-                  "style": "Accent",
-                  "cells": [
-                    {"type":"TableCell","items":[{"type":"TextBlock","text":"Suite","weight":"Bolder","size":"Small"}]},
-                    {"type":"TableCell","items":[{"type":"TextBlock","text":"ID","weight":"Bolder","size":"Small"}]},
-                    {"type":"TableCell","items":[{"type":"TextBlock","text":"Test","weight":"Bolder","size":"Small"}]}
-                  ]
-                },
-                '"${FAILED_ROWS}"'
-              ]
-            }'
-          else
-            FAILED_SECTION=',{
-              "type": "TextBlock",
-              "text": "✅ All tests passed!",
-              "size": "Medium",
-              "color": "Good",
-              "weight": "Bolder",
-              "spacing": "Medium"
-            }'
-          fi
-
-          # Build the Adaptive Card payload
-          cat > teams-payload.json <<ENDJSON
-          {
-            "type": "message",
-            "attachments": [
-              {
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "contentUrl": null,
-                "content": {
-                  "\$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                  "type": "AdaptiveCard",
-                  "version": "1.4",
-                  "body": [
-                    {
-                      "type": "TextBlock",
-                      "text": "${STATUS_ICON} Hydrocert Nightly QA Report",
-                      "weight": "Bolder",
-                      "size": "Large"
-                    },
-                    {
-                      "type": "TextBlock",
-                      "text": "Date: ${DATE} | Environment: DEV | Mode: ${MODE}",
-                      "size": "Small",
-                      "isSubtle": true,
-                      "spacing": "None"
-                    },
-                    {
-                      "type": "ColumnSet",
-                      "spacing": "Medium",
-                      "columns": [
-                        {
-                          "type": "Column",
-                          "width": "stretch",
-                          "items": [{"type":"TextBlock","text":"Total","size":"Small","isSubtle":true,"horizontalAlignment":"Center"},{"type":"TextBlock","text":"${TOTAL}","size":"ExtraLarge","weight":"Bolder","horizontalAlignment":"Center"}]
-                        },
-                        {
-                          "type": "Column",
-                          "width": "stretch",
-                          "items": [{"type":"TextBlock","text":"Passed","size":"Small","color":"Good","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${PASS}","size":"ExtraLarge","weight":"Bolder","color":"Good","horizontalAlignment":"Center"}]
-                        },
-                        {
-                          "type": "Column",
-                          "width": "stretch",
-                          "items": [{"type":"TextBlock","text":"Failed","size":"Small","color":"Attention","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${FAIL}","size":"ExtraLarge","weight":"Bolder","color":"Attention","horizontalAlignment":"Center"}]
-                        },
-                        {
-                          "type": "Column",
-                          "width": "stretch",
-                          "items": [{"type":"TextBlock","text":"Skipped","size":"Small","color":"Warning","horizontalAlignment":"Center"},{"type":"TextBlock","text":"${SKIP}","size":"ExtraLarge","weight":"Bolder","color":"Warning","horizontalAlignment":"Center"}]
-                        }
-                      ]
-                    }
-                    ${FAILED_SECTION}
-                  ],
-                  "actions": [
-                    {
-                      "type": "Action.OpenUrl",
-                      "title": "View Run",
-                      "url": "${RUN_URL}"
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-          ENDJSON
-
-          echo "Sending Adaptive Card to Teams..."
-          HTTP_STATUS=$(curl -s -o /tmp/teams-response.txt -w "%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -d @teams-payload.json \
-            "${TEAMS_WEBHOOK_URL}")
-
-          echo "Webhook response status: ${HTTP_STATUS}"
-          cat /tmp/teams-response.txt 2>/dev/null || true
-          if [[ "${HTTP_STATUS}" -ge 200 && "${HTTP_STATUS}" -lt 300 ]]; then
-            echo "Teams notification sent successfully."
-          else
-            echo "::warning::Teams webhook returned HTTP ${HTTP_STATUS}. Notification may not have been delivered."
-          fi
 
   mobile:
     needs: nightly
     if: needs.nightly.outputs.mobile == 'true'
     uses: ./.github/workflows/post-deploy-regression-mobile.yml
     secrets: inherit
+
+  # ── Combined Teams notification (web + mobile) ──────────────
+  notify:
+    needs: [nightly, mobile]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Teams channel (web + mobile)
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          W_TOTAL: ${{ needs.nightly.outputs.total }}
+          W_PASS: ${{ needs.nightly.outputs.passed }}
+          W_FAIL: ${{ needs.nightly.outputs.failed }}
+          W_SKIP: ${{ needs.nightly.outputs.skipped }}
+          W_FAILED_TESTS: ${{ needs.nightly.outputs.failed_tests }}
+          MODE: ${{ needs.nightly.outputs.mode }}
+          DATE: ${{ needs.nightly.outputs.date }}
+          RUN_URL: ${{ needs.nightly.outputs.run_url }}
+          MOBILE_ENABLED: ${{ needs.nightly.outputs.mobile }}
+          MOBILE_RESULT: ${{ needs.mobile.result }}
+          M_TOTAL: ${{ needs.mobile.outputs.total }}
+          M_PASS: ${{ needs.mobile.outputs.passed }}
+          M_FAIL: ${{ needs.mobile.outputs.failed }}
+          M_SKIP: ${{ needs.mobile.outputs.skipped }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${TEAMS_WEBHOOK_URL:-}" ]]; then
+            echo "No TEAMS_WEBHOOK_URL secret set - skipping Teams notification."
+            exit 0
+          fi
+
+          WT="${W_TOTAL:-0}"; WP="${W_PASS:-0}"; WF="${W_FAIL:-0}"; WS="${W_SKIP:-0}"
+          MT="${M_TOTAL:-0}"; MP="${M_PASS:-0}"; MF="${M_FAIL:-0}"; MS="${M_SKIP:-0}"
+          [[ -n "$MT" ]] || MT=0; [[ -n "$MP" ]] || MP=0; [[ -n "$MF" ]] || MF=0; [[ -n "$MS" ]] || MS=0
+          MODE="${MODE:-standard}"
+          DATE="${DATE:-$(date -u +%Y-%m-%d)}"
+
+          TOTAL_FAIL=$(( ${WF:-0} + ${MF:-0} ))
+          if [[ "${TOTAL_FAIL}" -eq 0 ]]; then ICON="✅"; else ICON="❌"; fi
+
+          FT="${W_FAILED_TESTS:-[]}"
+          echo "$FT" | jq . >/dev/null 2>&1 || FT="[]"
+
+          jq -n \
+            --arg icon "$ICON" --arg date "$DATE" --arg mode "$MODE" --arg runUrl "$RUN_URL" \
+            --arg wt "$WT" --arg wp "$WP" --arg wf "$WF" --arg ws "$WS" \
+            --arg menabled "$MOBILE_ENABLED" --arg mresult "$MOBILE_RESULT" \
+            --arg mt "$MT" --arg mp "$MP" --arg mf "$MF" --arg ms "$MS" \
+            --argjson failed "$FT" '
+            def metrics(t;p;f;s):
+              {type:"ColumnSet",spacing:"Small",columns:[
+                {type:"Column",width:"stretch",items:[{type:"TextBlock",text:"Total",size:"Small",isSubtle:true,horizontalAlignment:"Center"},{type:"TextBlock",text:t,size:"Large",weight:"Bolder",horizontalAlignment:"Center"}]},
+                {type:"Column",width:"stretch",items:[{type:"TextBlock",text:"Passed",size:"Small",color:"Good",horizontalAlignment:"Center"},{type:"TextBlock",text:p,size:"Large",weight:"Bolder",color:"Good",horizontalAlignment:"Center"}]},
+                {type:"Column",width:"stretch",items:[{type:"TextBlock",text:"Failed",size:"Small",color:"Attention",horizontalAlignment:"Center"},{type:"TextBlock",text:f,size:"Large",weight:"Bolder",color:"Attention",horizontalAlignment:"Center"}]},
+                {type:"Column",width:"stretch",items:[{type:"TextBlock",text:"Skipped",size:"Small",color:"Warning",horizontalAlignment:"Center"},{type:"TextBlock",text:s,size:"Large",weight:"Bolder",color:"Warning",horizontalAlignment:"Center"}]}
+              ]};
+            ( [ {type:"TextBlock",text:($icon+" Hydrocert Nightly QA Report"),weight:"Bolder",size:"Large"},
+                {type:"TextBlock",text:("Date: "+$date+" | Environment: DEV | Mode: "+$mode),size:"Small",isSubtle:true,spacing:"None"},
+                {type:"TextBlock",text:"Web",weight:"Bolder",spacing:"Medium"},
+                metrics($wt;$wp;$wf;$ws) ]
+              + ( if $menabled=="true" and $mresult!="skipped"
+                  then [ {type:"TextBlock",text:"Mobile",weight:"Bolder",spacing:"Medium"}, metrics($mt;$mp;$mf;$ms) ]
+                  elif $menabled=="true"
+                  then [ {type:"TextBlock",text:"Mobile: run did not complete",size:"Small",color:"Warning",spacing:"Medium"} ]
+                  else [] end )
+              + ( if ($failed|length)>0
+                  then [ {type:"TextBlock",text:"Failed tests (web):",weight:"Bolder",spacing:"Medium"} ]
+                       + [ $failed[] | {type:"TextBlock",text:("- "+(.suite//"")+" / "+(.id//"")+" - "+(.test//"")),size:"Small",wrap:true,spacing:"None"} ]
+                  else [] end )
+            ) as $body |
+            {type:"message",attachments:[{contentType:"application/vnd.microsoft.card.adaptive",contentUrl:null,
+              content:{"$schema":"http://adaptivecards.io/schemas/adaptive-card.json",type:"AdaptiveCard",version:"1.4",
+                body:$body,actions:[{type:"Action.OpenUrl",title:"View Run",url:$runUrl}]}}]}
+            ' > teams-payload.json
+
+          echo "Sending combined Adaptive Card to Teams..."
+          HTTP_STATUS=$(curl -s -o teams-response.txt -w "%{http_code}" -X POST \
+            -H "Content-Type: application/json" -d @teams-payload.json "${TEAMS_WEBHOOK_URL}")
+          echo "Webhook response status: ${HTTP_STATUS}"
+          cat teams-response.txt 2>/dev/null || true
+          if [[ "${HTTP_STATUS}" -ge 200 && "${HTTP_STATUS}" -lt 300 ]]; then
+            echo "Teams notification sent successfully."
+          else
+            echo "::warning::Teams webhook returned HTTP ${HTTP_STATUS}."
+          fi
