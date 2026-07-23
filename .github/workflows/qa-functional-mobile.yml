@@ -12,12 +12,14 @@ on:
     paths:
       - 'mobile-flows-v2/**'
       - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/generate_mobile_regression_html.py'
       - 'scripts/qa_functional_check.py'
   push:
     branches: [main]
     paths:
       - 'mobile-flows-v2/**'
       - 'scripts/generate_mobile_regression_excel.py'
+      - 'scripts/generate_mobile_regression_html.py'
       - 'scripts/qa_functional_check.py'
 
 permissions:
