@@ -81,7 +81,9 @@ jobs:
     needs: plan
     runs-on: ubuntu-latest
     # Worst shard is the 29-flow fixture shard at ~1 min/flow, plus retries.
-    timeout-minutes: 90
+    # Per-flow timeout in the runner bounds a wedged flow, so this only has to
+    # cap the pathological case rather than absorb it.
+    timeout-minutes: 60
     environment: Development
     strategy:
       fail-fast: false

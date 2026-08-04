@@ -80,14 +80,27 @@ PASS_COUNT=0
 FAIL_COUNT=0
 declare -a CHECK_LINES
 
+# A flow normally finishes in 60-90s. Maestro can also wedge completely -
+# no output, no exit - when the emulator stops responding, and then the retry
+# loop below never fires, because it only reacts to a non-zero exit. One wedged
+# flow burned a whole 90-minute job that way. The timeout converts a hang into
+# a normal failed attempt, so it gets retried and, if it keeps hanging, is
+# reported as a real failure instead of eating the job.
+FLOW_TIMEOUT="${MAESTRO_FLOW_TIMEOUT:-360}"
+
 # run_flow <flow-path> <log-file>  sets RUN_EXIT to the maestro exit code
 run_flow() {
   local flow="$1" log_file="$2"
-  maestro test \
+  timeout --kill-after=30s "${FLOW_TIMEOUT}s" maestro test \
     -e MAESTRO_APP_EMAIL="${MAESTRO_APP_EMAIL}" \
     -e MAESTRO_APP_PASSWORD="${MAESTRO_APP_PASSWORD}" \
     "$flow" 2>&1 | tee "$log_file"
   RUN_EXIT=${PIPESTATUS[0]}
+  # 124 = killed by timeout. Say so in the log, otherwise the report just shows
+  # an opaque non-zero exit.
+  if [[ "$RUN_EXIT" -eq 124 || "$RUN_EXIT" -eq 137 ]]; then
+    echo "flow exceeded ${FLOW_TIMEOUT}s and was killed (hung)" | tee -a "$log_file"
+  fi
 }
 
 for flow in "${FLOWS[@]}"; do
