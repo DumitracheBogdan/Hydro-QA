@@ -10,6 +10,13 @@ run-name: "Post-Deploy regression (Mobile) - ${{ github.event_name }}"
 # flow lands in the right shard without anyone maintaining a list. The merge job
 # rebuilds a single bundle, so the HTML report and the Teams card see exactly
 # what they saw before sharding.
+#
+# Two shards, not more. The flows also depend on state their predecessors leave
+# behind - a logged-in session, a visit list already pulled while online - and a
+# 3-way split broke 03_forgot_password and 63_offline_note_edit by separating
+# them from the flows they follow. With two shards the non-fixture flows stay in
+# their original order, and it costs nothing: the 29-flow fixture shard sets the
+# wall-clock floor either way.
 
 on:
   workflow_dispatch:
@@ -18,14 +25,14 @@ on:
         description: "Parallel shards (1 = single job, as before)"
         required: false
         type: number
-        default: 3
+        default: 2
   workflow_call:
     inputs:
       shards:
         description: "Parallel shards (1 = single job)"
         required: false
         type: number
-        default: 3
+        default: 2
     outputs:
       total:
         description: Total mobile flows in the run
@@ -65,7 +72,7 @@ jobs:
         id: plan
         run: |
           set -euo pipefail
-          SHARDS="${{ inputs.shards || 3 }}"
+          SHARDS="${{ inputs.shards || 2 }}"
           python scripts/mobile_shard_plan.py --shards "$SHARDS" --format human
           MATRIX="$(python scripts/mobile_shard_plan.py --shards "$SHARDS")"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
