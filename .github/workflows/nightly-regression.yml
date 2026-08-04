@@ -345,6 +345,7 @@ jobs:
     secrets: inherit
     with:
       gate: report
+      notify: false
 
   # ── Combined Teams notification (web + mobile) ──────────────
   notify:
