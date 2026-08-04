@@ -1,22 +1,44 @@
 name: Post-Deploy regression (Mobile)
 run-name: "Post-Deploy regression (Mobile) - ${{ github.event_name }}"
 
+# Runs the 61 Maestro flows against the dev app on an Android emulator, sharded
+# across parallel jobs to cut wall-clock time.
+#
+# Sharding is NOT a plain split of the flow list: 29 of the flows drive the same
+# dev visit ("QA test") and several write to it, so they all run serially in one
+# shard. scripts/mobile_shard_plan.py derives that from the flow files, so a new
+# flow lands in the right shard without anyone maintaining a list. The merge job
+# rebuilds a single bundle, so the HTML report and the Teams card see exactly
+# what they saw before sharding.
+
 on:
   workflow_dispatch:
+    inputs:
+      shards:
+        description: "Parallel shards (1 = single job, as before)"
+        required: false
+        type: number
+        default: 3
   workflow_call:
+    inputs:
+      shards:
+        description: "Parallel shards (1 = single job)"
+        required: false
+        type: number
+        default: 3
     outputs:
       total:
         description: Total mobile flows in the run
-        value: ${{ jobs.mobile.outputs.total }}
+        value: ${{ jobs.merge.outputs.total }}
       passed:
         description: Passed mobile flows
-        value: ${{ jobs.mobile.outputs.passed }}
+        value: ${{ jobs.merge.outputs.passed }}
       failed:
         description: Failed mobile flows
-        value: ${{ jobs.mobile.outputs.failed }}
+        value: ${{ jobs.merge.outputs.failed }}
       skipped:
         description: Skipped mobile flows
-        value: ${{ jobs.mobile.outputs.skipped }}
+        value: ${{ jobs.merge.outputs.skipped }}
 
 permissions:
   contents: read
@@ -26,11 +48,150 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  mobile:
+  # ── Work out which flows go in which shard ────────────────────
+  plan:
     runs-on: ubuntu-latest
-    # 65 flows at 60-90s each plus up to 2 retries per failing flow
-    timeout-minutes: 120
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      plan: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build shard plan
+        id: plan
+        run: |
+          set -euo pipefail
+          SHARDS="${{ inputs.shards || 3 }}"
+          python scripts/mobile_shard_plan.py --shards "$SHARDS" --format human
+          MATRIX="$(python scripts/mobile_shard_plan.py --shards "$SHARDS")"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Mobile shard plan"
+            echo ""
+            python scripts/mobile_shard_plan.py --shards "$SHARDS" --format human \
+              | sed 's/^/    /'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Run each shard on its own emulator ───────────────────────
+  mobile:
+    needs: plan
+    runs-on: ubuntu-latest
+    # Worst shard is the 29-flow fixture shard at ~1 min/flow, plus retries.
+    timeout-minutes: 90
     environment: Development
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # The key carries api-level/target/arch: the action only checks whether
+      # ~/.android/avd/test.avd exists, so a key shared across different
+      # configs would silently boot the wrong image.
+      - name: Restore AVD cache
+        id: avd-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api30-default-x86_64-${{ runner.os }}-v1
+
+      # Boot once to write a snapshot the real run can load. Only on a miss.
+      - name: Create AVD snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          # -no-snapshot-load (not -no-snapshot) so the snapshot is SAVED here.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: echo "Generated AVD snapshot"
+
+      # One shard saves the cache; the others would only collide on the key.
+      - name: Save AVD cache
+        if: matrix.shard == 0 && steps.avd-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api30-default-x86_64-${{ runner.os }}-v1
+
+      - name: Run mobile V2 tests (shard ${{ matrix.shard }} - ${{ matrix.name }})
+        id: mobile
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          # -no-snapshot-save (not -no-snapshot) so the cached snapshot LOADS.
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FLOWS_FILTER: ${{ matrix.flows }}
+          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
+          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
+          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+
+      - name: Upload shard bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-shard-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: qa-artifacts/mobile-v2/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Shard summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Shard ${{ matrix.shard }} (${{ matrix.name }}) - ${{ matrix.count }} flows"
+            F="qa-artifacts/mobile-v2/test/summary.json"
+            if [[ -f "$F" ]]; then
+              node -e "
+                const t=(require('./$F').totals)||{};
+                console.log('| Total | Passed | Failed | Skipped |');
+                console.log('|-------|--------|--------|---------|');
+                console.log('| '+(t.total||0)+' | '+(t.pass||0)+' | '+(t.fail||0)+' | '+(t.skip||0)+' |');
+              " 2>/dev/null || echo "_summary parse failed_"
+            else
+              echo "_no summary produced by this shard_"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ── Stitch the shards back into one bundle + report ──────────
+  merge:
+    needs: [plan, mobile]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     outputs:
       total: ${{ steps.mobile_totals.outputs.total }}
       passed: ${{ steps.mobile_totals.outputs.passed }}
@@ -49,31 +210,20 @@ jobs:
       - name: Install report dependencies
         run: python -m pip install --upgrade pip openpyxl Pillow
 
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Run mobile V2 tests (Android emulator)
-        id: mobile
-        continue-on-error: true
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Download shard bundles
+        uses: actions/download-artifact@v4
         with:
-          api-level: 30
-          target: default
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          disable-animations: true
-          emulator-boot-timeout: 600
-          script: bash $GITHUB_WORKSPACE/scripts/run-mobile-v2-test.sh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          HYDROCERT_WEB_BASE: ${{ vars.HYDROCERT_DEV_WEB_BASE }}
-          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
-          MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_MOBILE_QA_EMAIL }}
-          MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_MOBILE_QA_PASSWORD }}
+          pattern: mobile-shard-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: shard-bundles
+        continue-on-error: true
+
+      - name: Merge shards
+        shell: bash
+        run: |
+          python scripts/merge_mobile_shards.py \
+            --shards-dir shard-bundles \
+            --output-dir qa-artifacts/mobile-v2 \
+            --plan '${{ needs.plan.outputs.plan }}'
 
       - name: Generate mobile regression HTML report
         if: always()
@@ -105,7 +255,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
           echo "Mobile totals: total=$T pass=$P fail=$FA skip=$S"
 
-      - name: Upload mobile V2 artifacts
+      - name: Upload merged bundle
         if: always()
         id: upload_bundle
         uses: actions/upload-artifact@v4
@@ -131,7 +281,7 @@ jobs:
         run: |
           set +e
           {
-            echo "## Post-Deploy Regression — Mobile (Android Emulator)"
+            echo "## Post-Deploy Regression - Mobile (Android Emulator)"
             echo ""
             SUMMARY_FILE="qa-artifacts/mobile-v2/test/summary.json"
             if [[ -f "$SUMMARY_FILE" ]]; then
@@ -140,48 +290,28 @@ jobs:
                 const t = s.totals || {total:0,pass:0,fail:0,skip:0};
                 const checks = Array.isArray(s.checks) ? s.checks : [];
                 console.log('- **Mode:** ' + (s.mode || 'test'));
-                console.log('- **Generated:** ' + (s.generatedAt || 'n/a'));
-                console.log('- **Runtime emulator:** API 30 x86_64');
+                console.log('- **Runtime emulator:** API 30 x86_64' + (s.sharded ? ' across ' + s.shards + ' shards' : ''));
                 console.log('');
                 console.log('| Total | Passed | Failed | Skipped |');
                 console.log('|-------|--------|---------|---------|');
                 console.log('| ' + (t.total||0) + ' | ' + (t.pass||0) + ' | ' + (t.fail||0) + ' | ' + (t.skip||0) + ' |');
                 console.log('');
-                if (checks.length > 0) {
-                  console.log('### Flow results');
+                const failed = checks.filter(c => c.status === 'FAIL');
+                if (failed.length > 0) {
+                  console.log('### Failed flows (' + failed.length + ')');
                   console.log('');
-                  console.log('| Flow | Status | Details |');
-                  console.log('|------|--------|---------|');
-                  const icon = (st) => st === 'PASS' ? '✅ PASS' : st === 'FAIL' ? '❌ FAIL' : st === 'SKIP' ? '⏭️ SKIP' : st;
-                  for (const c of checks) {
-                    const id = c.id || '(unknown)';
-                    const st = c.status || 'UNKNOWN';
-                    const det = String(c.details || '').replace(/\|/g, '\\\\|').replace(/\r?\n/g, ' ');
-                    console.log('| \`' + id + '\` | ' + icon(st) + ' | ' + det + ' |');
+                  for (const c of failed) {
+                    let det = String(c.details || '').replace(/\r?\n/g, ' ');
+                    if (det.length > 200) det = det.slice(0, 200) + '...';
+                    console.log('- **' + (c.id || '?') + '** - ' + det);
                   }
-                  const failed = checks.filter(c => c.status === 'FAIL');
-                  if (failed.length > 0) {
-                    console.log('');
-                    console.log('### Failed flows (' + failed.length + ')');
-                    console.log('');
-                    for (const c of failed) {
-                      const id = c.id || '(unknown)';
-                      let det = String(c.details || '').replace(/\r?\n/g, ' ');
-                      if (det.length > 200) det = det.slice(0, 200) + '…';
-                      console.log('- **' + id + '** — ' + det);
-                    }
-                  }
-                } else {
-                  console.log('_No flow checks found in summary._');
                 }
               " 2>/dev/null || echo "_Summary parse failed._"
             else
-              echo "_No summary file at $SUMMARY_FILE — the test run may have failed before producing results._"
+              echo "_No summary file - the run failed before producing results._"
             fi
             echo ""
             echo "---"
-            echo ""
-            echo "**HTML report:** \`mobile-regression-report.html\`"
             echo ""
             echo "[Download HTML report](${{ steps.upload_html.outputs.artifact-url || '#' }})"
             echo ""

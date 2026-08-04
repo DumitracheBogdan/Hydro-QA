@@ -44,5 +44,16 @@ export function makeClient(baseUrl, fetchImpl = fetch) {
       });
       return parse(res, "PATCH", path);
     },
+    // Used only by cleanup-parity-visits.mjs. DELETE /visits/{id} is a hard
+    // cascade on the backend (no soft-delete column), so callers must do their
+    // own guarding before ever reaching this.
+    async del(path) {
+      const res = await fetchImpl(`${base}${path}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return parse(res, "DELETE", path);
+    },
+    get baseUrl() { return base; },
   };
 }

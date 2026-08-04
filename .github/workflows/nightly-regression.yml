@@ -27,6 +27,11 @@ on:
         required: true
         type: boolean
         default: false
+      run_parity_tests:
+        description: Bidirectional parity (web vs mobile data)
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -44,6 +49,7 @@ jobs:
       mode: ${{ steps.mode.outputs.value }}
       mobile: ${{ steps.mode.outputs.mobile }}
       webapp_ui: ${{ steps.mode.outputs.webapp_ui }}
+      parity: ${{ steps.mode.outputs.parity }}
       total: ${{ steps.results.outputs.total }}
       passed: ${{ steps.results.outputs.passed }}
       failed: ${{ steps.results.outputs.failed }}
@@ -91,10 +97,26 @@ jobs:
             WEB_UI="true"
           fi
 
+          # Bidirectional parity (web <-> mobile data parity). Deliberately NOT
+          # every night: it is a ~31 min emulator job, and nightly+mobile+parity
+          # every weeknight overruns the 2000-minute monthly allowance a private
+          # repo gets. Twice a week keeps the signal and stays inside budget.
+          # Manual dispatches honour the checkbox.
+          PARITY="false"
+          if [[ "${{ github.event.inputs.run_parity_tests }}" == "true" ]]; then
+            PARITY="true"
+          elif [[ -n "${{ github.event.schedule }}" ]]; then
+            DOW="$(date -u +%u)"   # 1=Mon .. 7=Sun
+            if [[ "${DOW}" == "1" || "${DOW}" == "4" ]]; then
+              PARITY="true"
+            fi
+          fi
+
           echo "value=${MODE}" >> "$GITHUB_OUTPUT"
           echo "mobile=${MOBILE}" >> "$GITHUB_OUTPUT"
           echo "webapp_ui=${WEB_UI}" >> "$GITHUB_OUTPUT"
-          echo "Regression mode: ${MODE} | Mobile: ${MOBILE} | WebappUI: ${WEB_UI}"
+          echo "parity=${PARITY}" >> "$GITHUB_OUTPUT"
+          echo "Regression mode: ${MODE} | Mobile: ${MOBILE} | WebappUI: ${WEB_UI} | Parity: ${PARITY}"
 
       # ── Checkout ───────────────────────────────────────────────
       - name: Checkout repository
@@ -312,9 +334,21 @@ jobs:
     uses: ./.github/workflows/post-deploy-regression-mobile.yml
     secrets: inherit
 
+  # Report-only for now: `gate: report` downgrades a real divergence to a
+  # warning so a still-calibrating check cannot turn the nightly red. A run that
+  # produces no verdict at all still fails, because "parity did not run" is a
+  # different problem from "parity found a divergence".
+  parity:
+    needs: nightly
+    if: needs.nightly.outputs.parity == 'true'
+    uses: ./.github/workflows/bidirectional-parity.yml
+    secrets: inherit
+    with:
+      gate: report
+
   # ── Combined Teams notification (web + mobile) ──────────────
   notify:
-    needs: [nightly, mobile]
+    needs: [nightly, mobile, parity]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -338,6 +372,12 @@ jobs:
           M_PASS: ${{ needs.mobile.outputs.passed }}
           M_FAIL: ${{ needs.mobile.outputs.failed }}
           M_SKIP: ${{ needs.mobile.outputs.skipped }}
+          PARITY_ENABLED: ${{ needs.nightly.outputs.parity }}
+          PARITY_RESULT: ${{ needs.parity.result }}
+          P_TOTAL: ${{ needs.parity.outputs.total }}
+          P_PASS: ${{ needs.parity.outputs.passed }}
+          P_FAIL: ${{ needs.parity.outputs.failed }}
+          P_GATE: ${{ needs.parity.outputs.gate_failed }}
         run: |
           set -euo pipefail
           if [[ -z "${TEAMS_WEBHOOK_URL:-}" ]]; then
@@ -348,6 +388,8 @@ jobs:
           WT="${W_TOTAL:-0}"; WP="${W_PASS:-0}"; WF="${W_FAIL:-0}"; WS="${W_SKIP:-0}"
           MT="${M_TOTAL:-0}"; MP="${M_PASS:-0}"; MF="${M_FAIL:-0}"; MS="${M_SKIP:-0}"
           [[ -n "$MT" ]] || MT=0; [[ -n "$MP" ]] || MP=0; [[ -n "$MF" ]] || MF=0; [[ -n "$MS" ]] || MS=0
+          PT="${P_TOTAL:-0}"; PP="${P_PASS:-0}"; PF="${P_FAIL:-0}"
+          [[ -n "$PT" ]] || PT=0; [[ -n "$PP" ]] || PP=0; [[ -n "$PF" ]] || PF=0
           MODE="${MODE:-standard}"
           DATE="${DATE:-$(date -u +%Y-%m-%d)}"
 
@@ -361,7 +403,7 @@ jobs:
             --arg icon "$ICON" --arg date "$DATE" --arg mode "$MODE" --arg runUrl "$RUN_URL" \
             --arg wt "$WT" --arg wp "$WP" --arg wf "$WF" --arg ws "$WS" \
             --arg menabled "$MOBILE_ENABLED" --arg mresult "$MOBILE_RESULT" \
-            --arg mt "$MT" --arg mp "$MP" --arg mf "$MF" --arg ms "$MS" \
+            --arg mt "$MT" --arg mp "$MP" --arg mf "$MF" --arg ms "$MS"             --arg penabled "$PARITY_ENABLED" --arg presult "$PARITY_RESULT" --arg pgate "$P_GATE"             --arg pt "$PT" --arg pp "$PP" --arg pf "$PF" \
             --argjson failed "$FT" '
             def metrics(t;p;f;s):
               {type:"ColumnSet",spacing:"Small",columns:[
@@ -374,6 +416,10 @@ jobs:
                 {type:"TextBlock",text:("Date: "+$date+" | Environment: DEV | Mode: "+$mode),size:"Small",isSubtle:true,spacing:"None"},
                 {type:"TextBlock",text:"Web",weight:"Bolder",spacing:"Medium"},
                 metrics($wt;$wp;$wf;$ws) ]
+              + ( if $penabled=="true" and $presult!="skipped"
+                  then [ {type:"TextBlock",text:("Parity (web vs mobile)"+(if $pgate=="true" then " - divergence found" else "" end)),weight:"Bolder",spacing:"Medium"},
+                         {type:"TextBlock",text:($pp+"/"+$pt+" checks passed, "+$pf+" failed"),size:"Small",isSubtle:true,spacing:"None"} ]
+                  else [] end )
               + ( if $menabled=="true" and $mresult!="skipped"
                   then [ {type:"TextBlock",text:"Mobile",weight:"Bolder",spacing:"Medium"}, metrics($mt;$mp;$mf;$ms) ]
                   elif $menabled=="true"

@@ -42,3 +42,6 @@ summary.json
 report.html
 qa-artifacts/
 _ss_verify/
+
+__pycache__/
+*.pyc

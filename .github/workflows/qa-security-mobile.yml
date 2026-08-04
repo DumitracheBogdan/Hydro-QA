@@ -14,6 +14,8 @@ on:
       - 'scripts/run-mobile-v2-test.sh'
       - 'scripts/generate_mobile_regression_excel.py'
       - 'scripts/generate_mobile_regression_html.py'
+      - 'scripts/mobile_shard_plan.py'
+      - 'scripts/merge_mobile_shards.py'
       - 'scripts/qa_security_check.py'
       - '.github/workflows/update-mobile-apk.yml'
   push:
@@ -23,6 +25,8 @@ on:
       - 'scripts/run-mobile-v2-test.sh'
       - 'scripts/generate_mobile_regression_excel.py'
       - 'scripts/generate_mobile_regression_html.py'
+      - 'scripts/mobile_shard_plan.py'
+      - 'scripts/merge_mobile_shards.py'
       - 'scripts/qa_security_check.py'
       - '.github/workflows/update-mobile-apk.yml'
 

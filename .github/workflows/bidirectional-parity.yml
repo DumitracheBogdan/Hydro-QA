@@ -8,6 +8,37 @@ on:
         description: "Reuse an existing visit ref (skip create). Leave blank for a fresh visit."
         required: false
         default: ""
+      gate:
+        description: "enforce = divergence fails the run; report = divergence only warns"
+        required: false
+        type: choice
+        default: enforce
+        options: [enforce, report]
+  workflow_call:
+    inputs:
+      visit_ref:
+        description: "Reuse an existing visit ref. Blank for a fresh visit."
+        required: false
+        type: string
+        default: ""
+      gate:
+        description: "enforce or report. Nightly passes report until parity proves stable."
+        required: false
+        type: string
+        default: enforce
+    outputs:
+      total:
+        description: Total parity checks
+        value: ${{ jobs.parity.outputs.total }}
+      passed:
+        description: Passed parity checks
+        value: ${{ jobs.parity.outputs.passed }}
+      failed:
+        description: Failed parity checks
+        value: ${{ jobs.parity.outputs.failed }}
+      gate_failed:
+        description: Whether the parity gate found a real divergence
+        value: ${{ jobs.parity.outputs.gate_failed }}
 
 permissions:
   contents: read
@@ -21,6 +52,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 75
     environment: Development
+    outputs:
+      total: ${{ steps.parity_totals.outputs.total }}
+      passed: ${{ steps.parity_totals.outputs.passed }}
+      failed: ${{ steps.parity_totals.outputs.failed }}
+      gate_failed: ${{ steps.parity_totals.outputs.gate_failed }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,11 +66,59 @@ jobs:
       - name: Unit tests (parity API scripts)
         run: node --test scripts/parity/*.test.mjs
 
+      # Housekeeping before the run creates another visit: dev accumulates a
+      # PARITY-* visit per run and a crowded visit list is what aggravates the
+      # mobile-sync flake. Runs first so there is no in-flight visit of ours to
+      # protect, and it can only ever touch PARITY-* rows older than 3 days.
+      - name: Clean up old PARITY test visits (dev)
+        continue-on-error: true
+        run: node scripts/parity/cleanup-parity-visits.mjs
+        env:
+          HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
+          API_EMAIL: ${{ secrets.HYDROCERT_DEV_API_EMAIL }}
+          API_PASSWORD: ${{ secrets.HYDROCERT_DEV_API_PASSWORD }}
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
+      # Key carries api-level/target/arch: the runner action only checks that
+      # ~/.android/avd/test.avd exists, so a key shared across configs would
+      # restore the wrong image.
+      - name: Restore AVD cache
+        id: avd-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api30-default-x86_64-${{ runner.os }}-v1
+
+      - name: Create AVD snapshot
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: default
+          arch: x86_64
+          force-avd-creation: false
+          # -no-snapshot-load (not -no-snapshot) so a snapshot is SAVED here.
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot-load
+          disable-animations: true
+          emulator-boot-timeout: 600
+          script: echo "Generated AVD snapshot"
+
+      - name: Save AVD cache
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api30-default-x86_64-${{ runner.os }}-v1
 
       - name: Run bidirectional parity (Android emulator)
         id: parity
@@ -45,14 +129,17 @@ jobs:
           target: default
           arch: x86_64
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          # -no-snapshot-save (not -no-snapshot) so the cached snapshot LOADS.
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot-save -noaudio -no-boot-anim
           disable-animations: true
           emulator-boot-timeout: 600
           script: bash $GITHUB_WORKSPACE/scripts/run-parity-test.sh
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.run_id }}
-          VISIT_REF: ${{ github.event.inputs.visit_ref }}
+          # inputs.* (not github.event.inputs.*) so it resolves for both
+          # workflow_dispatch and workflow_call.
+          VISIT_REF: ${{ inputs.visit_ref }}
           HYDROCERT_API_BASE: ${{ vars.HYDROCERT_DEV_API_BASE }}
           # webapp-UI evidence layer (Phase 2.5, non-gating): Playwright logs into the dev webapp to
           # screenshot the web side of each datum.
@@ -67,6 +154,26 @@ jobs:
           MOBILE_PASSWORD: ${{ secrets.HYDROCERT_PARITY_MOBILE_PASSWORD }}
           MAESTRO_APP_EMAIL: ${{ secrets.HYDROCERT_PARITY_MOBILE_EMAIL }}
           MAESTRO_APP_PASSWORD: ${{ secrets.HYDROCERT_PARITY_MOBILE_PASSWORD }}
+
+      - name: Compute parity totals
+        if: always()
+        id: parity_totals
+        shell: bash
+        run: |
+          T=0; P=0; F=0; G=unknown
+          if [[ -f summary.json ]]; then
+            T=$(node -pe "require('./summary.json').total||0" 2>/dev/null || echo 0)
+            P=$(node -pe "require('./summary.json').passed||0" 2>/dev/null || echo 0)
+            F=$(node -pe "require('./summary.json').failed||0" 2>/dev/null || echo 0)
+            G=$(node -pe "String(!!require('./summary.json').gateFailed)" 2>/dev/null || echo unknown)
+          fi
+          {
+            echo "total=$T"
+            echo "passed=$P"
+            echo "failed=$F"
+            echo "gate_failed=$G"
+          } >> "$GITHUB_OUTPUT"
+          echo "Parity totals: total=$T pass=$P fail=$F gateFailed=$G"
 
       - name: Upload artifacts
         if: always()
@@ -134,10 +241,23 @@ jobs:
       # continue-on-error (so artifacts always upload); without this step a failed/short/absent run
       # would report green (fail-open). Keys on summary.gateFailed (hard failures, excludes the
       # documented-flaky allowlist) and treats a missing summary as failure (H2, M7).
+      #
+      # gate: report softens ONLY a real divergence, never "parity did not run".
+      # Those are different failures: a divergence is a finding we are still
+      # calibrating, a missing summary means the suite never produced a verdict
+      # and would otherwise report green while blind.
       - name: Parity gate
         if: always()
         run: |
           if [ ! -f summary.json ]; then
             echo "::error::no summary.json produced — verification did not complete (see artifacts/logs)"; exit 1
           fi
-          node -e "const s=require('./summary.json');console.log('gate: '+s.passed+'/'+s.total+' PASS, failed='+s.failed+', gateFailed='+s.gateFailed);if(s.gateFailed){console.error('::error::parity gate FAILED');process.exit(1)}console.log('parity gate PASS')"
+          if node -e "const s=require('./summary.json');console.log('gate: '+s.passed+'/'+s.total+' PASS, failed='+s.failed+', gateFailed='+s.gateFailed);if(s.gateFailed){process.exit(1)}console.log('parity gate PASS')"; then
+            exit 0
+          fi
+          if [ "${{ inputs.gate }}" = "report" ]; then
+            echo "::warning::parity gate found a divergence (report-only mode, not failing the run)"
+            exit 0
+          fi
+          echo "::error::parity gate FAILED"
+          exit 1
